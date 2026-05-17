@@ -809,8 +809,32 @@
 
           <div class="form-row">
             <div class="field">
-              <label>Height (inches)</label>
-              <input type="number" id="p-height" placeholder="e.g. 70" min="48" max="96">
+              <label>Height</label>
+              <div style="display:flex;gap:8px;">
+                <select id="p-height-ft" style="flex:1;">
+                  <option value="">Feet</option>
+                  <option value="4">4 ft</option>
+                  <option value="5">5 ft</option>
+                  <option value="6">6 ft</option>
+                  <option value="7">7 ft</option>
+                </select>
+                <select id="p-height-in" style="flex:1;">
+                  <option value="">Inches</option>
+                  <option value="0">0 in</option>
+                  <option value="1">1 in</option>
+                  <option value="2">2 in</option>
+                  <option value="3">3 in</option>
+                  <option value="4">4 in</option>
+                  <option value="5">5 in</option>
+                  <option value="6">6 in</option>
+                  <option value="7">7 in</option>
+                  <option value="8">8 in</option>
+                  <option value="9">9 in</option>
+                  <option value="10">10 in</option>
+                  <option value="11">11 in</option>
+                </select>
+              </div>
+              <input type="hidden" id="p-height">
             </div>
             <div class="field">
               <label>Education</label>
@@ -1372,7 +1396,12 @@ async function loadExistingProfile() {
     }
 
     // Lifestyle
-    set('p-height', profile.height_inches);
+    if (profile.height_inches) {
+      const ft = Math.floor(profile.height_inches / 12);
+      const inches = profile.height_inches % 12;
+      document.getElementById('p-height-ft').value = ft;
+      document.getElementById('p-height-in').value = inches;
+    }
     setSelect('p-education', profile.education);
     set('p-occupation', profile.occupation);
     set('p-employer', profile.employer);
@@ -1457,7 +1486,12 @@ async function saveProfile() {
     p_email_opt_in: document.getElementById('p-email-opt').checked,
     p_services_text_opt_in: document.getElementById('p-services-text').checked,
     p_marketing_text_opt_in: document.getElementById('p-marketing-text').checked,
-    p_height_inches: document.getElementById('p-height').value ? parseInt(document.getElementById('p-height').value) : null,
+    p_height_inches: (() => {
+      const ft = parseInt(document.getElementById('p-height-ft').value);
+      const inches = parseInt(document.getElementById('p-height-in').value);
+      if (!isNaN(ft) && !isNaN(inches)) return ft * 12 + inches;
+      return null;
+    })(),
     p_education: document.getElementById('p-education').value || null,
     p_occupation: document.getElementById('p-occupation').value.trim() || null,
     p_employer: document.getElementById('p-employer').value.trim() || null,
@@ -1626,6 +1660,10 @@ async function loadOptions() {
   } catch(e) {
     console.error('Could not load profile options:', e);
   }
+}
+
+function returnToProfile() {
+  showScreen('profile');
 }
 </script>
 </body>
