@@ -241,21 +241,28 @@
   }
   .tab-btn {
     flex: 1;
-    padding: 14px 8px;
+    padding: 16px 8px;
     border: none;
-    background: none;
+    background: var(--gray-light);
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
-    font-weight: 500;
-    color: var(--gray-mid);
+    font-weight: 600;
+    color: var(--gray-dark);
     cursor: pointer;
     border-bottom: 3px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s;
+    border-right: 1px solid #e0e0e0;
   }
+  .tab-btn:last-child { border-right: none; }
   .tab-btn.active {
     color: var(--red);
     border-bottom-color: var(--red);
+    background: var(--white);
+  }
+  .tab-btn:hover:not(.active) {
+    background: #e8e8e8;
+    color: var(--gray-dark);
   }
 
   .tab-content {
@@ -627,7 +634,7 @@
         </div>
 
         <div class="privacy-card">
-          <span class="privacy-icon">🔒</span>
+          <span class="privacy-icon"></span>
           <div>
             <strong>Privacy Guaranteed</strong>
             <p>Your profile is only visible to Smitten Singles staff and matchmakers — never to other participants.</p>
@@ -646,7 +653,7 @@
         <!-- TAB: BASIC INFO -->
         <div id="tab-basic" class="tab-content active">
 
-          <div class="section-title"><span class="icon">👤</span> Personal Details</div>
+          <div class="section-title"><span class="icon"></span> Personal Details</div>
 
           <div class="form-full">
             <div class="form-row">
@@ -684,16 +691,7 @@
               </div>
               <div class="field">
                 <label>Gender</label>
-                <select id="p-gender">
-                  <option value="">Select...</option>
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Non-binary</option>
-                  <option>Transgender Male</option>
-                  <option>Transgender Female</option>
-                  <option>Prefer not to say</option>
-                  <option>Other</option>
-                </select>
+                <select id="p-gender" data-category="gender"><option value="">Select...</option></select>
               </div>
             </div>
           </div>
@@ -726,11 +724,7 @@
             <div class="form-row">
               <div class="field">
                 <label>Country</label>
-                <select id="p-country">
-                  <option value="US">United States</option>
-                  <option value="CA">Canada</option>
-                  <option value="other">Other</option>
-                </select>
+                <select id="p-country" style="display:none"><option value="US" selected>United States</option></select>
               </div>
               <div class="field">
                 <label>Closest Major City</label>
@@ -740,7 +734,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon">❤️</span> Seeking</div>
+          <div class="section-title"><span class="icon"></span> Seeking</div>
 
           <div class="form-full">
             <div class="checkbox-group">
@@ -752,7 +746,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon">✍️</span> About Me</div>
+          <div class="section-title"><span class="icon"></span> About Me</div>
 
           <div class="form-full">
             <div class="field">
@@ -776,7 +770,7 @@
               <label class="check-item with-desc">
                 <input type="checkbox" id="p-interested-matchmaking">
                 <div class="check-text">
-                  <strong>Are you interested in learning about Matchmaking Services?</strong>
+                  <strong>I am interested in learning more about matchmaking services</strong>
                 </div>
               </label>
               <label class="check-item with-desc">
@@ -802,11 +796,15 @@
               </label>
             </div>
           </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="switchTab('lifestyle', document.querySelectorAll('.tab-btn')[1])">Next: Lifestyle &rarr;</button>
+          </div>
         </div>
 
         <!-- TAB: LIFESTYLE -->
         <div id="tab-lifestyle" class="tab-content">
-          <div class="section-title"><span class="icon">🌿</span> Background &amp; Lifestyle</div>
+          <div class="section-title"><span class="icon"></span> Background &amp; Lifestyle</div>
           <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">This helps our algorithm find better matches for you.</p>
 
           <div class="form-row">
@@ -816,17 +814,7 @@
             </div>
             <div class="field">
               <label>Education</label>
-              <select id="p-education">
-                <option value="">Select education</option>
-                <option>High School / GED</option>
-                <option>Some College</option>
-                <option>Associate Degree</option>
-                <option>Bachelor's Degree</option>
-                <option>Master's Degree</option>
-                <option>Doctoral Degree</option>
-                <option>Trade / Vocational</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-education" data-category="education"><option value="">Select...</option></select>
             </div>
           </div>
 
@@ -847,96 +835,40 @@
           <div class="form-row">
             <div class="field">
               <label>Do you have kids?</label>
-              <select id="p-kids">
-                <option value="">Select...</option>
-                <option>No</option>
-                <option>Yes - at home</option>
-                <option>Yes - grown</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-kids" data-category="kids"><option value="">Select...</option></select>
             </div>
             <div class="field">
               <label>Do you want kids?</label>
-              <select id="p-want-kids">
-                <option value="">Select...</option>
-                <option>Yes</option>
-                <option>No</option>
-                <option>Open to it</option>
-                <option>Not sure</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-want-kids" data-category="want_kids"><option value="">Select...</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Smoking</label>
-              <select id="p-smoking">
-                <option value="">Select...</option>
-                <option>Non-smoker</option>
-                <option>Occasional smoker</option>
-                <option>Regular smoker</option>
-                <option>Trying to quit</option>
-              </select>
+              <select id="p-smoking" data-category="smoking"><option value="">Select...</option></select>
             </div>
             <div class="field">
               <label>Drinking</label>
-              <select id="p-drinking">
-                <option value="">Select...</option>
-                <option>Non-drinker</option>
-                <option>Social drinker</option>
-                <option>Regular drinker</option>
-                <option>Sober</option>
-              </select>
+              <select id="p-drinking" data-category="drinking"><option value="">Select...</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Religion</label>
-              <select id="p-religion">
-                <option value="">Select...</option>
-                <option>Christian</option>
-                <option>Catholic</option>
-                <option>Jewish</option>
-                <option>Muslim</option>
-                <option>Hindu</option>
-                <option>Buddhist</option>
-                <option>Spiritual but not religious</option>
-                <option>Agnostic</option>
-                <option>Atheist</option>
-                <option>Other</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-religion" data-category="religion"><option value="">Select...</option></select>
             </div>
             <div class="field">
               <label>Politics</label>
-              <select id="p-politics">
-                <option value="">Select...</option>
-                <option>Liberal</option>
-                <option>Moderate</option>
-                <option>Conservative</option>
-                <option>Apolitical</option>
-                <option>Other</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-politics" data-category="politics"><option value="">Select...</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Income Level</label>
-              <select id="p-income">
-                <option value="">Select...</option>
-                <option>Under $40k</option>
-                <option>$40k - $60k</option>
-                <option>$60k - $80k</option>
-                <option>$80k - $100k</option>
-                <option>$100k - $150k</option>
-                <option>$150k - $200k</option>
-                <option>$200k+</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-income" data-category="income_level"><option value="">Select...</option></select>
             </div>
             <div class="field">
               <label>Ethnicity</label>
@@ -947,44 +879,18 @@
           <div class="form-row full">
             <div class="field">
               <label>Body Type</label>
-              <select id="p-body-type">
-                <option value="">Select...</option>
-                <option>Slim</option>
-                <option>Athletic</option>
-                <option>Average</option>
-                <option>Curvy</option>
-                <option>Plus size</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-body-type" data-category="body_type"><option value="">Select...</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Hair Color</label>
-              <select id="p-hair">
-                <option value="">Select...</option>
-                <option>Black</option>
-                <option>Brown</option>
-                <option>Blonde</option>
-                <option>Red</option>
-                <option>Gray / Silver</option>
-                <option>White</option>
-                <option>Bald</option>
-                <option>Other</option>
-              </select>
+              <select id="p-hair" data-category="hair_color"><option value="">Select...</option></select>
             </div>
             <div class="field">
               <label>Eye Color</label>
-              <select id="p-eyes">
-                <option value="">Select...</option>
-                <option>Brown</option>
-                <option>Blue</option>
-                <option>Green</option>
-                <option>Hazel</option>
-                <option>Gray</option>
-                <option>Other</option>
-              </select>
+              <select id="p-eyes" data-category="eye_color"><option value="">Select...</option></select>
             </div>
           </div>
 
@@ -1012,14 +918,7 @@
           <div class="form-row full">
             <div class="field">
               <label>Relationship Status</label>
-              <select id="p-rel-status">
-                <option value="">Select...</option>
-                <option>Single</option>
-                <option>Separated</option>
-                <option>Divorced</option>
-                <option>Widowed</option>
-                <option>Prefer not to say</option>
-              </select>
+              <select id="p-rel-status" data-category="relationship_status"><option value="">Select...</option></select>
             </div>
           </div>
 
@@ -1029,11 +928,16 @@
               <textarea id="p-ideal-match" placeholder="Describe who you're looking for..." rows="3"></textarea>
             </div>
           </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:space-between;">
+            <button class="btn btn-ghost" onclick="switchTab('basic', document.querySelectorAll('.tab-btn')[0])">&larr; Basic Info</button>
+            <button class="btn btn-outline" onclick="switchTab('preferences', document.querySelectorAll('.tab-btn')[2])">Next: Preferences &rarr;</button>
+          </div>
         </div>
 
         <!-- TAB: PREFERENCES -->
         <div id="tab-preferences" class="tab-content">
-          <div class="section-title"><span class="icon">💝</span> Match Preferences</div>
+          <div class="section-title"><span class="icon"></span> Match Preferences</div>
           <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">Who are you looking to meet?</p>
 
           <div class="form-row">
@@ -1050,16 +954,7 @@
           <div class="form-row full">
             <div class="field">
               <label>Maximum Distance (miles)</label>
-              <select id="p-max-distance">
-                <option value="">Select...</option>
-                <option value="10">10 miles</option>
-                <option value="25">25 miles</option>
-                <option value="50">50 miles</option>
-                <option value="100">100 miles</option>
-                <option value="250">250 miles</option>
-                <option value="500">500 miles</option>
-                <option value="999">No limit</option>
-              </select>
+              <select id="p-max-distance" data-category="max_distance"><option value="">Select...</option></select>
             </div>
           </div>
 
@@ -1077,15 +972,7 @@
           <div class="form-row">
             <div class="field">
               <label>Preferred Body Type</label>
-              <select id="p-pref-body">
-                <option value="">Any</option>
-                <option>Slim</option>
-                <option>Athletic</option>
-                <option>Average</option>
-                <option>Curvy</option>
-                <option>Plus size</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-body" data-category="preferred_body_type"><option value="">Any</option></select>
             </div>
             <div class="field">
               <label>Preferred Ethnicity</label>
@@ -1096,135 +983,77 @@
           <div class="form-row">
             <div class="field">
               <label>Preferred Religion</label>
-              <select id="p-pref-religion">
-                <option value="">Any</option>
-                <option>Christian</option>
-                <option>Catholic</option>
-                <option>Jewish</option>
-                <option>Muslim</option>
-                <option>Hindu</option>
-                <option>Buddhist</option>
-                <option>Spiritual</option>
-                <option>Agnostic / Atheist</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-religion" data-category="preferred_religion"><option value="">Any</option></select>
             </div>
             <div class="field">
               <label>Preferred Politics</label>
-              <select id="p-pref-politics">
-                <option value="">Any</option>
-                <option>Liberal</option>
-                <option>Moderate</option>
-                <option>Conservative</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-politics" data-category="preferred_politics"><option value="">Any</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Preferred Education</label>
-              <select id="p-pref-education">
-                <option value="">Any</option>
-                <option>High School minimum</option>
-                <option>Some college minimum</option>
-                <option>Bachelor's minimum</option>
-                <option>Graduate degree minimum</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-education" data-category="preferred_education"><option value="">Any</option></select>
             </div>
             <div class="field">
               <label>Preferred Income Level</label>
-              <select id="p-pref-income">
-                <option value="">Any</option>
-                <option>Under $40k</option>
-                <option>$40k+</option>
-                <option>$60k+</option>
-                <option>$80k+</option>
-                <option>$100k+</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-income" data-category="preferred_income"><option value="">Any</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Preferred Smoking</label>
-              <select id="p-pref-smoking">
-                <option value="">Any</option>
-                <option>Non-smoker only</option>
-                <option>Occasional OK</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-smoking" data-category="preferred_smoking"><option value="">Any</option></select>
             </div>
             <div class="field">
               <label>Preferred Drinking</label>
-              <select id="p-pref-alcohol">
-                <option value="">Any</option>
-                <option>Non-drinker only</option>
-                <option>Social drinker OK</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-alcohol" data-category="preferred_alcohol"><option value="">Any</option></select>
             </div>
           </div>
 
           <div class="form-row full">
             <div class="field">
               <label>Preferred Relationship Status</label>
-              <select id="p-pref-rel-status">
-                <option value="">Any</option>
-                <option>Single only</option>
-                <option>Divorced OK</option>
-                <option>Widowed OK</option>
-                <option>No preference</option>
-              </select>
+              <select id="p-pref-rel-status" data-category="preferred_relationship_status"><option value="">Any</option></select>
             </div>
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon">🏠</span> Lifestyle Compatibility</div>
+          <div class="section-title"><span class="icon"></span> Lifestyle Compatibility</div>
 
           <div class="form-row">
             <div class="field">
               <label>Open to dating someone with kids?</label>
-              <select id="p-date-with-kids">
-                <option value="">Select...</option>
-                <option>Yes</option>
-                <option>No</option>
-                <option>Depends on situation</option>
-              </select>
+              <select id="p-date-with-kids" data-category="date_with_kids"><option value="">Select...</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="field">
               <label>Willing to relocate (In State)?</label>
-              <select id="p-relocation-in">
-                <option value="">Select...</option>
-                <option>Yes</option>
-                <option>No</option>
-                <option>Maybe</option>
-              </select>
+              <select id="p-relocation-in" data-category="relocation"><option value="">Select...</option></select>
             </div>
             <div class="field">
               <label>Willing to relocate (Out of State)?</label>
-              <select id="p-relocation-out">
-                <option value="">Select...</option>
-                <option>Yes</option>
-                <option>No</option>
-                <option>Maybe</option>
-              </select>
+              <select id="p-relocation-out" data-category="relocation"><option value="">Select...</option></select>
             </div>
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon">🚫</span> Dealbreakers</div>
+          <div class="section-title"><span class="icon"></span> Dealbreakers</div>
 
           <div class="form-row full">
             <div class="field">
               <textarea id="p-dealbreakers" placeholder="E.g., Must love dogs, no smokers..." rows="4"></textarea>
               <span class="hint">Any strict dealbreakers our matchmakers should know about?</span>
             </div>
+          </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:space-between;align-items:center;">
+            <button class="btn btn-ghost" onclick="switchTab('lifestyle', document.querySelectorAll('.tab-btn')[1])">&larr; Lifestyle</button>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
           </div>
         </div>
       </div>
@@ -1408,6 +1237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  loadOptions();
   updateProgress();
   document.querySelectorAll('#screen-profile input, #screen-profile select, #screen-profile textarea')
     .forEach(el => el.addEventListener('change', updateProgress));
@@ -1761,6 +1591,34 @@ function updateProgress() {
   });
   const pct = Math.min(10 + Math.round((filled / fields.length) * 90), 100);
   document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ── Load dropdown options from Supabase ───────────────────────────────────────
+async function loadOptions() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profile_options?select=category,value,label,sort_order&is_active=eq.true&order=category,sort_order`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+    });
+    const options = await r.json();
+
+    // Group by category
+    const grouped = {};
+    options.forEach(o => {
+      if (!grouped[o.category]) grouped[o.category] = [];
+      grouped[o.category].push(o);
+    });
+
+    // Populate each select
+    document.querySelectorAll('select[data-category]').forEach(sel => {
+      const category = sel.getAttribute('data-category');
+      const opts = grouped[category] || [];
+      const isAny = sel.querySelector('option')?.value === '' && sel.querySelector('option')?.textContent === 'Any';
+      const placeholder = isAny ? '<option value="">Any</option>' : '<option value="">Select...</option>';
+      sel.innerHTML = placeholder + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    });
+  } catch(e) {
+    console.error('Could not load profile options:', e);
+  }
 }
 </script>
 </body>
