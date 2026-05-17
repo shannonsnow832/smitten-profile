@@ -609,22 +609,22 @@
           <p class="photo-hint">Your first photo is your main profile picture.</p>
           <div class="main-photo" id="main-photo-drop" onclick="document.getElementById('main-photo-input').click()">
             <img id="main-photo-preview" src="" style="display:none;">
-            <div class="upload-icon" id="main-photo-icon">📷</div>
+            <div class="upload-icon" id="main-photo-icon">+ Add Photo</div>
             <div class="upload-label" id="main-photo-label">Click to upload</div>
           </div>
           <input type="file" id="main-photo-input" accept="image/*" style="display:none" onchange="previewMainPhoto(this)">
           <div class="extra-photos">
             <div class="extra-photo" onclick="document.getElementById('extra0').click()">
               <img id="extra-preview-0" src="" style="display:none;">
-              <span class="cam" id="extra-icon-0">📷</span>
+              <span class="cam" id="extra-icon-0">+</span>
             </div>
             <div class="extra-photo" onclick="document.getElementById('extra1').click()">
               <img id="extra-preview-1" src="" style="display:none;">
-              <span class="cam" id="extra-icon-1">📷</span>
+              <span class="cam" id="extra-icon-1">+</span>
             </div>
             <div class="extra-photo" onclick="document.getElementById('extra2').click()">
               <img id="extra-preview-2" src="" style="display:none;">
-              <span class="cam" id="extra-icon-2">📷</span>
+              <span class="cam" id="extra-icon-2">+</span>
             </div>
           </div>
           <input type="file" id="extra0" accept="image/*" style="display:none" onchange="previewExtra(this,0)">
@@ -653,7 +653,7 @@
         <!-- TAB: BASIC INFO -->
         <div id="tab-basic" class="tab-content active">
 
-          <div class="section-title"><span class="icon"></span> Personal Details</div>
+          <div class="section-title"></span>Personal Details</div>
 
           <div class="form-full">
             <div class="form-row">
@@ -734,7 +734,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon"></span> Seeking</div>
+          <div class="section-title"></span>Seeking</div>
 
           <div class="form-full">
             <div class="checkbox-group">
@@ -746,7 +746,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon"></span> About Me</div>
+          <div class="section-title"></span>About Me</div>
 
           <div class="form-full">
             <div class="field">
@@ -756,7 +756,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon">📋</span> Consent & Communication</div>
+          <div class="section-title"></span>Consent & Communication</div>
 
           <div class="form-full">
             <div class="checkbox-group">
@@ -804,7 +804,7 @@
 
         <!-- TAB: LIFESTYLE -->
         <div id="tab-lifestyle" class="tab-content">
-          <div class="section-title"><span class="icon"></span> Background &amp; Lifestyle</div>
+          <div class="section-title"></span>Background &amp; Lifestyle</div>
           <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">This helps our algorithm find better matches for you.</p>
 
           <div class="form-row">
@@ -937,7 +937,7 @@
 
         <!-- TAB: PREFERENCES -->
         <div id="tab-preferences" class="tab-content">
-          <div class="section-title"><span class="icon"></span> Match Preferences</div>
+          <div class="section-title"></span>Match Preferences</div>
           <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">Who are you looking to meet?</p>
 
           <div class="form-row">
@@ -1021,7 +1021,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon"></span> Lifestyle Compatibility</div>
+          <div class="section-title"></span>Lifestyle Compatibility</div>
 
           <div class="form-row">
             <div class="field">
@@ -1042,7 +1042,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title"><span class="icon"></span> Dealbreakers</div>
+          <div class="section-title"></span>Dealbreakers</div>
 
           <div class="form-row full">
             <div class="field">
@@ -1064,7 +1064,7 @@
 <!-- SCREEN 4: Success -->
 <div id="screen-success" class="screen">
   <div class="success-wrap">
-    <div class="success-icon">🎉</div>
+    
     <h2>Profile Saved!</h2>
     <p>Thank you! Your profile has been submitted. Our team will be in touch soon. Keep an eye on your email for updates about upcoming events and matches.</p>
     <br>
@@ -1201,7 +1201,10 @@ async function proceedToOtp() {
     await sendOtp(currentEmail);
     showScreen('otp');
   } catch(e) {
-    showAlert('gate-alert', 'Could not send verification code. Please try again.', 'error');
+    let msg = 'Could not send verification code. Please try again.';
+    if (e.message && e.message.includes('429')) msg = 'Please wait 60 seconds before requesting another code.';
+    else if (e.message) msg = e.message;
+    showAlert('gate-alert', msg, 'error');
   }
 }
 
@@ -1214,7 +1217,11 @@ async function sendOtp(email) {
     headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  if (!r.ok) throw new Error('Failed to send OTP');
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    if (r.status === 429) throw new Error('429: Please wait 60 seconds before requesting another code.');
+    throw new Error(err.msg || err.message || 'Failed to send verification code.');
+  }
 }
 
 // ── OTP digits ────────────────────────────────────────────────────────────────
