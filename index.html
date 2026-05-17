@@ -1460,12 +1460,29 @@ async function verifyOtp() {
 }
 
 async function resendOtp() {
+  const link = document.querySelector('#screen-otp a[onclick]');
   try {
     await sendOtp(currentEmail);
     showAlert('otp-alert', 'Code resent! Check your email.', 'success');
-    document.getElementById('otp-alert').classList.add('show');
+    document.getElementById('otp-alert').className = 'alert success show';
+    // Disable resend for 60 seconds
+    if (link) {
+      link.style.pointerEvents = 'none';
+      link.style.color = 'var(--gray-mid)';
+      let secs = 60;
+      link.textContent = `Resend code (${secs}s)`;
+      const interval = setInterval(() => {
+        secs--;
+        link.textContent = secs > 0 ? `Resend code (${secs}s)` : 'Resend code';
+        if (secs <= 0) {
+          clearInterval(interval);
+          link.style.pointerEvents = '';
+          link.style.color = 'var(--red)';
+        }
+      }, 1000);
+    }
   } catch(e) {
-    showAlert('otp-alert', 'Could not resend. Please try again.', 'error');
+    showAlert('otp-alert', 'Could not resend. Please wait 60 seconds before trying again.', 'error');
   }
 }
 
