@@ -99,8 +99,8 @@
     margin-bottom: 24px;
   }
   .otp-inputs input {
-    width: 48px;
-    height: 56px;
+    width: 40px;
+    height: 50px;
     border: 2px solid var(--gray-light);
     border-radius: var(--radius-sm);
     text-align: center;
@@ -558,7 +558,7 @@
   <div class="otp-wrap">
     <img src="Singles Red Background.png" alt="Smitten Singles" style="height:60px;width:60px;border-radius:50%;margin-bottom:12px;">
     <h2>Check Your Email</h2>
-    <p id="otp-desc">We sent a 6-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
+    <p id="otp-desc">We sent an 8-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
     <div id="otp-alert" class="alert error"></div>
     <div class="otp-inputs">
       <input type="text" maxlength="1" class="otp-digit" id="otp0">
@@ -567,6 +567,8 @@
       <input type="text" maxlength="1" class="otp-digit" id="otp3">
       <input type="text" maxlength="1" class="otp-digit" id="otp4">
       <input type="text" maxlength="1" class="otp-digit" id="otp5">
+      <input type="text" maxlength="1" class="otp-digit" id="otp6">
+      <input type="text" maxlength="1" class="otp-digit" id="otp7">
     </div>
     <button class="btn btn-primary" id="btn-verify" onclick="verifyOtp()" style="width:100%;margin-bottom:16px;">Verify Code</button>
     <p style="font-size:13px;color:var(--gray-mid);">Didn't get it? <a href="#" onclick="resendOtp()" style="color:var(--red);font-weight:600;">Resend code</a></p>
@@ -1415,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function verifyOtp() {
   hideAlert('otp-alert');
   const token = [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
-  if (token.length !== 6) {
+  if (token.length !== 8) {
     showAlert('otp-alert', 'Please enter all 6 digits.', 'error'); return;
   }
   setLoading('btn-verify', true, 'Verifying...');
