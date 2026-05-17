@@ -46,7 +46,7 @@
   }
   .header-sub {
     font-size: 13px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     margin-left: 4px;
   }
 
@@ -71,7 +71,7 @@
   }
   .gate-wrap p {
     font-size: 14px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     margin-bottom: 32px;
     line-height: 1.6;
   }
@@ -91,7 +91,7 @@
     font-size: 24px;
     margin-bottom: 12px;
   }
-  .otp-wrap p { font-size: 14px; color: var(--gray-mid); margin-bottom: 28px; line-height: 1.6; }
+  .otp-wrap p { font-size: 14px; color: var(--gray-dark); margin-bottom: 28px; line-height: 1.6; }
   .otp-inputs {
     display: flex;
     gap: 10px;
@@ -128,7 +128,7 @@
   }
   .profile-header p {
     font-size: 14px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     margin-top: 4px;
   }
 
@@ -155,7 +155,7 @@
   }
   .photo-card .photo-hint {
     font-size: 12px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     margin-bottom: 16px;
     line-height: 1.5;
   }
@@ -179,12 +179,12 @@
   .main-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }
   .main-photo .upload-icon {
     font-size: 32px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     margin-bottom: 8px;
   }
   .main-photo .upload-label {
     font-size: 12px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
   }
   .extra-photos {
     display: grid;
@@ -206,10 +206,10 @@
   }
   .extra-photo:hover { border-color: var(--red); }
   .extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
-  .extra-photo .cam { font-size: 18px; color: var(--gray-mid); }
+  .extra-photo .cam { font-size: 18px; color: var(--gray-dark); }
   .photo-upload-note {
     font-size: 11px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     text-align: center;
     margin-top: 10px;
     line-height: 1.5;
@@ -226,7 +226,7 @@
   }
   .privacy-card .privacy-icon { color: var(--red); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
   .privacy-card strong { font-size: 13px; display: block; margin-bottom: 4px; color: var(--gray-dark); }
-  .privacy-card p { font-size: 12px; color: var(--gray-mid); line-height: 1.5; }
+  .privacy-card p { font-size: 12px; color: var(--gray-dark); line-height: 1.5; }
 
   /* RIGHT COLUMN */
   .right-col { display: flex; flex-direction: column; gap: 0; }
@@ -247,7 +247,7 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 14px;
     font-weight: 600;
-    color: var(--gray-dark);
+    color: #333;
     cursor: pointer;
     border-bottom: 3px solid transparent;
     margin-bottom: -2px;
@@ -307,7 +307,7 @@
   }
   .field .hint {
     font-size: 11px;
-    color: var(--gray-mid);
+    color: #333;
     margin-top: -2px;
   }
   .field input,
@@ -349,7 +349,7 @@
   }
   .check-item.with-desc { align-items: flex-start; }
   .check-item.with-desc .check-text strong { display: block; font-size: 14px; }
-  .check-item.with-desc .check-text span { font-size: 12px; color: var(--gray-mid); line-height: 1.5; display: block; margin-top: 2px; }
+  .check-item.with-desc .check-text span { font-size: 12px; color: var(--gray-dark); line-height: 1.5; display: block; margin-top: 2px; }
 
   /* SAVE BAR */
   .save-bar {
@@ -394,7 +394,7 @@
   .btn-outline:hover { background: #FFF5F5; }
   .btn-ghost {
     background: transparent;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
     border: 1.5px solid var(--gray-mid);
   }
 
@@ -446,7 +446,7 @@
     text-align: center;
     padding: 24px;
     font-size: 12px;
-    color: var(--gray-mid);
+    color: var(--gray-dark);
   }
   .footer a { color: var(--red); text-decoration: none; }
   .footer a:hover { text-decoration: underline; }
@@ -474,7 +474,7 @@
     font-size: 26px;
     margin-bottom: 12px;
   }
-  .success-wrap p { font-size: 14px; color: var(--gray-mid); line-height: 1.6; }
+  .success-wrap p { font-size: 14px; color: var(--gray-dark); line-height: 1.6; }
 
   /* SPINNER */
   .spinner {
@@ -489,6 +489,8 @@
     vertical-align: middle;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::placeholder { color: #888; }
 
   @media (max-width: 768px) {
     .profile-grid { grid-template-columns: 1fr; }
@@ -1088,11 +1090,13 @@
 <!-- SCREEN 4: Success -->
 <div id="screen-success" class="screen">
   <div class="success-wrap">
-    
     <h2>Profile Saved!</h2>
-    <p>Thank you! Your profile has been submitted. Our team will be in touch soon. Keep an eye on your email for updates about upcoming events and matches.</p>
+    <p id="success-msg">Thank you! Your profile has been submitted. Our team will be in touch soon. Keep an eye on your email for updates about upcoming events and matches.</p>
     <br>
-    <a href="https://smittensingles.com" class="btn btn-primary">Visit Smitten Singles</a>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="returnToProfile()">Update my profile</button>
+      <a href="https://smittensingles.com" class="btn btn-primary">Visit Smitten Singles</a>
+    </div>
   </div>
 </div>
 
@@ -1269,9 +1273,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   loadOptions();
+  loadOptions();
   updateProgress();
-  document.querySelectorAll('#screen-profile input, #screen-profile select, #screen-profile textarea')
-    .forEach(el => el.addEventListener('change', updateProgress));
+  document.querySelectorAll('#screen-profile input:not([readonly]):not([type=hidden]), #screen-profile select, #screen-profile textarea')
+    .forEach(el => {
+      el.addEventListener('change', updateProgress);
+      el.addEventListener('blur', () => { if (currentEmail && supabaseSession) autosave(); });
+    });
 });
 
 // ── STEP 2: Verify OTP ────────────────────────────────────────────────────────
@@ -1458,10 +1466,9 @@ async function loadExistingProfile() {
 }
 
 // ── STEP 3: Save / Update Profile ────────────────────────────────────────────
-async function saveProfile() {
-  hideAlert('profile-alert');
-  hideAlert('profile-success');
-  setLoading('btn-save', true, 'Saving...');
+async function saveProfile(silent = false) {
+  if (!silent) { hideAlert('profile-alert'); hideAlert('profile-success'); }
+  if (!silent) setLoading('btn-save', true, 'Saving...');
 
   const seeking = [...document.querySelectorAll('.seeking-cb:checked')].map(c => c.value);
 
@@ -1541,7 +1548,7 @@ async function saveProfile() {
     }
     currentProfileId = profileId;
     await uploadPhotos(profileId);
-    showScreen('success');
+    if (!silent) showScreen('success');
     if (isExistingUser) {
       document.querySelector('.success-wrap p').textContent = 'Your profile has been updated successfully. Our team will be in touch soon.';
     }
@@ -1549,7 +1556,7 @@ async function saveProfile() {
     showAlert('profile-alert', 'Error saving profile: ' + e.message, 'error');
     console.error(e);
   }
-  setLoading('btn-save', false, isExistingUser ? 'Update Profile' : 'Save Profile');
+  if (!silent) setLoading('btn-save', false, isExistingUser ? 'Update Profile' : 'Save Profile');
 }
 
 // ── Photo upload ──────────────────────────────────────────────────────────────
@@ -1664,6 +1671,19 @@ async function loadOptions() {
 
 function returnToProfile() {
   showScreen('profile');
+}
+
+// ── Autosave on blur ──────────────────────────────────────────────────────────
+let autosaveTimeout = null;
+
+async function autosave() {
+  if (!currentEmail || !supabaseSession) return;
+  if (!isExistingUser && !currentProfileId) return;
+  try {
+    await saveProfile(true); // silent = true
+  } catch(e) {
+    console.warn('Autosave failed:', e);
+  }
 }
 </script>
 </body>
