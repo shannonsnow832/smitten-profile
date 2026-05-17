@@ -556,7 +556,7 @@
 <!-- SCREEN 2: OTP Verification -->
 <div id="screen-otp" class="screen">
   <div class="otp-wrap">
-    <div style="font-size:36px;margin-bottom:12px;">💌</div>
+    <img src="Singles Red Background.png" alt="Smitten Singles" style="height:60px;width:60px;border-radius:50%;margin-bottom:12px;">
     <h2>Check Your Email</h2>
     <p id="otp-desc">We sent a 6-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
     <div id="otp-alert" class="alert error"></div>
@@ -1417,10 +1417,11 @@ async function verifyOtp() {
   }
   setLoading('btn-verify', true, 'Verifying...');
   try {
+    const verifyType = isExistingUser ? 'magiclink' : 'signup';
     const r = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'email', email: currentEmail, token })
+      body: JSON.stringify({ type: verifyType, email: currentEmail, token })
     });
     const data = await r.json();
     if (!r.ok || !data.access_token) {
