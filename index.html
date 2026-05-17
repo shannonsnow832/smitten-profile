@@ -1243,9 +1243,9 @@
 
 <div class="footer">
   &copy; 2026 Smitten Singles. All rights reserved. &nbsp;|&nbsp;
-  <a href="https://smittensingles.com/privacy-policy">Privacy Policy</a> &nbsp;|&nbsp;
-  <a href="https://smittensingles.com/terms-of-service">Terms of Service</a> &nbsp;|&nbsp;
-  <a href="https://smittensingles.com/code-of-conduct">Code of Conduct</a>
+  <a href="https://thesmittenproject.com/privacy-policy/">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="https://thesmittenproject.com/terms-of-service/">Terms of Service</a> &nbsp;|&nbsp;
+  <a href="https://thesmittenproject.com/code-of-conduct/">Code of Conduct</a>
 </div>
 
 <script>
@@ -1254,11 +1254,14 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 let currentEmail = '';
 let currentPhone = '';
+let currentFirstName = '';
+let currentLastName = '';
 let currentProfileId = null;
 let supabaseSession = null;
+let isExistingUser = false;
 const orgSlug = new URLSearchParams(window.location.search).get('org') || 'smitten-singles';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
@@ -1329,25 +1332,31 @@ async function checkDuplicate() {
 
   try {
     const result = await rpc('intake_check_duplicate', { p_email: email, p_phone: phone || null });
+
+    currentEmail = email;
+    currentPhone = phone;
+    currentFirstName = first;
+    currentLastName = last;
+
     if (result === 'found') {
+      // Existing user - offer to update
+      isExistingUser = true;
       document.getElementById('duplicate-msg').classList.add('show');
+      // Change duplicate message to show update option
+      document.querySelector('#duplicate-msg p').textContent = 'We found an existing profile with that email. Verify your identity to update your profile.';
+      document.querySelector('#duplicate-msg a').textContent = 'Verify & update my profile';
+      document.querySelector('#duplicate-msg a').href = '#';
+      document.querySelector('#duplicate-msg a').onclick = function(e) {
+        e.preventDefault();
+        proceedToOtp();
+      };
       setLoading('btn-check', false, 'Continue');
       return;
     }
-    // New user - proceed to OTP
-    currentEmail = email;
-    currentPhone = phone;
-    document.getElementById('otp-email-display').textContent = email;
 
-    // Pre-fill profile form
-    document.getElementById('p-first').value = first;
-    document.getElementById('p-last').value = last;
-    document.getElementById('p-email').value = email;
-    document.getElementById('p-phone').value = phone;
-
-    // Send OTP via Supabase
-    await sendOtp(email);
-    showScreen('otp');
+    // New user
+    isExistingUser = false;
+    await proceedToOtp();
 
   } catch(e) {
     showAlert('gate-alert', 'Something went wrong. Please try again.', 'error');
@@ -1355,6 +1364,23 @@ async function checkDuplicate() {
   }
 
   setLoading('btn-check', false, 'Continue');
+}
+
+async function proceedToOtp() {
+  document.getElementById('otp-email-display').textContent = currentEmail;
+
+  // Pre-fill form fields from gate
+  document.getElementById('p-first').value = currentFirstName;
+  document.getElementById('p-last').value = currentLastName;
+  document.getElementById('p-email').value = currentEmail;
+  document.getElementById('p-phone').value = currentPhone;
+
+  try {
+    await sendOtp(currentEmail);
+    showScreen('otp');
+  } catch(e) {
+    showAlert('gate-alert', 'Could not send verification code. Please try again.', 'error');
+  }
 }
 
 async function sendOtp(email) {
@@ -1366,7 +1392,7 @@ async function sendOtp(email) {
   if (!r.ok) throw new Error('Failed to send OTP');
 }
 
-// ── OTP digits ───────────────────────────────────────────────────────────────
+// ── OTP digits ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const digits = document.querySelectorAll('.otp-digit');
   digits.forEach((inp, i) => {
@@ -1411,9 +1437,33 @@ async function verifyOtp() {
       setLoading('btn-verify', false, 'Verify Code'); return;
     }
     supabaseSession = data.access_token;
+
+    if (isExistingUser) {
+      // Load existing profile into form
+      await loadExistingProfile();
+      document.getElementById('btn-save').textContent = 'Update Profile';
+      document.querySelector('.save-bar-title').textContent = 'Update Your Profile';
+      document.querySelector('.profile-header h1').textContent = 'Update Your Profile';
+    } else {
+      // Create incomplete row for abandoned intake tracking
+      try {
+        const pid = await rpc('intake_create_incomplete', {
+          p_email: currentEmail,
+          p_first_name: currentFirstName,
+          p_last_name: currentLastName,
+          p_phone: currentPhone || null,
+          p_org_slug: orgSlug
+        });
+        currentProfileId = pid;
+      } catch(e) {
+        console.warn('Could not create incomplete profile:', e);
+      }
+    }
+
     showScreen('profile');
   } catch(e) {
     showAlert('otp-alert', 'Verification failed. Please try again.', 'error');
+    console.error(e);
   }
   setLoading('btn-verify', false, 'Verify Code');
 }
@@ -1428,7 +1478,106 @@ async function resendOtp() {
   }
 }
 
-// ── STEP 3: Save Profile ──────────────────────────────────────────────────────
+// ── Load existing profile into form ──────────────────────────────────────────
+async function loadExistingProfile() {
+  try {
+    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+    if (!profile) return;
+
+    currentProfileId = profile.id;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+    const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    const setSelect = (id, val) => {
+      const el = document.getElementById(id);
+      if (!el || val == null) return;
+      [...el.options].forEach(o => { if (o.value === val || o.text === val) el.value = o.value; });
+    };
+
+    set('p-first', profile.first_name);
+    set('p-last', profile.last_name);
+    set('p-email', profile.email);
+    set('p-phone', profile.phone);
+    set('p-dob', profile.date_of_birth);
+    setSelect('p-gender', profile.gender);
+    set('p-address', profile.street_address);
+    set('p-city', profile.city);
+    set('p-state', profile.state);
+    set('p-zip', profile.postal_code);
+    setSelect('p-country', profile.country);
+    set('p-closest-city', profile.closest_major_city);
+    set('p-bio', profile.bio);
+    setCheck('p-share-matchmakers', profile.share_with_matchmakers);
+    setCheck('p-interested-matchmaking', profile.interested_in_matchmaking);
+    setCheck('p-email-opt', profile.email_opt_in);
+    setCheck('p-services-text', profile.services_text_opt_in);
+    setCheck('p-marketing-text', profile.marketing_text_opt_in);
+
+    // Seeking checkboxes
+    if (profile.seeking && Array.isArray(profile.seeking)) {
+      document.querySelectorAll('.seeking-cb').forEach(cb => {
+        cb.checked = profile.seeking.includes(cb.value);
+      });
+    }
+
+    // Lifestyle
+    set('p-height', profile.height_inches);
+    setSelect('p-education', profile.education);
+    set('p-occupation', profile.occupation);
+    set('p-employer', profile.employer);
+    setSelect('p-kids', profile.kids);
+    setSelect('p-want-kids', profile.want_kids);
+    setSelect('p-smoking', profile.smoking);
+    setSelect('p-drinking', profile.drinking);
+    setSelect('p-religion', profile.religion);
+    setSelect('p-politics', profile.politics);
+    setSelect('p-income', profile.income_level);
+    set('p-ethnicity', profile.ethnicity);
+    setSelect('p-body-type', profile.body_type);
+    setSelect('p-hair', profile.hair_color);
+    setSelect('p-eyes', profile.eye_color);
+    set('p-pets', profile.pets);
+    set('p-languages', profile.languages);
+    set('p-hobbies', profile.activities_hobbies);
+    setSelect('p-rel-status', profile.relationship_status);
+    set('p-ideal-match', profile.ideal_match);
+
+    // Preferences
+    set('p-min-age', profile.min_age);
+    set('p-max-age', profile.max_age);
+    setSelect('p-max-distance', profile.max_distance ? String(profile.max_distance) : null);
+    set('p-pref-height-min', profile.preferred_height_min);
+    set('p-pref-height-max', profile.preferred_height_max);
+    setSelect('p-pref-body', profile.preferred_body_type);
+    set('p-pref-ethnicity', profile.preferred_ethnicities);
+    setSelect('p-pref-religion', profile.preferred_religion);
+    setSelect('p-pref-politics', profile.preferred_politics);
+    setSelect('p-pref-education', profile.preferred_education);
+    setSelect('p-pref-income', profile.preferred_income);
+    setSelect('p-pref-smoking', profile.preferred_smoking);
+    setSelect('p-pref-alcohol', profile.preferred_alcohol);
+    setSelect('p-pref-rel-status', profile.preferred_relationship_status);
+    setSelect('p-date-with-kids', profile.date_with_kids);
+    setSelect('p-relocation-in', profile.relocation_in);
+    setSelect('p-relocation-out', profile.relocation_out);
+    set('p-dealbreakers', profile.dealbreakers);
+
+    // Show existing photo if present
+    if (profile.image_url) {
+      const img = document.getElementById('main-photo-preview');
+      img.src = profile.image_url;
+      img.style.display = 'block';
+      document.getElementById('main-photo-icon').style.display = 'none';
+      document.getElementById('main-photo-label').style.display = 'none';
+    }
+
+    updateProgress();
+  } catch(e) {
+    console.error('Could not load profile:', e);
+  }
+}
+
+// ── STEP 3: Save / Update Profile ────────────────────────────────────────────
 async function saveProfile() {
   hideAlert('profile-alert');
   hideAlert('profile-success');
@@ -1440,7 +1589,7 @@ async function saveProfile() {
     p_email: currentEmail,
     p_first_name: document.getElementById('p-first').value.trim(),
     p_last_name: document.getElementById('p-last').value.trim(),
-    p_phone: currentPhone || null,
+    p_phone: currentPhone || document.getElementById('p-phone').value.trim() || null,
     p_date_of_birth: document.getElementById('p-dob').value || null,
     p_gender: document.getElementById('p-gender').value || null,
     p_street_address: document.getElementById('p-address').value.trim() || null,
@@ -1495,22 +1644,27 @@ async function saveProfile() {
     p_relocation_in: document.getElementById('p-relocation-in').value || null,
     p_relocation_out: document.getElementById('p-relocation-out').value || null,
     p_dealbreakers: document.getElementById('p-dealbreakers').value.trim() || null,
-    p_org_slug: orgSlug
   };
 
   try {
-    const profileId = await rpc('intake_create_profile', params);
+    let profileId;
+    if (isExistingUser) {
+      profileId = await rpc('intake_update_profile', params);
+    } else {
+      if (!params.p_org_slug) params.p_org_slug = orgSlug;
+      profileId = await rpc('intake_create_profile', { ...params, p_org_slug: orgSlug });
+    }
     currentProfileId = profileId;
-
-    // Upload photos if any
     await uploadPhotos(profileId);
-
     showScreen('success');
+    if (isExistingUser) {
+      document.querySelector('.success-wrap p').textContent = 'Your profile has been updated successfully. Our team will be in touch soon.';
+    }
   } catch(e) {
     showAlert('profile-alert', 'Error saving profile: ' + e.message, 'error');
     console.error(e);
   }
-  setLoading('btn-save', false, 'Save Profile');
+  setLoading('btn-save', false, isExistingUser ? 'Update Profile' : 'Save Profile');
 }
 
 // ── Photo upload ──────────────────────────────────────────────────────────────
@@ -1532,6 +1686,7 @@ function previewExtra(input, idx) {
 }
 
 async function uploadPhotos(profileId) {
+  if (!profileId) return;
   const mainFile = document.getElementById('main-photo-input').files[0];
   const extraFiles = [
     document.getElementById('extra0').files[0],
@@ -1555,13 +1710,10 @@ async function uploadPhotos(profileId) {
       },
       body: file
     });
-    if (r.ok) {
-      urls.push(`${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`);
-    }
+    if (r.ok) urls.push(`${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`);
   }
 
   if (urls.length) {
-    // Update profile with photo URLs
     const patchBody = { photos: urls };
     if (mainFile) patchBody.image_url = urls[0];
     await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${profileId}`, {
