@@ -509,8 +509,8 @@
 
     <div id="gate-alert" class="alert error"></div>
     <div id="duplicate-msg" class="duplicate-msg">
-      <p>It looks like you already have a profile with us. Log in to view and update it.</p>
-      <a href="https://smittensingles.com/login">Log in to Smitten Singles &rarr;</a>
+      <p>It looks like you already have a profile with us. Verify your email to view and update it.</p>
+      <a href="#" onclick="proceedToOtp();return false;">Verify &amp; update my profile &rarr;</a>
     </div>
 
     <div class="form-row">
@@ -1339,17 +1339,8 @@ async function checkDuplicate() {
     currentLastName = last;
 
     if (result === 'found') {
-      // Existing user - offer to update
       isExistingUser = true;
       document.getElementById('duplicate-msg').classList.add('show');
-      // Change duplicate message to show update option
-      document.querySelector('#duplicate-msg p').textContent = 'We found an existing profile with that email. Verify your identity to update your profile.';
-      document.querySelector('#duplicate-msg a').textContent = 'Verify & update my profile';
-      document.querySelector('#duplicate-msg a').href = '#';
-      document.querySelector('#duplicate-msg a').onclick = function(e) {
-        e.preventDefault();
-        proceedToOtp();
-      };
       setLoading('btn-check', false, 'Continue');
       return;
     }
