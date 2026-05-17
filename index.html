@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Profile - Smitten Singles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C6302C;
+    --red-light: #DA5C58;
+    --pink: #FBB3B1;
+    --gray-light: #EFEFF1;
+    --gray-dark: #5A5353;
+    --gray-mid: #BFBFBF;
+    --white: #FFFFFF;
+    --black: #000000;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(90,83,83,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--gray-light);
+    color: var(--gray-dark);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--white);
+    border-bottom: 1px solid #eee;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    color: var(--red);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--gray-mid);
+    margin-left: 4px;
+  }
+
+  /* FLOW SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* STEP 1 - Identity gate */
+  .gate-wrap {
+    max-width: 480px;
+    margin: 60px auto;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+  }
+  .gate-wrap h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 28px;
+    color: var(--black);
+    margin-bottom: 8px;
+  }
+  .gate-wrap p {
+    font-size: 14px;
+    color: var(--gray-mid);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  /* OTP screen */
+  .otp-wrap {
+    max-width: 480px;
+    margin: 60px auto;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+    text-align: center;
+  }
+  .otp-wrap h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .otp-wrap p { font-size: 14px; color: var(--gray-mid); margin-bottom: 28px; line-height: 1.6; }
+  .otp-inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .otp-inputs input {
+    width: 48px;
+    height: 56px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .otp-inputs input:focus { border-color: var(--red); }
+
+  /* MAIN PROFILE FORM */
+  .profile-wrap {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+  }
+  .profile-header {
+    margin-bottom: 28px;
+  }
+  .profile-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 30px;
+    color: var(--black);
+  }
+  .profile-header p {
+    font-size: 14px;
+    color: var(--gray-mid);
+    margin-top: 4px;
+  }
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* LEFT COLUMN */
+  .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+  .photo-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+  .photo-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .photo-card .photo-hint {
+    font-size: 12px;
+    color: var(--gray-mid);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .main-photo {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    background: var(--gray-light);
+    border: 2px dashed var(--gray-mid);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .main-photo:hover { border-color: var(--red); }
+  .main-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }
+  .main-photo .upload-icon {
+    font-size: 32px;
+    color: var(--gray-mid);
+    margin-bottom: 8px;
+  }
+  .main-photo .upload-label {
+    font-size: 12px;
+    color: var(--gray-mid);
+  }
+  .extra-photos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .extra-photo {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    background: var(--gray-light);
+    border: 2px dashed var(--gray-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .extra-photo:hover { border-color: var(--red); }
+  .extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+  .extra-photo .cam { font-size: 18px; color: var(--gray-mid); }
+  .photo-upload-note {
+    font-size: 11px;
+    color: var(--gray-mid);
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .privacy-card {
+    background: #FFF5F5;
+    border: 1px solid var(--pink);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .privacy-card .privacy-icon { color: var(--red); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .privacy-card strong { font-size: 13px; display: block; margin-bottom: 4px; color: var(--gray-dark); }
+  .privacy-card p { font-size: 12px; color: var(--gray-mid); line-height: 1.5; }
+
+  /* RIGHT COLUMN */
+  .right-col { display: flex; flex-direction: column; gap: 0; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--white);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: 2px solid var(--gray-light);
+    overflow: hidden;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border: none;
+    background: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-mid);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+
+  .tab-content {
+    background: var(--white);
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    display: none;
+  }
+  .tab-content.active { display: block; }
+
+  /* FORM ELEMENTS */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  .section-title:not(:first-child) { margin-top: 32px; }
+  .section-title .icon { color: var(--red); }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-dark);
+    
+    
+  }
+  .field .hint {
+    font-size: 11px;
+    color: var(--gray-mid);
+    margin-top: -2px;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    border: 1.5px solid #E8E8E8;
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: var(--gray-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--white);
+    width: 100%;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus { border-color: var(--red); }
+  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  /* SEEKING CHECKBOXES */
+  .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--gray-dark);
+  }
+  .check-item input[type=checkbox],
+  .check-item input[type=radio] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--red);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .check-item.with-desc { align-items: flex-start; }
+  .check-item.with-desc .check-text strong { display: block; font-size: 14px; }
+  .check-item.with-desc .check-text span { font-size: 12px; color: var(--gray-mid); line-height: 1.5; display: block; margin-top: 2px; }
+
+  /* SAVE BAR */
+  .save-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid #eee;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .save-bar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: var(--red-light); }
+  .btn-primary:disabled { background: var(--gray-mid); cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    color: var(--red);
+    border: 1.5px solid var(--red);
+  }
+  .btn-outline:hover { background: #FFF5F5; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-mid);
+    border: 1.5px solid var(--gray-mid);
+  }
+
+  /* FORM ROW - full width fields */
+  .form-full { margin-bottom: 16px; }
+
+  /* ALERTS */
+  .alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .alert.error { background: #FFF0F0; border: 1px solid var(--pink); color: var(--red); }
+  .alert.success { background: #F0FFF4; border: 1px solid #86efac; color: #166534; }
+  .alert.show { display: block; }
+
+  /* DUPLICATE FOUND */
+  .duplicate-msg {
+    text-align: center;
+    padding: 16px;
+    background: #FFF5F5;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--pink);
+    display: none;
+  }
+  .duplicate-msg.show { display: block; }
+  .duplicate-msg p { font-size: 14px; color: var(--gray-dark); margin-bottom: 12px; }
+  .duplicate-msg a { color: var(--red); font-weight: 600; text-decoration: none; }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 4px;
+    background: var(--gray-light);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--gray-mid);
+  }
+  .footer a { color: var(--red); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--gray-light);
+    margin: 24px 0;
+  }
+
+  /* SUCCESS */
+  .success-wrap {
+    max-width: 480px;
+    margin: 80px auto;
+    text-align: center;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+  }
+  .success-wrap .success-icon { font-size: 48px; margin-bottom: 16px; }
+  .success-wrap h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  .success-wrap p { font-size: 14px; color: var(--gray-mid); line-height: 1.6; }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .profile-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-row.three { grid-template-columns: 1fr 1fr; }
+    .gate-wrap, .otp-wrap { margin: 20px; padding: 28px 20px; }
+    .profile-wrap { padding: 0 12px 40px; }
+    .save-bar { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="Singles Red Background.png" alt="Smitten Singles" style="height:44px;width:44px;border-radius:50%;">
+  <span class="header-logo">Smitten Singles</span>
+  <span class="header-sub">Profile Setup</span>
+</div>
+
+<!-- SCREEN 1: Identity Gate -->
+<div id="screen-gate" class="screen active">
+  <div class="gate-wrap">
+    <h1>Create Your Profile</h1>
+    <p>Tell us a little about yourself to get started. We'll check if you already have an account before creating a new one.</p>
+
+    <div id="gate-alert" class="alert error"></div>
+    <div id="duplicate-msg" class="duplicate-msg">
+      <p>It looks like you already have a profile with us. Log in to view and update it.</p>
+      <a href="https://smittensingles.com/login">Log in to Smitten Singles &rarr;</a>
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label>First Name *</label>
+        <input type="text" id="g-first" placeholder="Sarah" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label>Last Name *</label>
+        <input type="text" id="g-last" placeholder="Jenkins" autocomplete="family-name">
+      </div>
+    </div>
+    <div class="form-row full form-full">
+      <div class="field">
+        <label>Email Address *</label>
+        <input type="email" id="g-email" placeholder="sarah@example.com" autocomplete="email">
+      </div>
+    </div>
+    <div class="form-row full form-full">
+      <div class="field">
+        <label>Phone Number *</label>
+        <input type="tel" id="g-phone" placeholder="(402) 555-0100" autocomplete="tel">
+      </div>
+    </div>
+
+    <div class="form-row full form-full">
+      <div class="field">
+        <label style="text-transform:none;font-size:13px;font-weight:400;">
+          <label class="check-item" style="gap:8px;">
+            <input type="checkbox" id="g-consent">
+            <span>By continuing, I acknowledge that submitting this form creates a Smitten Singles account and profile.</span>
+          </label>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-check" onclick="checkDuplicate()" style="width:100%;margin-top:8px;">
+      Continue
+    </button>
+  </div>
+</div>
+
+<!-- SCREEN 2: OTP Verification -->
+<div id="screen-otp" class="screen">
+  <div class="otp-wrap">
+    <div style="font-size:36px;margin-bottom:12px;">💌</div>
+    <h2>Check Your Email</h2>
+    <p id="otp-desc">We sent a 6-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
+    <div id="otp-alert" class="alert error"></div>
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" class="otp-digit" id="otp0">
+      <input type="text" maxlength="1" class="otp-digit" id="otp1">
+      <input type="text" maxlength="1" class="otp-digit" id="otp2">
+      <input type="text" maxlength="1" class="otp-digit" id="otp3">
+      <input type="text" maxlength="1" class="otp-digit" id="otp4">
+      <input type="text" maxlength="1" class="otp-digit" id="otp5">
+    </div>
+    <button class="btn btn-primary" id="btn-verify" onclick="verifyOtp()" style="width:100%;margin-bottom:16px;">Verify Code</button>
+    <p style="font-size:13px;color:var(--gray-mid);">Didn't get it? <a href="#" onclick="resendOtp()" style="color:var(--red);font-weight:600;">Resend code</a></p>
+  </div>
+</div>
+
+<!-- SCREEN 3: Full Profile Form -->
+<div id="screen-profile" class="screen">
+  <div class="save-bar">
+    <span class="save-bar-title">Complete Your Profile</span>
+    <button class="btn btn-primary" id="btn-save" onclick="saveProfile()">Save Profile</button>
+  </div>
+
+  <div class="profile-wrap">
+    <div class="profile-header">
+      <h1>Submit or Update Profile</h1>
+      <p>View and update your personal information, lifestyle details, and match preferences.</p>
+      <div class="progress-bar" style="margin-top:16px;">
+        <div class="progress-fill" id="progress-fill" style="width:10%"></div>
+      </div>
+    </div>
+
+    <div id="profile-alert" class="alert error"></div>
+    <div id="profile-success" class="alert success"></div>
+
+    <div class="profile-grid">
+      <!-- LEFT -->
+      <div class="left-col">
+        <div class="photo-card">
+          <h3>Profile Photos</h3>
+          <p class="photo-hint">Your first photo is your main profile picture.</p>
+          <div class="main-photo" id="main-photo-drop" onclick="document.getElementById('main-photo-input').click()">
+            <img id="main-photo-preview" src="" style="display:none;">
+            <div class="upload-icon" id="main-photo-icon">📷</div>
+            <div class="upload-label" id="main-photo-label">Click to upload</div>
+          </div>
+          <input type="file" id="main-photo-input" accept="image/*" style="display:none" onchange="previewMainPhoto(this)">
+          <div class="extra-photos">
+            <div class="extra-photo" onclick="document.getElementById('extra0').click()">
+              <img id="extra-preview-0" src="" style="display:none;">
+              <span class="cam" id="extra-icon-0">📷</span>
+            </div>
+            <div class="extra-photo" onclick="document.getElementById('extra1').click()">
+              <img id="extra-preview-1" src="" style="display:none;">
+              <span class="cam" id="extra-icon-1">📷</span>
+            </div>
+            <div class="extra-photo" onclick="document.getElementById('extra2').click()">
+              <img id="extra-preview-2" src="" style="display:none;">
+              <span class="cam" id="extra-icon-2">📷</span>
+            </div>
+          </div>
+          <input type="file" id="extra0" accept="image/*" style="display:none" onchange="previewExtra(this,0)">
+          <input type="file" id="extra1" accept="image/*" style="display:none" onchange="previewExtra(this,1)">
+          <input type="file" id="extra2" accept="image/*" style="display:none" onchange="previewExtra(this,2)">
+          <p class="photo-upload-note">Upload clear, recent photos. No sunglasses or group shots for your main photo.</p>
+        </div>
+
+        <div class="privacy-card">
+          <span class="privacy-icon">🔒</span>
+          <div>
+            <strong>Privacy Guaranteed</strong>
+            <p>Your profile is only visible to Smitten Singles staff and matchmakers — never to other participants.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="right-col">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('basic',this)">Basic Info</button>
+          <button class="tab-btn" onclick="switchTab('lifestyle',this)">Lifestyle</button>
+          <button class="tab-btn" onclick="switchTab('preferences',this)">Preferences</button>
+        </div>
+
+        <!-- TAB: BASIC INFO -->
+        <div id="tab-basic" class="tab-content active">
+
+          <div class="section-title"><span class="icon">👤</span> Personal Details</div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>First Name *</label>
+                <input type="text" id="p-first" placeholder="Sarah">
+              </div>
+              <div class="field">
+                <label>Last Name *</label>
+                <input type="text" id="p-last" placeholder="Jenkins">
+                <span class="hint">Kept private</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>Email Address *</label>
+                <input type="email" id="p-email" placeholder="sarah@example.com" readonly style="background:#f9f9f9;color:var(--gray-mid);">
+              </div>
+              <div class="field">
+                <label>Phone Number</label>
+                <input type="tel" id="p-phone" placeholder="(402) 555-0100">
+                <span class="hint">Kept private</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>Date of Birth</label>
+                <input type="date" id="p-dob">
+              </div>
+              <div class="field">
+                <label>Gender</label>
+                <select id="p-gender">
+                  <option value="">Select...</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Non-binary</option>
+                  <option>Transgender Male</option>
+                  <option>Transgender Female</option>
+                  <option>Prefer not to say</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="field">
+              <label>Street Address</label>
+              <input type="text" id="p-address" placeholder="123 Main St">
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row three">
+              <div class="field">
+                <label>City</label>
+                <input type="text" id="p-city" placeholder="Omaha">
+              </div>
+              <div class="field">
+                <label>State</label>
+                <input type="text" id="p-state" placeholder="NE">
+              </div>
+              <div class="field">
+                <label>Postal Code</label>
+                <input type="text" id="p-zip" placeholder="68102">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>Country</label>
+                <select id="p-country">
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Closest Major City</label>
+                <input type="text" id="p-closest-city" placeholder="Omaha">
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title"><span class="icon">❤️</span> Seeking</div>
+
+          <div class="form-full">
+            <div class="checkbox-group">
+              <label class="check-item"><input type="checkbox" value="Date Men" class="seeking-cb"> Date Men</label>
+              <label class="check-item"><input type="checkbox" value="Date Women" class="seeking-cb"> Date Women</label>
+              <label class="check-item"><input type="checkbox" value="Date Any/Other Gender" class="seeking-cb"> Date Any/Other Gender</label>
+              <label class="check-item"><input type="checkbox" value="Friendship" class="seeking-cb"> Friendship</label>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title"><span class="icon">✍️</span> About Me</div>
+
+          <div class="form-full">
+            <div class="field">
+              <textarea id="p-bio" placeholder="Write a short bio about yourself..." rows="4"></textarea>
+              <span class="hint">This will be visible to your matchmaker.</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title"><span class="icon">📋</span> Consent & Communication</div>
+
+          <div class="form-full">
+            <div class="checkbox-group">
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-share-matchmakers">
+                <div class="check-text">
+                  <strong>Share my profile with matchmakers</strong>
+                  <span>By checking this box, you give permission for your information to be shared with trusted matchmakers for the purpose of potential matchmaking. You acknowledge that Smitten may receive a referral fee if a matchmaker chooses to work with you or facilitates a match.</span>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-interested-matchmaking">
+                <div class="check-text">
+                  <strong>Are you interested in learning about Matchmaking Services?</strong>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-email-opt">
+                <div class="check-text">
+                  <strong>Email Opt-In</strong>
+                  <span>By checking this box, you agree to receive occasional emails from Smitten about groups, events, and opportunities. You can unsubscribe at any time.</span>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-services-text">
+                <div class="check-text">
+                  <strong>Services Text Opt-In</strong>
+                  <span>By checking this box, I consent to receive transactional messages related to my account, orders, or services I have requested. These messages may include appointment reminders, order confirmations, and account notifications. Message frequency may vary. Message &amp; Data rates may apply. Reply HELP for help or STOP to opt-out.</span>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-marketing-text">
+                <div class="check-text">
+                  <strong>Marketing Text Opt-Ins</strong>
+                  <span>By checking this box, I consent to receive marketing and promotional messages, including special offers, discounts, and new product updates. Message frequency may vary. Message &amp; Data rates may apply. Reply HELP for help or STOP to opt-out.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: LIFESTYLE -->
+        <div id="tab-lifestyle" class="tab-content">
+          <div class="section-title"><span class="icon">🌿</span> Background &amp; Lifestyle</div>
+          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">This helps our algorithm find better matches for you.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Height (inches)</label>
+              <input type="number" id="p-height" placeholder="e.g. 70" min="48" max="96">
+            </div>
+            <div class="field">
+              <label>Education</label>
+              <select id="p-education">
+                <option value="">Select education</option>
+                <option>High School / GED</option>
+                <option>Some College</option>
+                <option>Associate Degree</option>
+                <option>Bachelor's Degree</option>
+                <option>Master's Degree</option>
+                <option>Doctoral Degree</option>
+                <option>Trade / Vocational</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Occupation / Industry</label>
+              <input type="text" id="p-occupation" placeholder="e.g. Software Engineer, Healthcare">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Employer</label>
+              <input type="text" id="p-employer" placeholder="Company name">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Do you have kids?</label>
+              <select id="p-kids">
+                <option value="">Select...</option>
+                <option>No</option>
+                <option>Yes - at home</option>
+                <option>Yes - grown</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Do you want kids?</label>
+              <select id="p-want-kids">
+                <option value="">Select...</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Open to it</option>
+                <option>Not sure</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Smoking</label>
+              <select id="p-smoking">
+                <option value="">Select...</option>
+                <option>Non-smoker</option>
+                <option>Occasional smoker</option>
+                <option>Regular smoker</option>
+                <option>Trying to quit</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Drinking</label>
+              <select id="p-drinking">
+                <option value="">Select...</option>
+                <option>Non-drinker</option>
+                <option>Social drinker</option>
+                <option>Regular drinker</option>
+                <option>Sober</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Religion</label>
+              <select id="p-religion">
+                <option value="">Select...</option>
+                <option>Christian</option>
+                <option>Catholic</option>
+                <option>Jewish</option>
+                <option>Muslim</option>
+                <option>Hindu</option>
+                <option>Buddhist</option>
+                <option>Spiritual but not religious</option>
+                <option>Agnostic</option>
+                <option>Atheist</option>
+                <option>Other</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Politics</label>
+              <select id="p-politics">
+                <option value="">Select...</option>
+                <option>Liberal</option>
+                <option>Moderate</option>
+                <option>Conservative</option>
+                <option>Apolitical</option>
+                <option>Other</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Income Level</label>
+              <select id="p-income">
+                <option value="">Select...</option>
+                <option>Under $40k</option>
+                <option>$40k - $60k</option>
+                <option>$60k - $80k</option>
+                <option>$80k - $100k</option>
+                <option>$100k - $150k</option>
+                <option>$150k - $200k</option>
+                <option>$200k+</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ethnicity</label>
+              <input type="text" id="p-ethnicity" placeholder="e.g. Caucasian, Hispanic, Asian">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Body Type</label>
+              <select id="p-body-type">
+                <option value="">Select...</option>
+                <option>Slim</option>
+                <option>Athletic</option>
+                <option>Average</option>
+                <option>Curvy</option>
+                <option>Plus size</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Hair Color</label>
+              <select id="p-hair">
+                <option value="">Select...</option>
+                <option>Black</option>
+                <option>Brown</option>
+                <option>Blonde</option>
+                <option>Red</option>
+                <option>Gray / Silver</option>
+                <option>White</option>
+                <option>Bald</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Eye Color</label>
+              <select id="p-eyes">
+                <option value="">Select...</option>
+                <option>Brown</option>
+                <option>Blue</option>
+                <option>Green</option>
+                <option>Hazel</option>
+                <option>Gray</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Pets</label>
+              <input type="text" id="p-pets" placeholder="e.g. Dog, Cat, None">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Languages Spoken</label>
+              <input type="text" id="p-languages" placeholder="e.g. English, Spanish">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Activities &amp; Hobbies</label>
+              <textarea id="p-hobbies" placeholder="e.g. hiking, cooking, live music..." rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Relationship Status</label>
+              <select id="p-rel-status">
+                <option value="">Select...</option>
+                <option>Single</option>
+                <option>Separated</option>
+                <option>Divorced</option>
+                <option>Widowed</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Ideal Match Description</label>
+              <textarea id="p-ideal-match" placeholder="Describe who you're looking for..." rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: PREFERENCES -->
+        <div id="tab-preferences" class="tab-content">
+          <div class="section-title"><span class="icon">💝</span> Match Preferences</div>
+          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">Who are you looking to meet?</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Minimum Age</label>
+              <input type="number" id="p-min-age" placeholder="e.g. 28" min="18" max="99">
+            </div>
+            <div class="field">
+              <label>Maximum Age</label>
+              <input type="number" id="p-max-age" placeholder="e.g. 45" min="18" max="99">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Maximum Distance (miles)</label>
+              <select id="p-max-distance">
+                <option value="">Select...</option>
+                <option value="10">10 miles</option>
+                <option value="25">25 miles</option>
+                <option value="50">50 miles</option>
+                <option value="100">100 miles</option>
+                <option value="250">250 miles</option>
+                <option value="500">500 miles</option>
+                <option value="999">No limit</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Height Min</label>
+              <input type="text" id="p-pref-height-min" placeholder="e.g. 5'4&quot;">
+            </div>
+            <div class="field">
+              <label>Preferred Height Max</label>
+              <input type="text" id="p-pref-height-max" placeholder="e.g. 6'2&quot;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Body Type</label>
+              <select id="p-pref-body">
+                <option value="">Any</option>
+                <option>Slim</option>
+                <option>Athletic</option>
+                <option>Average</option>
+                <option>Curvy</option>
+                <option>Plus size</option>
+                <option>No preference</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Preferred Ethnicity</label>
+              <input type="text" id="p-pref-ethnicity" placeholder="Any, or specify...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Religion</label>
+              <select id="p-pref-religion">
+                <option value="">Any</option>
+                <option>Christian</option>
+                <option>Catholic</option>
+                <option>Jewish</option>
+                <option>Muslim</option>
+                <option>Hindu</option>
+                <option>Buddhist</option>
+                <option>Spiritual</option>
+                <option>Agnostic / Atheist</option>
+                <option>No preference</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Preferred Politics</label>
+              <select id="p-pref-politics">
+                <option value="">Any</option>
+                <option>Liberal</option>
+                <option>Moderate</option>
+                <option>Conservative</option>
+                <option>No preference</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Education</label>
+              <select id="p-pref-education">
+                <option value="">Any</option>
+                <option>High School minimum</option>
+                <option>Some college minimum</option>
+                <option>Bachelor's minimum</option>
+                <option>Graduate degree minimum</option>
+                <option>No preference</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Preferred Income Level</label>
+              <select id="p-pref-income">
+                <option value="">Any</option>
+                <option>Under $40k</option>
+                <option>$40k+</option>
+                <option>$60k+</option>
+                <option>$80k+</option>
+                <option>$100k+</option>
+                <option>No preference</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Smoking</label>
+              <select id="p-pref-smoking">
+                <option value="">Any</option>
+                <option>Non-smoker only</option>
+                <option>Occasional OK</option>
+                <option>No preference</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Preferred Drinking</label>
+              <select id="p-pref-alcohol">
+                <option value="">Any</option>
+                <option>Non-drinker only</option>
+                <option>Social drinker OK</option>
+                <option>No preference</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Relationship Status</label>
+              <select id="p-pref-rel-status">
+                <option value="">Any</option>
+                <option>Single only</option>
+                <option>Divorced OK</option>
+                <option>Widowed OK</option>
+                <option>No preference</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title"><span class="icon">🏠</span> Lifestyle Compatibility</div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Open to dating someone with kids?</label>
+              <select id="p-date-with-kids">
+                <option value="">Select...</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Depends on situation</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Willing to relocate (In State)?</label>
+              <select id="p-relocation-in">
+                <option value="">Select...</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Maybe</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Willing to relocate (Out of State)?</label>
+              <select id="p-relocation-out">
+                <option value="">Select...</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Maybe</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title"><span class="icon">🚫</span> Dealbreakers</div>
+
+          <div class="form-row full">
+            <div class="field">
+              <textarea id="p-dealbreakers" placeholder="E.g., Must love dogs, no smokers..." rows="4"></textarea>
+              <span class="hint">Any strict dealbreakers our matchmakers should know about?</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 4: Success -->
+<div id="screen-success" class="screen">
+  <div class="success-wrap">
+    <div class="success-icon">🎉</div>
+    <h2>Profile Saved!</h2>
+    <p>Thank you! Your profile has been submitted. Our team will be in touch soon. Keep an eye on your email for updates about upcoming events and matches.</p>
+    <br>
+    <a href="https://smittensingles.com" class="btn btn-primary">Visit Smitten Singles</a>
+  </div>
+</div>
+
+<div class="footer">
+  &copy; 2026 Smitten Singles. All rights reserved. &nbsp;|&nbsp;
+  <a href="https://smittensingles.com/privacy-policy">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="https://smittensingles.com/terms-of-service">Terms of Service</a> &nbsp;|&nbsp;
+  <a href="https://smittensingles.com/code-of-conduct">Code of Conduct</a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgctltxcgsnbrdtbhmay.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+
+let currentEmail = '';
+let currentPhone = '';
+let currentProfileId = null;
+let supabaseSession = null;
+const orgSlug = new URLSearchParams(window.location.search).get('org') || 'smitten-singles';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function setLoading(btnId, loading, text) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading ? `<span class="spinner"></span>${text}` : text;
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'alert'; el.textContent = ''; }
+}
+
+function cleanPhone(raw) {
+  const digits = raw.replace(/\D/g,'');
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits[0] === '1') return '+' + digits;
+  return raw;
+}
+
+async function rpc(fn, params) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${supabaseSession || SUPABASE_ANON}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(params)
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.message || err.hint || 'Request failed');
+  }
+  return r.json();
+}
+
+// ── STEP 1: Duplicate check ───────────────────────────────────────────────────
+async function checkDuplicate() {
+  hideAlert('gate-alert');
+  document.getElementById('duplicate-msg').classList.remove('show');
+
+  const first = document.getElementById('g-first').value.trim();
+  const last = document.getElementById('g-last').value.trim();
+  const email = document.getElementById('g-email').value.trim().toLowerCase();
+  const phone = cleanPhone(document.getElementById('g-phone').value.trim());
+  const consent = document.getElementById('g-consent').checked;
+
+  if (!first || !last || !email) {
+    showAlert('gate-alert', 'Please fill in your name and email address.', 'error'); return;
+  }
+  if (!consent) {
+    showAlert('gate-alert', 'Please acknowledge that submitting this form creates a Smitten Singles account.', 'error'); return;
+  }
+
+  setLoading('btn-check', true, 'Checking...');
+
+  try {
+    const result = await rpc('intake_check_duplicate', { p_email: email, p_phone: phone || null });
+    if (result === 'found') {
+      document.getElementById('duplicate-msg').classList.add('show');
+      setLoading('btn-check', false, 'Continue');
+      return;
+    }
+    // New user - proceed to OTP
+    currentEmail = email;
+    currentPhone = phone;
+    document.getElementById('otp-email-display').textContent = email;
+
+    // Pre-fill profile form
+    document.getElementById('p-first').value = first;
+    document.getElementById('p-last').value = last;
+    document.getElementById('p-email').value = email;
+    document.getElementById('p-phone').value = phone;
+
+    // Send OTP via Supabase
+    await sendOtp(email);
+    showScreen('otp');
+
+  } catch(e) {
+    showAlert('gate-alert', 'Something went wrong. Please try again.', 'error');
+    console.error(e);
+  }
+
+  setLoading('btn-check', false, 'Continue');
+}
+
+async function sendOtp(email) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, create_user: true })
+  });
+  if (!r.ok) throw new Error('Failed to send OTP');
+}
+
+// ── OTP digits ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const digits = document.querySelectorAll('.otp-digit');
+  digits.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/,'');
+      if (inp.value && i < digits.length - 1) digits[i+1].focus();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) digits[i-1].focus();
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+      [...paste].slice(0, digits.length).forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
+      const last = Math.min(paste.length, digits.length) - 1;
+      if (digits[last]) digits[last].focus();
+    });
+  });
+
+  updateProgress();
+  document.querySelectorAll('#screen-profile input, #screen-profile select, #screen-profile textarea')
+    .forEach(el => el.addEventListener('change', updateProgress));
+});
+
+// ── STEP 2: Verify OTP ────────────────────────────────────────────────────────
+async function verifyOtp() {
+  hideAlert('otp-alert');
+  const token = [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
+  if (token.length !== 6) {
+    showAlert('otp-alert', 'Please enter all 6 digits.', 'error'); return;
+  }
+  setLoading('btn-verify', true, 'Verifying...');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'email', email: currentEmail, token })
+    });
+    const data = await r.json();
+    if (!r.ok || !data.access_token) {
+      showAlert('otp-alert', 'Invalid or expired code. Please try again.', 'error');
+      setLoading('btn-verify', false, 'Verify Code'); return;
+    }
+    supabaseSession = data.access_token;
+    showScreen('profile');
+  } catch(e) {
+    showAlert('otp-alert', 'Verification failed. Please try again.', 'error');
+  }
+  setLoading('btn-verify', false, 'Verify Code');
+}
+
+async function resendOtp() {
+  try {
+    await sendOtp(currentEmail);
+    showAlert('otp-alert', 'Code resent! Check your email.', 'success');
+    document.getElementById('otp-alert').classList.add('show');
+  } catch(e) {
+    showAlert('otp-alert', 'Could not resend. Please try again.', 'error');
+  }
+}
+
+// ── STEP 3: Save Profile ──────────────────────────────────────────────────────
+async function saveProfile() {
+  hideAlert('profile-alert');
+  hideAlert('profile-success');
+  setLoading('btn-save', true, 'Saving...');
+
+  const seeking = [...document.querySelectorAll('.seeking-cb:checked')].map(c => c.value);
+
+  const params = {
+    p_email: currentEmail,
+    p_first_name: document.getElementById('p-first').value.trim(),
+    p_last_name: document.getElementById('p-last').value.trim(),
+    p_phone: currentPhone || null,
+    p_date_of_birth: document.getElementById('p-dob').value || null,
+    p_gender: document.getElementById('p-gender').value || null,
+    p_street_address: document.getElementById('p-address').value.trim() || null,
+    p_city: document.getElementById('p-city').value.trim() || null,
+    p_state: document.getElementById('p-state').value.trim() || null,
+    p_postal_code: document.getElementById('p-zip').value.trim() || null,
+    p_country: document.getElementById('p-country').value || null,
+    p_closest_major_city: document.getElementById('p-closest-city').value.trim() || null,
+    p_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    p_seeking: seeking.length ? seeking : null,
+    p_bio: document.getElementById('p-bio').value.trim() || null,
+    p_share_with_matchmakers: document.getElementById('p-share-matchmakers').checked,
+    p_interested_in_matchmaking: document.getElementById('p-interested-matchmaking').checked,
+    p_email_opt_in: document.getElementById('p-email-opt').checked,
+    p_services_text_opt_in: document.getElementById('p-services-text').checked,
+    p_marketing_text_opt_in: document.getElementById('p-marketing-text').checked,
+    p_height_inches: document.getElementById('p-height').value ? parseInt(document.getElementById('p-height').value) : null,
+    p_education: document.getElementById('p-education').value || null,
+    p_occupation: document.getElementById('p-occupation').value.trim() || null,
+    p_employer: document.getElementById('p-employer').value.trim() || null,
+    p_kids: document.getElementById('p-kids').value || null,
+    p_want_kids: document.getElementById('p-want-kids').value || null,
+    p_smoking: document.getElementById('p-smoking').value || null,
+    p_drinking: document.getElementById('p-drinking').value || null,
+    p_religion: document.getElementById('p-religion').value || null,
+    p_politics: document.getElementById('p-politics').value || null,
+    p_income_level: document.getElementById('p-income').value || null,
+    p_ethnicity: document.getElementById('p-ethnicity').value.trim() || null,
+    p_body_type: document.getElementById('p-body-type').value || null,
+    p_hair_color: document.getElementById('p-hair').value || null,
+    p_eye_color: document.getElementById('p-eyes').value || null,
+    p_pets: document.getElementById('p-pets').value.trim() || null,
+    p_languages: document.getElementById('p-languages').value.trim() || null,
+    p_activities_hobbies: document.getElementById('p-hobbies').value.trim() || null,
+    p_relationship_status: document.getElementById('p-rel-status').value || null,
+    p_ideal_match: document.getElementById('p-ideal-match').value.trim() || null,
+    p_min_age: document.getElementById('p-min-age').value ? parseInt(document.getElementById('p-min-age').value) : null,
+    p_max_age: document.getElementById('p-max-age').value ? parseInt(document.getElementById('p-max-age').value) : null,
+    p_max_distance: document.getElementById('p-max-distance').value ? parseInt(document.getElementById('p-max-distance').value) : null,
+    p_preferred_height_min: document.getElementById('p-pref-height-min').value.trim() || null,
+    p_preferred_height_max: document.getElementById('p-pref-height-max').value.trim() || null,
+    p_preferred_body_type: document.getElementById('p-pref-body').value || null,
+    p_preferred_ethnicities: document.getElementById('p-pref-ethnicity').value.trim() || null,
+    p_preferred_religion: document.getElementById('p-pref-religion').value || null,
+    p_preferred_politics: document.getElementById('p-pref-politics').value || null,
+    p_preferred_education: document.getElementById('p-pref-education').value || null,
+    p_preferred_income: document.getElementById('p-pref-income').value || null,
+    p_preferred_smoking: document.getElementById('p-pref-smoking').value || null,
+    p_preferred_alcohol: document.getElementById('p-pref-alcohol').value || null,
+    p_preferred_relationship_status: document.getElementById('p-pref-rel-status').value || null,
+    p_date_with_kids: document.getElementById('p-date-with-kids').value || null,
+    p_relocation_in: document.getElementById('p-relocation-in').value || null,
+    p_relocation_out: document.getElementById('p-relocation-out').value || null,
+    p_dealbreakers: document.getElementById('p-dealbreakers').value.trim() || null,
+    p_org_slug: orgSlug
+  };
+
+  try {
+    const profileId = await rpc('intake_create_profile', params);
+    currentProfileId = profileId;
+
+    // Upload photos if any
+    await uploadPhotos(profileId);
+
+    showScreen('success');
+  } catch(e) {
+    showAlert('profile-alert', 'Error saving profile: ' + e.message, 'error');
+    console.error(e);
+  }
+  setLoading('btn-save', false, 'Save Profile');
+}
+
+// ── Photo upload ──────────────────────────────────────────────────────────────
+function previewMainPhoto(input) {
+  if (!input.files[0]) return;
+  const url = URL.createObjectURL(input.files[0]);
+  const img = document.getElementById('main-photo-preview');
+  img.src = url; img.style.display = 'block';
+  document.getElementById('main-photo-icon').style.display = 'none';
+  document.getElementById('main-photo-label').style.display = 'none';
+}
+
+function previewExtra(input, idx) {
+  if (!input.files[0]) return;
+  const url = URL.createObjectURL(input.files[0]);
+  const img = document.getElementById(`extra-preview-${idx}`);
+  img.src = url; img.style.display = 'block';
+  document.getElementById(`extra-icon-${idx}`).style.display = 'none';
+}
+
+async function uploadPhotos(profileId) {
+  const mainFile = document.getElementById('main-photo-input').files[0];
+  const extraFiles = [
+    document.getElementById('extra0').files[0],
+    document.getElementById('extra1').files[0],
+    document.getElementById('extra2').files[0],
+  ].filter(Boolean);
+
+  const allFiles = mainFile ? [mainFile, ...extraFiles] : extraFiles;
+  if (!allFiles.length) return;
+
+  const urls = [];
+  for (const file of allFiles) {
+    const ext = file.name.split('.').pop();
+    const path = `${profileId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${supabaseSession || SUPABASE_ANON}`,
+        'Content-Type': file.type
+      },
+      body: file
+    });
+    if (r.ok) {
+      urls.push(`${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`);
+    }
+  }
+
+  if (urls.length) {
+    // Update profile with photo URLs
+    const patchBody = { photos: urls };
+    if (mainFile) patchBody.image_url = urls[0];
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${profileId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${supabaseSession}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(patchBody)
+    });
+  }
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+function updateProgress() {
+  const fields = document.querySelectorAll('#screen-profile input:not([readonly]), #screen-profile select, #screen-profile textarea');
+  let filled = 0;
+  fields.forEach(f => {
+    if (f.type === 'checkbox') { if (f.checked) filled++; }
+    else if (f.value && f.value.trim()) filled++;
+  });
+  const pct = Math.min(10 + Math.round((filled / fields.length) * 90), 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+</script>
+</body>
+</html>
