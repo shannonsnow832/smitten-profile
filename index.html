@@ -895,9 +895,12 @@
               <label>Income Level</label>
               <select id="p-income" data-category="income_level"><option value="">Select...</option></select>
             </div>
+          </div>
+
+          <div class="form-row full">
             <div class="field">
               <label>Ethnicity</label>
-              <input type="text" id="p-ethnicity" placeholder="e.g. Caucasian, Hispanic, Asian">
+              <div class="checkbox-group" id="ethnicity-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
           </div>
 
@@ -936,7 +939,7 @@
           <div class="form-row full">
             <div class="field">
               <label>Activities &amp; Hobbies</label>
-              <textarea id="p-hobbies" placeholder="e.g. hiking, cooking, live music..." rows="3"></textarea>
+              <div class="checkbox-group" id="activities-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
           </div>
 
@@ -994,54 +997,66 @@
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row full">
             <div class="field">
               <label>Preferred Body Type</label>
-              <select id="p-pref-body" data-category="preferred_body_type"><option value="">Any</option></select>
+              <div class="checkbox-group" id="pref-body-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
+          </div>
+
+          <div class="form-row full">
             <div class="field">
               <label>Preferred Ethnicity</label>
-              <input type="text" id="p-pref-ethnicity" placeholder="Any, or specify...">
+              <div class="checkbox-group" id="pref-ethnicity-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row full">
             <div class="field">
               <label>Preferred Religion</label>
-              <select id="p-pref-religion" data-category="preferred_religion"><option value="">Any</option></select>
+              <div class="checkbox-group" id="pref-religion-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
+          </div>
+
+          <div class="form-row full">
             <div class="field">
               <label>Preferred Politics</label>
-              <select id="p-pref-politics" data-category="preferred_politics"><option value="">Any</option></select>
+              <div class="checkbox-group" id="pref-politics-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Education</label>
+              <div class="checkbox-group" id="pref-education-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
           </div>
 
           <div class="form-row">
-            <div class="field">
-              <label>Preferred Education</label>
-              <select id="p-pref-education" data-category="preferred_education"><option value="">Any</option></select>
-            </div>
             <div class="field">
               <label>Preferred Income Level</label>
               <select id="p-pref-income" data-category="preferred_income"><option value="">Any</option></select>
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row full">
             <div class="field">
               <label>Preferred Smoking</label>
-              <select id="p-pref-smoking" data-category="preferred_smoking"><option value="">Any</option></select>
+              <div class="checkbox-group" id="pref-smoking-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
+          </div>
+
+          <div class="form-row full">
             <div class="field">
               <label>Preferred Drinking</label>
-              <select id="p-pref-alcohol" data-category="preferred_alcohol"><option value="">Any</option></select>
+              <div class="checkbox-group" id="pref-alcohol-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
           </div>
 
           <div class="form-row full">
             <div class="field">
               <label>Preferred Relationship Status</label>
-              <select id="p-pref-rel-status" data-category="preferred_relationship_status"><option value="">Any</option></select>
+              <div class="checkbox-group" id="pref-rel-status-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             </div>
           </div>
 
@@ -1071,7 +1086,8 @@
 
           <div class="form-row full">
             <div class="field">
-              <textarea id="p-dealbreakers" placeholder="E.g., Must love dogs, no smokers..." rows="4"></textarea>
+              <div class="checkbox-group" id="dealbreakers-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+              <textarea id="p-dealbreakers-other" placeholder="Describe any other dealbreakers..." rows="2" style="margin-top:12px;display:none;"></textarea>
               <span class="hint">Any strict dealbreakers our matchmakers should know about?</span>
             </div>
           </div>
@@ -1417,13 +1433,13 @@ async function loadExistingProfile() {
     setSelect('p-religion', profile.religion);
     setSelect('p-politics', profile.politics);
     setSelect('p-income', profile.income_level);
-    set('p-ethnicity', profile.ethnicity);
+    setChecked('ethnicity-group', profile.ethnicity);
     setSelect('p-body-type', profile.body_type);
     setSelect('p-hair', profile.hair_color);
     setSelect('p-eyes', profile.eye_color);
     set('p-pets', profile.pets);
     set('p-languages', profile.languages);
-    set('p-hobbies', profile.activities_hobbies);
+    setChecked('activities-group', profile.activities_hobbies);
     setSelect('p-rel-status', profile.relationship_status);
     set('p-ideal-match', profile.ideal_match);
 
@@ -1433,19 +1449,31 @@ async function loadExistingProfile() {
     setSelect('p-max-distance', profile.max_distance ? String(profile.max_distance) : null);
     set('p-pref-height-min', profile.preferred_height_min);
     set('p-pref-height-max', profile.preferred_height_max);
-    setSelect('p-pref-body', profile.preferred_body_type);
-    set('p-pref-ethnicity', profile.preferred_ethnicities);
-    setSelect('p-pref-religion', profile.preferred_religion);
-    setSelect('p-pref-politics', profile.preferred_politics);
-    setSelect('p-pref-education', profile.preferred_education);
+    setChecked('pref-body-group', profile.preferred_body_type);
+    setChecked('pref-ethnicity-group', profile.preferred_ethnicities);
+    setChecked('pref-religion-group', profile.preferred_religion);
+    setChecked('pref-politics-group', profile.preferred_politics);
+    setChecked('pref-education-group', profile.preferred_education);
     setSelect('p-pref-income', profile.preferred_income);
-    setSelect('p-pref-smoking', profile.preferred_smoking);
-    setSelect('p-pref-alcohol', profile.preferred_alcohol);
-    setSelect('p-pref-rel-status', profile.preferred_relationship_status);
+    setChecked('pref-smoking-group', profile.preferred_smoking);
+    setChecked('pref-alcohol-group', profile.preferred_alcohol);
+    setChecked('pref-rel-status-group', profile.preferred_relationship_status);
     setSelect('p-date-with-kids', profile.date_with_kids);
     setSelect('p-relocation-in', profile.relocation_in);
     setSelect('p-relocation-out', profile.relocation_out);
-    set('p-dealbreakers', profile.dealbreakers);
+    setChecked('dealbreakers-group', Array.isArray(profile.dealbreakers) ? profile.dealbreakers.filter(d => d !== 'Other' && !document.querySelector('#dealbreakers-group input[value="' + d + '"]')?.value) : null);
+    // Handle "Other" text
+    if (Array.isArray(profile.dealbreakers)) {
+      const knownVals = [...document.querySelectorAll('#dealbreakers-group input[type=checkbox]')].map(b => b.value);
+      const otherText = profile.dealbreakers.filter(d => !knownVals.includes(d)).join(', ');
+      if (otherText) {
+        document.getElementById('p-dealbreakers-other').value = otherText;
+        document.getElementById('p-dealbreakers-other').style.display = 'block';
+        const otherBox = document.querySelector('#dealbreakers-group input[value="Other"]');
+        if (otherBox) otherBox.checked = true;
+      }
+      setChecked('dealbreakers-group', profile.dealbreakers);
+    }
 
     // Show existing photo if present
     if (profile.image_url) {
@@ -1502,7 +1530,7 @@ async function saveProfile(silent = false) {
     p_body_type:           document.getElementById('p-body-type').value || null,
     p_hair_color:          document.getElementById('p-hair').value || null,
     p_eye_color:           document.getElementById('p-eyes').value || null,
-    p_ethnicity:           document.getElementById('p-ethnicity').value.trim() || null,
+    p_ethnicity:           getChecked('ethnicity-group'),
     p_occupation:          document.getElementById('p-occupation').value.trim() || null,
     p_employer:            document.getElementById('p-employer').value.trim() || null,
     p_education:           document.getElementById('p-education').value || null,
@@ -1516,10 +1544,17 @@ async function saveProfile(silent = false) {
     p_religion:            document.getElementById('p-religion').value || null,
     p_politics:            document.getElementById('p-politics').value || null,
     p_income_level:        document.getElementById('p-income').value || null,
-    p_activities_hobbies:  document.getElementById('p-hobbies').value.trim() || null,
+    p_activities_hobbies:  getChecked('activities-group'),
     p_languages:           document.getElementById('p-languages').value.trim() || null,
     p_ideal_match:         document.getElementById('p-ideal-match').value.trim() || null,
-    p_dealbreakers:        document.getElementById('p-dealbreakers').value.trim() || null,
+    p_dealbreakers:        (() => {
+      const checked = getChecked('dealbreakers-group');
+      const other = document.getElementById('p-dealbreakers-other').value.trim();
+      if (!checked && !other) return null;
+      const arr = checked || [];
+      if (other) arr.push(other);
+      return arr.length ? arr : null;
+    })(),
     p_date_with_kids:      document.getElementById('p-date-with-kids').value || null,
     p_relocation_in:       document.getElementById('p-relocation-in').value || null,
     p_relocation_out:      document.getElementById('p-relocation-out').value || null,
@@ -1528,15 +1563,15 @@ async function saveProfile(silent = false) {
     p_max_distance:        document.getElementById('p-max-distance').value ? parseInt(document.getElementById('p-max-distance').value) : null,
     p_preferred_height_min:         document.getElementById('p-pref-height-min').value.trim() || null,
     p_preferred_height_max:         document.getElementById('p-pref-height-max').value.trim() || null,
-    p_preferred_body_type:          document.getElementById('p-pref-body').value || null,
-    p_preferred_ethnicities:        document.getElementById('p-pref-ethnicity').value.trim() || null,
-    p_preferred_religion:           document.getElementById('p-pref-religion').value || null,
-    p_preferred_politics:           document.getElementById('p-pref-politics').value || null,
-    p_preferred_education:          document.getElementById('p-pref-education').value || null,
-    p_preferred_income:             document.getElementById('p-pref-income').value || null,
-    p_preferred_smoking:            document.getElementById('p-pref-smoking').value || null,
-    p_preferred_alcohol:            document.getElementById('p-pref-alcohol').value || null,
-    p_preferred_relationship_status: document.getElementById('p-pref-rel-status').value || null,
+    p_preferred_body_type:           getChecked('pref-body-group'),
+    p_preferred_ethnicities:         getChecked('pref-ethnicity-group'),
+    p_preferred_religion:            getChecked('pref-religion-group'),
+    p_preferred_politics:            getChecked('pref-politics-group'),
+    p_preferred_education:           getChecked('pref-education-group'),
+    p_preferred_income:              document.getElementById('p-pref-income').value || null,
+    p_preferred_smoking:             getChecked('pref-smoking-group'),
+    p_preferred_alcohol:             getChecked('pref-alcohol-group'),
+    p_preferred_relationship_status: getChecked('pref-rel-status-group'),
     // Required by intake_create_profile only — org resolved server-side from slug
     p_organization_id: null,
     p_org_slug:        orgSlug,
@@ -1687,7 +1722,70 @@ function updateProgress() {
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
+// ── Checkbox group helpers ────────────────────────────────────────────────────
+function getChecked(groupId) {
+  const boxes = document.querySelectorAll(`#${groupId} input[type=checkbox]:checked`);
+  const vals = [...boxes].map(b => b.value);
+  return vals.length ? vals : null;
+}
+
+function setChecked(groupId, values) {
+  if (!values || !Array.isArray(values)) return;
+  document.querySelectorAll(`#${groupId} input[type=checkbox]`).forEach(cb => {
+    cb.checked = values.includes(cb.value);
+  });
+}
+
+function buildCheckboxGroup(containerId, options, onchange) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = options.map(o =>
+    `<label class="check-item" style="font-size:13px;">
+      <input type="checkbox" value="${o.value}" ${onchange ? `onchange="${onchange}"` : ''}>
+      ${o.label}
+    </label>`
+  ).join('');
+}
+
+// When "All" is checked, uncheck others; when any other is checked, uncheck "All"
+function handleAllCheckbox(groupId) {
+  const allBox = document.querySelector(`#${groupId} input[value="All"]`);
+  if (!allBox) return;
+  const others = [...document.querySelectorAll(`#${groupId} input[type=checkbox]`)].filter(b => b.value !== 'All');
+  allBox.addEventListener('change', () => {
+    if (allBox.checked) others.forEach(b => b.checked = false);
+  });
+  others.forEach(b => b.addEventListener('change', () => {
+    if (b.checked) allBox.checked = false;
+  }));
+}
+
+// Show/hide "Other" textarea for dealbreakers
+function handleDealbreakerOther() {
+  const otherBox = document.querySelector('#dealbreakers-group input[value="Other"]');
+  const otherText = document.getElementById('p-dealbreakers-other');
+  if (!otherBox || !otherText) return;
+  otherBox.addEventListener('change', () => {
+    otherText.style.display = otherBox.checked ? 'block' : 'none';
+  });
+}
+
 // ── Load dropdown options from Supabase ───────────────────────────────────────
+// Checkbox group definitions: [groupId, category]
+const CHECKBOX_GROUPS = [
+  ['ethnicity-group',       'ethnicity'],
+  ['activities-group',      'activities'],
+  ['dealbreakers-group',    'dealbreakers'],
+  ['pref-body-group',       'body_type'],
+  ['pref-ethnicity-group',  'ethnicity'],
+  ['pref-religion-group',   'religion'],
+  ['pref-politics-group',   'politics'],
+  ['pref-education-group',  'education'],
+  ['pref-smoking-group',    'smoking'],
+  ['pref-alcohol-group',    'drinking'],
+  ['pref-rel-status-group', 'relationship_status'],
+];
+
 async function loadOptions() {
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/profile_options?select=category,value,label,sort_order&is_active=eq.true&order=category,sort_order`, {
@@ -1702,7 +1800,7 @@ async function loadOptions() {
       grouped[o.category].push(o);
     });
 
-    // Populate each select
+    // Populate dropdowns
     document.querySelectorAll('select[data-category]').forEach(sel => {
       const category = sel.getAttribute('data-category');
       const opts = grouped[category] || [];
@@ -1710,6 +1808,21 @@ async function loadOptions() {
       const placeholder = isAny ? '<option value="">Any</option>' : '<option value="">Select...</option>';
       sel.innerHTML = placeholder + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
     });
+
+    // Populate checkbox groups
+    CHECKBOX_GROUPS.forEach(([groupId, category]) => {
+      const opts = grouped[category] || [];
+      buildCheckboxGroup(groupId, opts);
+      handleAllCheckbox(groupId);
+    });
+
+    handleDealbreakerOther();
+
+    // Wire checkbox changes to autosave
+    document.querySelectorAll('#screen-profile .checkbox-group input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', () => { updateProgress(); if (currentEmail && supabaseSession) autosave(); });
+    });
+
   } catch (e) {
     console.error('Could not load profile options:', e);
   }
