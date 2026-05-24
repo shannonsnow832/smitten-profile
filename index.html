@@ -1546,7 +1546,9 @@ async function saveProfile(silent = false) {
     // If we already have a stub row (new user post-OTP) OR existing user — always update.
     // Only create a brand-new full profile if somehow no stub exists yet.
     if (isExistingUser || currentProfileId) {
-      profileId = await rpc('intake_update_profile', params);
+      // intake_update_profile does not accept p_org_slug or p_organization_id
+      const { p_org_slug, p_organization_id, ...updateParams } = params;
+      profileId = await rpc('intake_update_profile', updateParams);
     } else {
       profileId = await rpc('intake_create_profile', params);
     }
