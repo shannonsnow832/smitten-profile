@@ -1604,6 +1604,7 @@ function previewMainPhoto(input) {
   img.src = url; img.style.display = 'block';
   document.getElementById('main-photo-icon').style.display = 'none';
   document.getElementById('main-photo-label').style.display = 'none';
+  autoUploadPhoto(input.files[0], true);
 }
 
 function previewExtra(input, idx) {
@@ -1612,39 +1613,39 @@ function previewExtra(input, idx) {
   const img = document.getElementById(`extra-preview-${idx}`);
   img.src = url; img.style.display = 'block';
   document.getElementById(`extra-icon-${idx}`).style.display = 'none';
+  autoUploadPhoto(input.files[0], false);
 }
 
-async function uploadPhotos(profileId) {
-  if (!profileId) return;
-  const mainFile   = document.getElementById('main-photo-input').files[0];
-  const extraFiles = [
-    document.getElementById('extra0').files[0],
-    document.getElementById('extra1').files[0],
-    document.getElementById('extra2').files[0],
-  ].filter(Boolean);
-
-  const allFiles = mainFile ? [mainFile, ...extraFiles] : extraFiles;
-  if (!allFiles.length) return;
-
-  const urls = [];
-  for (const file of allFiles) {
+async function autoUploadPhoto(file, isMain) {
+  const profileId = currentProfileId;
+  if (!profileId || !supabaseSession) return;
+  try {
     const ext  = file.name.split('.').pop();
     const path = `${profileId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const r    = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${supabaseSession || SUPABASE_ANON}`,
+        'Authorization': `Bearer ${supabaseSession}`,
         'Content-Type': file.type
       },
       body: file
     });
-    if (r.ok) urls.push(`${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`);
-  }
+    if (!r.ok) { console.warn('Photo upload failed'); return; }
 
-  if (urls.length) {
-    const patchBody = { photos: urls };
-    if (mainFile) patchBody.image_url = urls[0];
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
+
+    // Get current photos array and append
+    const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${profileId}&select=photos,image_url`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
+    });
+    const [existing] = await profileRes.json();
+    const currentPhotos = existing?.photos || [];
+    const updatedPhotos = [...currentPhotos, publicUrl];
+
+    const patchBody = { photos: updatedPhotos };
+    if (isMain) patchBody.image_url = publicUrl;
+
     await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${profileId}`, {
       method: 'PATCH',
       headers: {
@@ -1655,7 +1656,15 @@ async function uploadPhotos(profileId) {
       },
       body: JSON.stringify(patchBody)
     });
+    showAutosaveIndicator();
+  } catch(e) {
+    console.warn('Photo autosave failed:', e);
   }
+}
+
+async function uploadPhotos(profileId) {
+  // Photos are now uploaded immediately on selection via autoUploadPhoto.
+  // Kept as no-op for compatibility with the Save button flow.
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
