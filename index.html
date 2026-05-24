@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#screen-profile input:not([readonly]):not([type=hidden]), #screen-profile select, #screen-profile textarea')
     .forEach(el => {
       el.addEventListener('change', updateProgress);
-      el.addEventListener('blur', () => { if (currentEmail && supabaseSession) autosave(); });
+      el.addEventListener('blur', autosave);
     });
 });
 
@@ -1543,7 +1543,9 @@ async function saveProfile(silent = false) {
 
   try {
     let profileId;
-    if (isExistingUser) {
+    // If we already have a stub row (new user post-OTP) OR existing user — always update.
+    // Only create a brand-new full profile if somehow no stub exists yet.
+    if (isExistingUser || currentProfileId) {
       profileId = await rpc('intake_update_profile', params);
     } else {
       profileId = await rpc('intake_create_profile', params);
@@ -1555,6 +1557,9 @@ async function saveProfile(silent = false) {
         document.getElementById('success-msg').textContent = 'Your profile has been updated successfully. Our team will be in touch soon.';
       }
       showScreen('success');
+    } else {
+      // Show a subtle autosave indicator
+      showAutosaveIndicator();
     }
   } catch (e) {
     if (!silent) {
@@ -1565,6 +1570,27 @@ async function saveProfile(silent = false) {
   }
 
   if (!silent) setLoading('btn-save', false, isExistingUser ? 'Update Profile' : 'Save Profile');
+}
+
+// ── Autosave indicator ────────────────────────────────────────────────────────
+function showAutosaveIndicator() {
+  let indicator = document.getElementById('autosave-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'autosave-indicator';
+    indicator.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 999;
+      background: #166534; color: white; font-family: 'Montserrat', sans-serif;
+      font-size: 12px; font-weight: 600; padding: 8px 14px;
+      border-radius: 8px; opacity: 0; transition: opacity 0.3s ease;
+      pointer-events: none;
+    `;
+    indicator.textContent = '✓ Draft saved';
+    document.body.appendChild(indicator);
+  }
+  indicator.style.opacity = '1';
+  clearTimeout(indicator._hideTimer);
+  indicator._hideTimer = setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
 }
 
 // ── Photo upload ──────────────────────────────────────────────────────────────
@@ -1683,15 +1709,26 @@ function returnToProfile() {
 
 // ── Autosave on blur ──────────────────────────────────────────────────────────
 let autosaveTimeout = null;
+let autosaveInProgress = false;
 
-async function autosave() {
+function autosave() {
+  // Must have a session and either a stub row or be an existing user
   if (!currentEmail || !supabaseSession) return;
-  if (!isExistingUser && !currentProfileId) return;
-  try {
-    await saveProfile(true); // silent = true
-  } catch (e) {
-    console.warn('Autosave failed:', e);
-  }
+  if (!currentProfileId && !isExistingUser) return;
+
+  // Debounce — wait 800ms after last blur before firing
+  clearTimeout(autosaveTimeout);
+  autosaveTimeout = setTimeout(async () => {
+    if (autosaveInProgress) return;
+    autosaveInProgress = true;
+    try {
+      await saveProfile(true); // silent = true
+    } catch (e) {
+      console.warn('Autosave failed:', e);
+    } finally {
+      autosaveInProgress = false;
+    }
+  }, 800);
 }
 </script>
 </body>
