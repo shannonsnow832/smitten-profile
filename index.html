@@ -1637,8 +1637,11 @@ async function autoUploadPhoto(file, isMain) {
   if (!supabaseSession) { console.warn('Photo upload skipped: no session'); return; }
   if (!profileId) { console.warn('Photo upload skipped: no profile ID yet'); return; }
   try {
+    // Storage policy requires path to start with auth.uid()
+    // Decode it from the JWT session token
+    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
     const ext  = file.name.split('.').pop();
-    const path = `${profileId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
       method: 'POST',
       headers: {
