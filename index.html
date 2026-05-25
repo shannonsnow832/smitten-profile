@@ -1663,18 +1663,11 @@ async function autoUploadPhoto(file, isMain) {
     const currentPhotos = existing?.photos || [];
     const updatedPhotos = [...currentPhotos, publicUrl];
 
-    const patchBody = { photos: updatedPhotos };
-    if (isMain) patchBody.image_url = publicUrl;
-
-    await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${profileId}`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${supabaseSession}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(patchBody)
+    // Use RPC to update photos — bypasses RLS for intake-created profiles
+    await rpc('intake_update_profile', {
+      p_email: currentEmail,
+      p_image_url: isMain ? publicUrl : null,
+      p_photos: updatedPhotos
     });
     showAutosaveIndicator();
   } catch(e) {
