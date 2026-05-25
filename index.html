@@ -1804,18 +1804,11 @@ async function loadOptions() {
     });
 
     // Populate checkbox groups
-    const PREF_GROUPS = ['pref-body-group','pref-ethnicity-group','pref-religion-group',
-      'pref-politics-group','pref-education-group','pref-smoking-group',
-      'pref-alcohol-group','pref-rel-status-group'];
-
+    // All checkbox groups use the same "Any/All checks everything" behavior
     CHECKBOX_GROUPS.forEach(([groupId, category]) => {
       const opts = grouped[category] || [];
       buildCheckboxGroup(groupId, opts);
-      if (PREF_GROUPS.includes(groupId)) {
-        handleAnyCheckbox(groupId);
-      } else {
-        handleAllCheckbox(groupId);
-      }
+      handleAnyCheckbox(groupId);
     });
 
     handleDealbreakerOther();
