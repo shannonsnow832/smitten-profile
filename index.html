@@ -516,11 +516,6 @@
     <p>Tell us a little about yourself to get started. We'll check if you already have an account before creating a new one.</p>
 
     <div id="gate-alert" class="alert error"></div>
-    <div id="duplicate-msg" class="duplicate-msg">
-      <p>It looks like you already have a profile with us. Verify your email to view and update it.</p>
-      <a href="#" onclick="proceedToOtp();return false;">Verify &amp; update my profile &rarr;</a>
-    </div>
-
     <div class="form-row">
       <div class="field">
         <label>First Name *</label>
@@ -1187,7 +1182,6 @@ async function rpc(fn, params) {
 // ── STEP 1: Duplicate check ───────────────────────────────────────────────────
 async function checkDuplicate() {
   hideAlert('gate-alert');
-  document.getElementById('duplicate-msg').classList.remove('show');
 
   const first   = document.getElementById('g-first').value.trim();
   const last    = document.getElementById('g-last').value.trim();
@@ -1202,32 +1196,13 @@ async function checkDuplicate() {
     showAlert('gate-alert', 'Please acknowledge that submitting this form creates a Smitten Singles account.', 'error'); return;
   }
 
-  setLoading('btn-check', true, 'Checking...');
+  currentEmail     = email;
+  currentPhone     = phone;
+  currentFirstName = first;
+  currentLastName  = last;
 
-  try {
-    const result = await rpc('intake_check_duplicate', { p_email: email, p_phone: phone || null });
-
-    currentEmail     = email;
-    currentPhone     = phone;
-    currentFirstName = first;
-    currentLastName  = last;
-
-    if (result === 'found') {
-      isExistingUser = true;
-      document.getElementById('duplicate-msg').classList.add('show');
-      setLoading('btn-check', false, 'Continue');
-      return;
-    }
-
-    // New user
-    isExistingUser = false;
-    await proceedToOtp();
-
-  } catch (e) {
-    showAlert('gate-alert', 'Something went wrong. Please try again.', 'error');
-    console.error(e);
-  }
-
+  setLoading('btn-check', true, 'Sending code...');
+  await proceedToOtp();
   setLoading('btn-check', false, 'Continue');
 }
 
@@ -1252,13 +1227,11 @@ async function proceedToOtp() {
 }
 
 async function sendOtp(email) {
-  const body = isExistingUser
-    ? { email }
-    : { email, create_user: true };
+  // Always use create_user:true — Supabase sends a code regardless of whether user exists
   const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
     method: 'POST',
     headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify({ email, create_user: true })
   });
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
@@ -1318,26 +1291,34 @@ async function verifyOtp() {
     }
     supabaseSession = data.access_token;
 
-    if (isExistingUser) {
-      // Load existing profile into form
-      await loadExistingProfile();
-      document.getElementById('btn-save').textContent = 'Update Profile';
-      document.querySelector('.save-bar-title').textContent = 'Update Your Profile';
-      document.querySelector('.profile-header h1').textContent = 'Update Your Profile';
-    } else {
-      // Create incomplete row for abandoned intake tracking
-      try {
-        const pid = await rpc('intake_create_incomplete', {
-          p_email:      currentEmail,
-          p_first_name: currentFirstName,
-          p_last_name:  currentLastName,
-          p_phone:      currentPhone || null,
-          p_org_slug:   orgSlug
-        });
-        currentProfileId = pid;
-      } catch (e) {
-        console.warn('Could not create incomplete profile:', e);
+    // Detect existing vs new by checking for a profile — no duplicate check needed
+    try {
+      const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+      if (profile && profile.id) {
+        // Existing user — load their profile
+        isExistingUser = true;
+        await loadExistingProfile();
+        document.getElementById('btn-save').textContent = 'Update Profile';
+        document.querySelector('.save-bar-title').textContent = 'Update Your Profile';
+        document.querySelector('.profile-header h1').textContent = 'Update Your Profile';
+      } else {
+        // New user — create stub row
+        isExistingUser = false;
+        try {
+          const pid = await rpc('intake_create_incomplete', {
+            p_email:      currentEmail,
+            p_first_name: currentFirstName,
+            p_last_name:  currentLastName,
+            p_phone:      currentPhone || null,
+            p_org_slug:   orgSlug
+          });
+          currentProfileId = pid;
+        } catch (e) {
+          console.warn('Could not create incomplete profile:', e);
+        }
       }
+    } catch (e) {
+      console.warn('Could not check for existing profile:', e);
     }
 
     showScreen('profile');
