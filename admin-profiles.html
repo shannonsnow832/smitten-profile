@@ -706,6 +706,9 @@ function launchApp() {
     const mmFilter = document.getElementById('filter-matchmakers-group');
     if (mmFilter) mmFilter.style.display = 'none';
   }
+  // Clear any stale filter state
+  activeFilters = {};
+  searchQuery = '';
   loadProfiles();
   if (!isMatchmaker) loadKb();
 }
@@ -789,8 +792,8 @@ function buildProfilesUrl(forCount = false) {
   if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
 
   if (searchQuery) {
-    const q = encodeURIComponent(`*${searchQuery}*`);
-    params.push(`or=(first_name.ilike.${q},last_name.ilike.${q},email.ilike.${q})`);
+    const sq = encodeURIComponent(searchQuery);
+    params.push(`or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)`);
   }
 
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
