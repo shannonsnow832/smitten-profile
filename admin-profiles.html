@@ -1060,13 +1060,21 @@ async function doRequestOtp() {
     const data = await r.json();
     if (!data.length) { showLoginError('Access denied. Authorized staff only.'); return; }
 
-    // Send OTP
+    // Send OTP — create_user:true so Lisa and future staff get auth users on first login
     const otpRes = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
       method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, create_user: true })
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, create_user: true, options: { shouldCreateUser: true } })
     });
-    if (!otpRes.ok) { showLoginError('Could not send code. Try again.'); return; }
+    if (!otpRes.ok) {
+      let errMsg = 'Could not send code. Try again.';
+      try { const errData = await otpRes.json(); errMsg = errData.msg || errData.error_description || errMsg; } catch(e2) {}
+      showLoginError(errMsg);
+      return;
+    }
 
     otpEmail = email;
     document.getElementById('otp-sent-msg').textContent = `We sent an 8-digit code to ${email}.`;
@@ -1382,26 +1390,27 @@ function renderProfiles(profiles) {
     const location = [p.city, p.state].filter(Boolean).join(', ');
     const meta = [age ? `${age} yrs` : null, p.gender, location].filter(Boolean).join(' · ');
     const avatar = p.image_url
-      ? `<img src="${p.image_url}" alt="${name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">`
-      : initials;
+      ? '<img src="' + p.image_url + '" alt="' + name + '" onerror="this.style.display=&apos;none&apos;">'
+      : '<span>' + initials + '</span>';
     const seeking = p.seeking?.join(', ') || '';
     const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    return `<div class="profile-card" onclick="openProfile(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+    const pJson = JSON.stringify(p).replace(/"/g, '&quot;');
+    return `<div class="profile-card" onclick="openProfile(${pJson})">
       <div class="profile-avatar">${avatar}</div>
       <div class="profile-info">
         <h4>${name}</h4>
         <div class="meta">${meta || '—'}</div>
         <div class="profile-tags">
-          ${p.occupation ? `<span class="tag">${p.occupation}</span>` : ''}
-          ${seeking ? `<span class="tag red">Seeking: ${seeking}</span>` : ''}
+          ${p.occupation ? '<span class="tag">' + p.occupation + '</span>' : ''}
+          ${seeking ? '<span class="tag red">Seeking: ' + seeking + '</span>' : ''}
           ${p.share_with_matchmakers ? '<span class="tag green">Matchmaker</span>' : ''}
           ${!p.is_active ? '<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>' : ''}
         </div>
       </div>
       <div class="profile-card-right">
         <div class="date">Joined ${date}</div>
-        ${adminUser && adminUser.role !== 'matchmaker' ? `<div class="email">${p.email || ''}</div>` : ''}
+        ${adminUser && adminUser.role !== 'matchmaker' ? '<div class="email">' + (p.email || '') + '</div>' : ''}
       </div>
     </div>`;
   }).join('');
@@ -1827,8 +1836,7 @@ async function exportCSV() {
       return base.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
     });
 
-    const csv = [headers.join(','), ...rows].join('
-');
+    const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url2 = URL.createObjectURL(blob);
     const a = document.createElement('a');
