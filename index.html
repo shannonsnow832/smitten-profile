@@ -1215,8 +1215,16 @@ async function proceedToOtp() {
   document.getElementById('p-email').value = currentEmail;
   document.getElementById('p-phone').value = currentPhone;
 
+  // Detect existing user BEFORE sending OTP so verifyType is correct at verify time
   try {
-    await sendOtp(currentEmail);
+    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+    isExistingUser = !!(profile && profile.id);
+  } catch (e) {
+    isExistingUser = false;
+  }
+
+  try {
+    await sendOtp(currentEmail, isExistingUser);
     showScreen('otp');
   } catch (e) {
     let msg = 'Could not send verification code. Please try again.';
@@ -1226,12 +1234,16 @@ async function proceedToOtp() {
   }
 }
 
-async function sendOtp(email) {
-  // Always use create_user:true — Supabase sends a code regardless of whether user exists
+async function sendOtp(email, existingUser) {
+  // Use recovery for existing auth users, signup for new ones
+  const body = existingUser
+    ? { email }
+    : { email, create_user: true };
+
   const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
     method: 'POST',
     headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, create_user: true })
+    body: JSON.stringify(body)
   });
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
