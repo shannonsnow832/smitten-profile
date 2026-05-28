@@ -36,10 +36,10 @@
   .login-box {
     background: var(--white);
     border-radius: var(--radius);
-    padding: 48px 44px;
+    padding: 48px 40px;
     width: 100%;
-    max-width: 460px;
-    box-shadow: var(--shadow-lg);
+    max-width: 480px;
+    box-shadow: var(--shadow);
   }
   .login-logo {
     display: flex;
@@ -371,13 +371,25 @@
 
   /* ── OTP INPUTS ── */
   .otp-inputs {
-    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 4px; justify-content: center; margin: 20px 0 8px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+    margin-top: 20px;
   }
   .otp-box {
-    width: 38px; height: 46px; border: 2px solid #E8E8E8; border-radius: var(--radius-sm);
-    text-align: center; font-size: 18px; font-weight: 700; color: var(--black);
-    font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s;
-    flex-shrink: 0; padding: 0;
+    width: 40px;
+    height: 50px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    padding: 0;
   }
   .otp-box:focus { border-color: var(--red); }
 
