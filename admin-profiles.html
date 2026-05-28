@@ -1366,6 +1366,16 @@ async function doVerifyOtp() {
     }
     supabaseSession = data.access_token;
 
+    // Get auth user id from session JWT
+    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
+
+    // Wire user_id on staff row if not already set (first login after being added via app)
+    await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(otpEmail)}&is_active=eq.true&user_id=is.null`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ user_id: authUid })
+    });
+
     // Load staff record
     const staffRes = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(otpEmail)}&is_active=eq.true&select=id,email,first_name,last_name,role`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
