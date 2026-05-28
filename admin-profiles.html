@@ -31,7 +31,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--black);
+    background: var(--gray-light);
   }
   .login-box {
     background: var(--white);
@@ -265,40 +265,7 @@
     border: 1.5px solid var(--gray-light);
   }
 
-  /* KNOWLEDGEBASE TAB */
-  .kb-layout { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
-  .kb-header { margin-bottom: 28px; }
-  .kb-header h2 { font-size: 24px; font-weight: 700; color: var(--black); }
-  .kb-header p { font-size: 14px; color: var(--gray-dark); margin-top: 4px; }
-  .kb-search { margin-bottom: 24px; }
-  .kb-search input {
-    width: 100%; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
-    padding: 11px 16px; font-family: 'Montserrat', sans-serif; font-size: 14px;
-    color: var(--gray-dark); outline: none; transition: border-color 0.2s;
-  }
-  .kb-search input:focus { border-color: var(--red); }
-  .kb-articles { display: flex; flex-direction: column; gap: 12px; }
-  .kb-card {
-    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
-    padding: 20px 24px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.2s;
-  }
-  .kb-card:hover { border-color: var(--pink); box-shadow: var(--shadow-lg); }
-  .kb-card.open { border-color: var(--red); }
-  .kb-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .kb-card h3 { font-size: 15px; font-weight: 700; color: var(--black); }
-  .kb-card .kb-category {
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--red); background: #FFF0F0; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-  }
-  .kb-card .kb-content {
-    font-size: 13px; color: var(--gray-dark); line-height: 1.7; margin-top: 14px;
-    display: none; white-space: pre-wrap;
-  }
-  .kb-card.open .kb-content { display: block; }
-  .kb-card .kb-toggle { font-size: 18px; color: var(--gray-mid); flex-shrink: 0; margin-top: 2px; }
-  .kb-card.open .kb-toggle { color: var(--red); }
-  .kb-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .kb-tag { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--gray-light); color: var(--gray-dark); }
+
 
   /* EMPTY + LOADING */
   .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-mid); }
@@ -387,7 +354,6 @@
       <span class="topbar-badge">Admin</span>
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchTab('profiles', this)">Profiles</button>
-        <button class="nav-tab" onclick="switchTab('kb', this)">Knowledgebase</button>
       </div>
     </div>
     <div class="topbar-right">
@@ -522,21 +488,7 @@
     </div>
   </div>
 
-  <!-- KB TAB -->
-  <div id="tab-kb" class="tab-panel">
-    <div class="kb-layout">
-      <div class="kb-header">
-        <h2>Knowledgebase</h2>
-        <p>Internal reference articles for the Smitten Singles team.</p>
-      </div>
-      <div class="kb-search">
-        <input type="text" id="kb-search" placeholder="Search articles…" oninput="filterKb()">
-      </div>
-      <div id="kb-list" class="kb-articles">
-        <div class="loading-state">Loading articles…</div>
-      </div>
-    </div>
-  </div>
+
 </div>
 
 <!-- PROFILE DETAIL MODAL -->
@@ -565,7 +517,6 @@ let totalCount = 0;
 let activeFilters = {};
 let searchQuery = '';
 let searchTimer = null;
-let allKbArticles = [];
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 let otpEmail = '';
@@ -700,9 +651,8 @@ function launchApp() {
   document.getElementById('screen-app').style.display = 'block';
   const isMatchmaker = adminUser.role === 'matchmaker';
   document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
-  // Hide KB tab and matchmaker filter for matchmakers
+  // Hide matchmaker filter for matchmakers
   if (isMatchmaker) {
-    document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent === 'Knowledgebase') t.style.display = 'none'; });
     const mmFilter = document.getElementById('filter-matchmakers-group');
     if (mmFilter) mmFilter.style.display = 'none';
   }
@@ -710,7 +660,6 @@ function launchApp() {
   activeFilters = {};
   searchQuery = '';
   loadProfiles();
-  if (!isMatchmaker) loadKb();
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
@@ -1005,54 +954,6 @@ function closeModal() {
 
 function closeModalOnBg(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
-}
-
-// ── KNOWLEDGEBASE ─────────────────────────────────────────────────────────────
-async function loadKb() {
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/knowledgebase?is_active=eq.true&order=category,title`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
-    });
-    allKbArticles = await r.json();
-    renderKb(allKbArticles);
-  } catch(e) {
-    document.getElementById('kb-list').innerHTML = '<div class="empty-state"><p>Failed to load knowledgebase.</p></div>';
-  }
-}
-
-function filterKb() {
-  const q = document.getElementById('kb-search').value.trim().toLowerCase();
-  if (!q) { renderKb(allKbArticles); return; }
-  renderKb(allKbArticles.filter(a =>
-    a.title?.toLowerCase().includes(q) ||
-    a.content?.toLowerCase().includes(q) ||
-    a.category?.toLowerCase().includes(q) ||
-    (a.tags && a.tags.some(t => t.toLowerCase().includes(q)))
-  ));
-}
-
-function renderKb(articles) {
-  const el = document.getElementById('kb-list');
-  if (!articles.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No articles found.</p></div>'; return; }
-  el.innerHTML = articles.map((a, i) => `
-    <div class="kb-card" id="kb-card-${i}" onclick="toggleKb(${i})">
-      <div class="kb-card-header">
-        <div>
-          <h3>${a.title}</h3>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-          ${a.category ? `<span class="kb-category">${a.category}</span>` : ''}
-          <span class="kb-toggle">▾</span>
-        </div>
-      </div>
-      <div class="kb-content">${a.content || ''}</div>
-      ${a.tags && a.tags.length ? `<div class="kb-tags">${a.tags.map(t => `<span class="kb-tag">${t}</span>`).join('')}</div>` : ''}
-    </div>
-  `).join('');
-}
-
-function toggleKb(i) {
-  document.getElementById(`kb-card-${i}`).classList.toggle('open');
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
