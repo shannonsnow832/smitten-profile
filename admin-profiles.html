@@ -267,6 +267,92 @@
 
 
 
+  /* ── COLLAPSIBLE FILTERS ── */
+  .filter-section { margin-bottom: 4px; }
+  .filter-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; cursor: pointer; user-select: none;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--gray-dark);
+    border-bottom: 1px solid transparent; transition: color 0.15s;
+  }
+  .filter-section-header:hover { color: var(--red); }
+  .filter-section-header.open { color: var(--red); border-bottom-color: var(--gray-light); }
+  .filter-section-toggle { font-size: 14px; color: var(--gray-mid); transition: transform 0.2s; }
+  .filter-section-header.open .filter-section-toggle { transform: rotate(180deg); color: var(--red); }
+  .filter-section-body { display: none; padding: 10px 0 4px; }
+  .filter-section-body.open { display: block; }
+  .filter-section .filter-group { margin-bottom: 10px; }
+  .filter-section .filter-group:last-child { margin-bottom: 0; }
+
+  /* ── MODAL REWRITE ── */
+  .modal { background: var(--white); border-radius: var(--radius); width: 100%; max-width: 900px; box-shadow: var(--shadow-lg); position: relative; margin: auto; }
+  .modal-topbar {
+    background: var(--black); border-radius: var(--radius) var(--radius) 0 0;
+    padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-topbar-left { display: flex; align-items: center; gap: 14px; }
+  .modal-topbar-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--gray-dark);
+    overflow: hidden; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; font-weight: 700; color: white;
+  }
+  .modal-topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-topbar h2 { font-size: 18px; font-weight: 700; color: white; }
+  .modal-topbar p { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .modal-topbar-actions { display: flex; align-items: center; gap: 10px; }
+  .modal-close { background: none; border: none; font-size: 22px; color: rgba(255,255,255,0.5); cursor: pointer; line-height: 1; transition: color 0.2s; padding: 0; }
+  .modal-close:hover { color: white; }
+  .modal-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 500px; max-height: 80vh; }
+  .modal-photos { padding: 20px; border-right: 1px solid var(--gray-light); overflow-y: auto; background: #fafafa; border-radius: 0 0 0 var(--radius); }
+  .modal-photos h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-mid); margin-bottom: 12px; }
+  .modal-main-photo { width: 100%; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--gray-light); margin-bottom: 10px; }
+  .modal-main-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-main-photo .no-photo { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 40px; font-weight: 700; color: var(--red); }
+  .modal-extra-photos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .modal-extra-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--gray-light); cursor: pointer; }
+  .modal-extra-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-content { overflow-y: auto; display: flex; flex-direction: column; border-radius: 0 0 var(--radius) 0; }
+  .modal-tabs { display: flex; border-bottom: 2px solid var(--gray-light); background: var(--white); flex-shrink: 0; }
+  .modal-tab-btn {
+    flex: 1; padding: 14px 8px; border: none; background: var(--gray-light);
+    font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600;
+    color: var(--gray-dark); cursor: pointer; transition: all 0.2s;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    border-right: 1px solid #e0e0e0;
+  }
+  .modal-tab-btn:last-child { border-right: none; }
+  .modal-tab-btn.active { color: var(--red); border-bottom-color: var(--red); background: var(--white); }
+  .modal-tab-btn:hover:not(.active) { background: #e8e8e8; }
+  .modal-tab-content { display: none; padding: 20px; flex: 1; }
+  .modal-tab-content.active { display: block; }
+  .modal-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-mid); margin-bottom: 12px; margin-top: 20px; padding-bottom: 6px; border-bottom: 1px solid var(--gray-light); }
+  .modal-section-title:first-child { margin-top: 0; }
+  .modal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .modal-form-row.full { grid-template-columns: 1fr; }
+  .modal-form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .modal-field { display: flex; flex-direction: column; gap: 4px; }
+  .modal-field label { font-size: 11px; font-weight: 600; color: var(--gray-mid); }
+  .modal-field input, .modal-field select, .modal-field textarea {
+    border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    padding: 8px 10px; font-family: 'Montserrat', sans-serif; font-size: 13px;
+    color: var(--gray-dark); outline: none; transition: border-color 0.2s; background: var(--white); width: 100%;
+  }
+  .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color: var(--red); }
+  .modal-field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+  .modal-field input[readonly], .modal-field input[disabled] { background: #f9f9f9; color: var(--gray-mid); }
+  .modal-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .modal-check-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray-dark); cursor: pointer; }
+  .modal-check-item input { width: 15px; height: 15px; accent-color: var(--red); flex-shrink: 0; }
+  .modal-save-bar { padding: 14px 20px; border-top: 1px solid var(--gray-light); display: flex; justify-content: flex-end; gap: 10px; background: var(--white); flex-shrink: 0; border-radius: 0 0 var(--radius) 0; }
+  .modal-alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin: 0 20px 12px; display: none; }
+  .modal-alert.error { background: #FFF0F0; border: 1px solid var(--pink); color: var(--red); display: block; }
+  .modal-alert.success { background: #F0FFF4; border: 1px solid #86efac; color: #166534; display: block; }
+  @media (max-width: 768px) {
+    .modal-layout { grid-template-columns: 1fr; }
+    .modal-photos { border-right: none; border-bottom: 1px solid var(--gray-light); }
+  }
+
   /* EMPTY + LOADING */
   .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-mid); }
   .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
@@ -277,6 +363,9 @@
   .btn { padding: 10px 20px; border-radius: var(--radius-sm); border: none; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .btn-primary { background: var(--red); color: white; }
   .btn-primary:hover { background: var(--red-light); }
+  .btn-outline { background: transparent; color: var(--red); border: 1.5px solid var(--red); }
+  .btn-outline:hover { background: #FFF5F5; }
+  .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
   /* ── OTP INPUTS ── */
@@ -369,101 +458,271 @@
       <div class="filter-sidebar">
         <h3>Filters</h3>
 
-        <div class="filter-group">
-          <label>Age Range</label>
-          <div class="age-range">
-            <input type="number" id="f-age-min" placeholder="Min" min="18" max="99">
-            <input type="number" id="f-age-max" placeholder="Max" min="18" max="99">
+        <!-- BASIC — always open -->
+        <div class="filter-section">
+          <div class="filter-section-header open" onclick="toggleFilter(this)">
+            Basic <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body open">
+            <div class="filter-group">
+              <label>Age Range</label>
+              <div class="age-range">
+                <input type="number" id="f-age-min" placeholder="Min" min="18" max="99">
+                <input type="number" id="f-age-max" placeholder="Max" min="18" max="99">
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Gender</label>
+              <select id="f-gender">
+                <option value="">Any</option>
+                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Seeking</label>
+              <select id="f-seeking">
+                <option value="">Any</option>
+                <option value="Date Men">Men</option><option value="Date Women">Women</option><option value="Date Any/Other Gender">Any/Other</option><option value="Friendship">Friendship</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div class="filter-group">
-          <label>Gender</label>
-          <select id="f-gender">
-            <option value="">Any</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Non-binary</option>
-            <option>Other</option>
-          </select>
+        <!-- LOCATION — always open -->
+        <div class="filter-section">
+          <div class="filter-section-header open" onclick="toggleFilter(this)">
+            Location <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body open">
+            <div class="filter-group">
+              <label>State</label>
+              <input type="text" id="f-state" placeholder="e.g. Nebraska">
+            </div>
+            <div class="filter-group">
+              <label>City</label>
+              <input type="text" id="f-city" placeholder="e.g. Omaha">
+            </div>
+            <div class="filter-group">
+              <label>Zip Code</label>
+              <input type="text" id="f-zip" placeholder="e.g. 68102">
+            </div>
+            <div class="filter-group">
+              <label>Distance Search</label>
+              <input type="text" id="f-distance-zip" placeholder="Center zip code">
+              <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                <input type="number" id="f-distance-miles" placeholder="Miles" min="1" max="500" style="width:80px">
+                <span style="font-size:12px;color:var(--gray-mid)">miles radius</span>
+              </div>
+              <div id="f-distance-status" style="font-size:11px;color:var(--gray-mid);margin-top:4px;"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="filter-group">
-          <label>Seeking</label>
-          <select id="f-seeking">
-            <option value="">Any</option>
-            <option value="Men">Men</option>
-            <option value="Women">Women</option>
-            <option value="Everyone">Everyone / Any</option>
-          </select>
+        <!-- LIFESTYLE -->
+        <div class="filter-section">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
+            Lifestyle <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body">
+            <div class="filter-group">
+              <label>Education</label>
+              <select id="f-education">
+                <option value="">Any</option>
+                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
+                <option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option><option>Trade / Vocational</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Religion</label>
+              <select id="f-religion">
+                <option value="">Any</option>
+                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
+                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Politics</label>
+              <select id="f-politics">
+                <option value="">Any</option>
+                <option>Very Liberal</option><option>Liberal</option><option>Moderate</option><option>Conservative</option><option>Very Conservative</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Body Type</label>
+              <select id="f-body-type">
+                <option value="">Any</option>
+                <option>Slim</option><option>Athletic</option><option>Average</option><option>Curvy</option><option>Full-figured</option><option>Heavyset</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Smoking</label>
+              <select id="f-smoking">
+                <option value="">Any</option>
+                <option>Non-smoker</option><option>Occasional</option><option>Smoker</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Drinking</label>
+              <select id="f-drinking">
+                <option value="">Any</option>
+                <option>Non-drinker</option><option>Occasional</option><option>Social drinker</option><option>Regular</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Has Kids</label>
+              <select id="f-kids">
+                <option value="">Any</option>
+                <option>No</option><option>Yes, at home</option><option>Yes, not at home</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Wants Kids</label>
+              <select id="f-want-kids">
+                <option value="">Any</option>
+                <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Income (Min)</label>
+              <select id="f-income-min">
+                <option value="">Any</option>
+                <option value="1">Under $50,000</option><option value="2">$50,000 - $74,999</option>
+                <option value="3">$75,000 - $99,999</option><option value="4">$100,000 - $149,999</option>
+                <option value="5">$150,000 - $199,999</option><option value="6">$200,000+</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Income (Max)</label>
+              <select id="f-income-max">
+                <option value="">Any</option>
+                <option value="1">Under $50,000</option><option value="2">$50,000 - $74,999</option>
+                <option value="3">$75,000 - $99,999</option><option value="4">$100,000 - $149,999</option>
+                <option value="5">$150,000 - $199,999</option><option value="6">$200,000+</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Relationship Status</label>
+              <select id="f-rel-status">
+                <option value="">Any</option>
+                <option>Single</option><option>Divorced</option><option>Widowed</option><option>Separated</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="filter-group">
-          <label>State</label>
-          <input type="text" id="f-state" placeholder="e.g. Nebraska">
+        <!-- PREFERENCES (what they want) -->
+        <div class="filter-section">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
+            Their Preferences <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body">
+            <div class="filter-group">
+              <label>Pref. Age Range</label>
+              <div class="age-range">
+                <input type="number" id="f-pref-age-min" placeholder="Min" min="18" max="99">
+                <input type="number" id="f-pref-age-max" placeholder="Max" min="18" max="99">
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Religion</label>
+              <select id="f-pref-religion">
+                <option value="">Any</option>
+                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
+                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Politics</label>
+              <select id="f-pref-politics">
+                <option value="">Any</option>
+                <option>Very Liberal</option><option>Liberal</option><option>Moderate</option><option>Conservative</option><option>Very Conservative</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Body Type</label>
+              <select id="f-pref-body-type">
+                <option value="">Any</option>
+                <option>Slim</option><option>Athletic</option><option>Average</option><option>Curvy</option><option>Full-figured</option><option>Heavyset</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Education</label>
+              <select id="f-pref-education">
+                <option value="">Any</option>
+                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
+                <option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Smoking</label>
+              <select id="f-pref-smoking">
+                <option value="">Any</option>
+                <option>Non-smoker</option><option>Occasional</option><option>Smoker</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Drinking</label>
+              <select id="f-pref-drinking">
+                <option value="">Any</option>
+                <option>Non-drinker</option><option>Occasional</option><option>Social drinker</option><option>Regular</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Pref. Relationship Status</label>
+              <select id="f-pref-rel-status">
+                <option value="">Any</option>
+                <option>Single</option><option>Divorced</option><option>Widowed</option><option>Separated</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Open to Dating w/ Kids</label>
+              <select id="f-date-with-kids">
+                <option value="">Any</option>
+                <option>Yes</option><option>No</option><option>Depends</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Relocation (In State)</label>
+              <select id="f-relocation-in">
+                <option value="">Any</option>
+                <option>Yes</option><option>No</option><option>Maybe</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Relocation (Out of State)</label>
+              <select id="f-relocation-out">
+                <option value="">Any</option>
+                <option>Yes</option><option>No</option><option>Maybe</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="filter-group">
-          <label>City</label>
-          <input type="text" id="f-city" placeholder="e.g. Omaha">
-        </div>
-
-        <div class="filter-group">
-          <label>Education</label>
-          <select id="f-education">
-            <option value="">Any</option>
-            <option>High School</option>
-            <option>Some College</option>
-            <option>Associate's Degree</option>
-            <option>Bachelor's Degree</option>
-            <option>Master's Degree</option>
-            <option>Doctoral Degree</option>
-            <option>Trade / Vocational</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Religion</label>
-          <select id="f-religion">
-            <option value="">Any</option>
-            <option>Christian</option>
-            <option>Catholic</option>
-            <option>Jewish</option>
-            <option>Muslim</option>
-            <option>Hindu</option>
-            <option>Buddhist</option>
-            <option>Spiritual</option>
-            <option>Agnostic</option>
-            <option>Atheist</option>
-            <option>Other</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Has Photo</label>
-          <select id="f-has-photo">
-            <option value="">Any</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-
-        <div class="filter-group" id="filter-matchmakers-group">
-          <label>Share w/ Matchmakers</label>
-          <select id="f-matchmakers">
-            <option value="">Any</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Profile Status</label>
-          <select id="f-active">
-            <option value="">Any</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
+        <!-- PROFILE STATUS -->
+        <div class="filter-section">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
+            Profile Status <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body">
+            <div class="filter-group">
+              <label>Has Photo</label>
+              <select id="f-has-photo">
+                <option value="">Any</option><option value="yes">Yes</option><option value="no">No</option>
+              </select>
+            </div>
+            <div class="filter-group" id="filter-matchmakers-group">
+              <label>Share w/ Matchmakers</label>
+              <select id="f-matchmakers">
+                <option value="">Any</option><option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Active</label>
+              <select id="f-active">
+                <option value="">Any</option><option value="true">Active</option><option value="false">Inactive</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="divider"></div>
@@ -475,7 +734,10 @@
       <div class="profiles-main">
         <div class="profiles-header">
           <h2>All Profiles</h2>
-          <span class="profile-count" id="profile-count"></span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="profile-count" id="profile-count"></span>
+            <button class="btn btn-outline" onclick="exportCSV()" id="btn-export" style="font-size:12px;padding:6px 14px">Export CSV</button>
+          </div>
         </div>
         <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
@@ -494,15 +756,278 @@
 <!-- PROFILE DETAIL MODAL -->
 <div id="modal-overlay" class="modal-overlay" onclick="closeModalOnBg(event)">
   <div class="modal" id="profile-modal">
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div class="modal-header">
-      <div class="modal-avatar" id="modal-avatar"></div>
-      <div class="modal-title">
-        <h2 id="modal-name"></h2>
-        <p id="modal-sub"></p>
+    <div class="modal-topbar">
+      <div class="modal-topbar-left">
+        <div class="modal-topbar-avatar" id="modal-topbar-avatar"></div>
+        <div>
+          <h2 id="modal-topbar-name"></h2>
+          <p id="modal-topbar-sub"></p>
+        </div>
+      </div>
+      <div class="modal-topbar-actions">
+        <span id="modal-role-badge"></span>
+        <button class="modal-close" onclick="closeModal()">×</button>
       </div>
     </div>
-    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-layout">
+      <!-- PHOTOS -->
+      <div class="modal-photos">
+        <h4>Photos</h4>
+        <div class="modal-main-photo" id="modal-main-photo"></div>
+        <div class="modal-extra-photos" id="modal-extra-photos"></div>
+      </div>
+      <!-- CONTENT -->
+      <div class="modal-content">
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" onclick="switchModalTab('basic',this)">Basic Info</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('lifestyle',this)">Lifestyle</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('preferences',this)">Preferences</button>
+        </div>
+        <div id="modal-alert" class="modal-alert"></div>
+
+        <!-- BASIC INFO TAB -->
+        <div id="modal-tab-basic" class="modal-tab-content active">
+          <div class="modal-section-title">Personal Details</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>First Name</label><input type="text" id="m-first"></div>
+            <div class="modal-field"><label>Last Name</label><input type="text" id="m-last"></div>
+          </div>
+          <div class="modal-form-row" id="m-contact-row">
+            <div class="modal-field"><label>Email</label><input type="email" id="m-email" readonly></div>
+            <div class="modal-field"><label>Phone</label><input type="tel" id="m-phone"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Date of Birth</label><input type="date" id="m-dob"></div>
+            <div class="modal-field"><label>Gender</label>
+              <select id="m-gender">
+                <option value="">Select...</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Street Address</label><input type="text" id="m-address"></div>
+          </div>
+          <div class="modal-form-row three">
+            <div class="modal-field"><label>City</label><input type="text" id="m-city"></div>
+            <div class="modal-field"><label>State</label><input type="text" id="m-state"></div>
+            <div class="modal-field"><label>Zip</label><input type="text" id="m-zip"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Closest Major City</label><input type="text" id="m-closest-city"></div>
+            <div class="modal-field"><label>Timezone</label><input type="text" id="m-timezone" readonly></div>
+          </div>
+          <div class="modal-section-title">Seeking</div>
+          <div class="modal-checkbox-group" style="margin-bottom:12px">
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-date-men" value="Date Men"> Date Men</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-date-women" value="Date Women"> Date Women</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-any" value="Date Any/Other Gender"> Date Any/Other</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-friend" value="Friendship"> Friendship</label>
+          </div>
+          <div class="modal-section-title">About Me</div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Bio</label><textarea id="m-bio" rows="4"></textarea></div>
+          </div>
+          <div class="modal-section-title">Consent &amp; Communication</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+            <label class="modal-check-item"><input type="checkbox" id="m-share-matchmakers"> Share with matchmakers</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-interested-matchmaking"> Interested in matchmaking services</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-email-opt"> Email opt-in</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-services-text"> Services text opt-in</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-marketing-text"> Marketing text opt-in</label>
+          </div>
+        </div>
+
+        <!-- LIFESTYLE TAB -->
+        <div id="modal-tab-lifestyle" class="modal-tab-content">
+          <div class="modal-section-title">Background &amp; Lifestyle</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Height</label>
+              <div style="display:flex;gap:6px">
+                <select id="m-height-ft" style="flex:1"><option value="">Ft</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+                </select>
+                <select id="m-height-in" style="flex:1"><option value="">In</option>
+                  <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+                  <option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-field"><label>Education</label>
+              <select id="m-education"><option value="">Select...</option>
+                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
+                <option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option><option>Trade / Vocational</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Occupation</label><input type="text" id="m-occupation"></div>
+            <div class="modal-field"><label>Employer</label><input type="text" id="m-employer"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Has Kids</label>
+              <select id="m-kids"><option value="">Select...</option>
+                <option>No</option><option>Yes, at home</option><option>Yes, not at home</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Wants Kids</label>
+              <select id="m-want-kids"><option value="">Select...</option>
+                <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Smoking</label>
+              <select id="m-smoking"><option value="">Select...</option>
+                <option>Non-smoker</option><option>Occasional</option><option>Smoker</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Drinking</label>
+              <select id="m-drinking"><option value="">Select...</option>
+                <option>Non-drinker</option><option>Occasional</option><option>Social drinker</option><option>Regular</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Religion</label>
+              <select id="m-religion"><option value="">Select...</option>
+                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
+                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Politics</label>
+              <select id="m-politics"><option value="">Select...</option>
+                <option>Very Liberal</option><option>Liberal</option><option>Moderate</option><option>Conservative</option><option>Very Conservative</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Income Level</label>
+              <select id="m-income"><option value="">Select...</option>
+                <option>Under $50,000</option><option>$50,000 - $74,999</option><option>$75,000 - $99,999</option>
+                <option>$100,000 - $149,999</option><option>$150,000 - $199,999</option><option>$200,000+</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Body Type</label>
+              <select id="m-body-type"><option value="">Select...</option>
+                <option>Slim</option><option>Athletic</option><option>Average</option><option>Curvy</option><option>Full-figured</option><option>Heavyset</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Hair Color</label>
+              <select id="m-hair"><option value="">Select...</option>
+                <option>Black</option><option>Brown</option><option>Blonde</option><option>Red</option><option>Gray</option><option>White</option><option>Other</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Eye Color</label>
+              <select id="m-eyes"><option value="">Select...</option>
+                <option>Brown</option><option>Blue</option><option>Green</option><option>Hazel</option><option>Gray</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Ethnicity</label>
+              <select id="m-ethnicity"><option value="">Select...</option>
+                <option>White / Caucasian</option><option>Black / African American</option><option>Hispanic / Latino</option>
+                <option>Asian</option><option>Middle Eastern</option><option>Native American</option><option>Pacific Islander</option><option>Mixed</option><option>Other</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Relationship Status</label>
+              <select id="m-rel-status"><option value="">Select...</option>
+                <option>Single</option><option>Divorced</option><option>Widowed</option><option>Separated</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Pets</label><input type="text" id="m-pets" placeholder="e.g. Dog, Cat, None"></div>
+            <div class="modal-field"><label>Languages</label><input type="text" id="m-languages"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Activities &amp; Hobbies</label><input type="text" id="m-activities" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Ideal Match</label><textarea id="m-ideal-match" rows="3"></textarea></div>
+          </div>
+        </div>
+
+        <!-- PREFERENCES TAB -->
+        <div id="modal-tab-preferences" class="modal-tab-content">
+          <div class="modal-section-title">Match Preferences</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Min Age Preference</label><input type="number" id="m-min-age" min="18" max="99"></div>
+            <div class="modal-field"><label>Max Age Preference</label><input type="number" id="m-max-age" min="18" max="99"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Max Distance (miles)</label><input type="number" id="m-max-distance"></div>
+            <div class="modal-field"><label>Preferred Income</label>
+              <select id="m-pref-income"><option value="">Any</option>
+                <option>Under $50,000</option><option>$50,000 - $74,999</option><option>$75,000 - $99,999</option>
+                <option>$100,000 - $149,999</option><option>$150,000 - $199,999</option><option>$200,000+</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Pref. Height Min</label><input type="text" id="m-pref-height-min" placeholder="e.g. 5'4&quot;"></div>
+            <div class="modal-field"><label>Pref. Height Max</label><input type="text" id="m-pref-height-max" placeholder="e.g. 6'2&quot;"></div>
+          </div>
+          <div class="modal-section-title">Lifestyle Compatibility</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Date someone with kids?</label>
+              <select id="m-date-with-kids"><option value="">Select...</option>
+                <option>Yes</option><option>No</option><option>Depends</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Relocate in-state?</label>
+              <select id="m-relocation-in"><option value="">Select...</option>
+                <option>Yes</option><option>No</option><option>Maybe</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Relocate out-of-state?</label>
+              <select id="m-relocation-out"><option value="">Select...</option>
+                <option>Yes</option><option>No</option><option>Maybe</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-section-title">Dealbreakers</div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Dealbreakers</label><textarea id="m-dealbreakers" rows="2" placeholder="Comma separated"></textarea></div>
+          </div>
+          <div class="modal-section-title">Checkbox Preferences</div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Body Type</label><input type="text" id="m-pref-body" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Ethnicity</label><input type="text" id="m-pref-ethnicity" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Religion</label><input type="text" id="m-pref-religion" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Politics</label><input type="text" id="m-pref-politics" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Education</label><input type="text" id="m-pref-education" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Smoking</label><input type="text" id="m-pref-smoking" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Drinking</label><input type="text" id="m-pref-alcohol" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Relationship Status</label><input type="text" id="m-pref-rel-status" placeholder="Comma separated"></div>
+          </div>
+        </div>
+
+        <div id="modal-save-bar" class="modal-save-bar">
+          <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;"></span>
+          <button class="btn btn-primary" id="btn-modal-save" onclick="saveModalProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -670,6 +1195,12 @@ function switchTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
+function toggleFilter(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
 // ── PROFILES ──────────────────────────────────────────────────────────────────
 function debounceSearch() {
   clearTimeout(searchTimer);
@@ -680,27 +1211,18 @@ function debounceSearch() {
   }, 400);
 }
 
-function applyFilters() {
-  activeFilters = {
-    ageMin: document.getElementById('f-age-min').value,
-    ageMax: document.getElementById('f-age-max').value,
-    gender: document.getElementById('f-gender').value,
-    seeking: document.getElementById('f-seeking').value,
-    state: document.getElementById('f-state').value.trim(),
-    city: document.getElementById('f-city').value.trim(),
-    education: document.getElementById('f-education').value,
-    religion: document.getElementById('f-religion').value,
-    hasPhoto: document.getElementById('f-has-photo').value,
-    matchmakers: document.getElementById('f-matchmakers').value,
-    active: document.getElementById('f-active').value,
-  };
-  currentPage = 0;
-  loadProfiles();
-}
+
 
 function clearFilters() {
-  ['f-age-min','f-age-max','f-state','f-city'].forEach(id => document.getElementById(id).value = '');
-  ['f-gender','f-seeking','f-education','f-religion','f-has-photo','f-matchmakers','f-active'].forEach(id => document.getElementById(id).value = '');
+  ['f-age-min','f-age-max','f-state','f-city','f-zip','f-distance-zip','f-distance-miles',
+   'f-pref-age-min','f-pref-age-max'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['f-gender','f-seeking','f-education','f-religion','f-has-photo','f-matchmakers','f-active',
+   'f-politics','f-body-type','f-smoking','f-drinking','f-kids','f-want-kids','f-income-min','f-income-max',
+   'f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type','f-pref-education',
+   'f-pref-smoking','f-pref-drinking','f-pref-rel-status','f-date-with-kids','f-relocation-in','f-relocation-out'
+  ].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('f-distance-status').textContent = '';
+  distanceCenter = null;
   activeFilters = {};
   currentPage = 0;
   loadProfiles();
@@ -739,6 +1261,26 @@ function buildProfilesUrl(forCount = false) {
   if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
   if (f.hasPhoto === 'no') params.push('image_url=is.null');
   if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
+  if (f.zip) params.push(`postal_code=eq.${encodeURIComponent(f.zip)}`);
+  if (f.politics) params.push(`politics=eq.${encodeURIComponent(f.politics)}`);
+  if (f.bodyType) params.push(`body_type=eq.${encodeURIComponent(f.bodyType)}`);
+  if (f.smoking) params.push(`smoking=eq.${encodeURIComponent(f.smoking)}`);
+  if (f.drinking) params.push(`drinking=eq.${encodeURIComponent(f.drinking)}`);
+  if (f.kids) params.push(`kids=eq.${encodeURIComponent(f.kids)}`);
+  if (f.wantKids) params.push(`want_kids=eq.${encodeURIComponent(f.wantKids)}`);
+  if (f.relStatus) params.push(`relationship_status=eq.${encodeURIComponent(f.relStatus)}`);
+  if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
+  if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
+  if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
+  if (f.prefReligion) params.push(`preferred_religion=cs.${encodeURIComponent('{"' + f.prefReligion + '"}')}`) ;
+  if (f.prefPolitics) params.push(`preferred_politics=cs.${encodeURIComponent('{"' + f.prefPolitics + '"}')}`) ;
+  if (f.prefBodyType) params.push(`preferred_body_type=cs.${encodeURIComponent('{"' + f.prefBodyType + '"}')}`) ;
+  if (f.prefEducation) params.push(`preferred_education=cs.${encodeURIComponent('{"' + f.prefEducation + '"}')}`) ;
+  if (f.prefSmoking) params.push(`preferred_smoking=cs.${encodeURIComponent('{"' + f.prefSmoking + '"}')}`) ;
+  if (f.prefDrinking) params.push(`preferred_alcohol=cs.${encodeURIComponent('{"' + f.prefDrinking + '"}')}`) ;
+  if (f.prefRelStatus) params.push(`preferred_relationship_status=cs.${encodeURIComponent('{"' + f.prefRelStatus + '"}')}`) ;
+  if (f.prefAgeMin) params.push(`min_age=gte.${f.prefAgeMin}`);
+  if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
 
   if (searchQuery) {
     const sq = encodeURIComponent(searchQuery);
@@ -748,7 +1290,7 @@ function buildProfilesUrl(forCount = false) {
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
   if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
-  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,image_url,seeking,share_with_matchmakers,is_active,created_at,updated_at,bio,occupation,education,religion,ethnicity,height_inches,kids,want_kids,smoking,drinking,politics,body_type,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,interested_in_matchmaking,import_batch&order=created_at.desc`;
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude&order=created_at.desc`;
 }
 
 async function loadProfiles() {
@@ -791,6 +1333,28 @@ async function loadProfiles() {
         if (f.ageMin && age < parseInt(f.ageMin)) return false;
         if (f.ageMax && age > parseInt(f.ageMax)) return false;
         return true;
+      });
+    }
+
+    // Client-side income range filter
+    const incomeOrder = ['Under $50,000','$50,000 - $74,999','$75,000 - $99,999','$100,000 - $149,999','$150,000 - $199,999','$200,000+'];
+    if (f.incomeMin || f.incomeMax) {
+      data = data.filter(p => {
+        if (!p.income_level) return false;
+        const rank = incomeOrder.indexOf(p.income_level);
+        if (rank === -1) return false;
+        if (f.incomeMin && rank < parseInt(f.incomeMin) - 1) return false;
+        if (f.incomeMax && rank > parseInt(f.incomeMax) - 1) return false;
+        return true;
+      });
+    }
+
+    // Client-side distance filter
+    if (distanceCenter && f.distanceMiles) {
+      const miles = parseFloat(f.distanceMiles);
+      data = data.filter(p => {
+        if (!p.latitude || !p.longitude) return false;
+        return haversineDistance(distanceCenter.lat, distanceCenter.lng, p.latitude, p.longitude) <= miles;
       });
     }
 
@@ -865,95 +1429,420 @@ function goPage(n) {
 }
 
 // ── PROFILE MODAL ─────────────────────────────────────────────────────────────
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('modal-tab-' + name).classList.add('active');
+}
+
+let currentModalProfile = null;
+
 function openProfile(p) {
+  currentModalProfile = p;
+  const isMatchmaker = adminUser && adminUser.role === 'matchmaker';
   const age = calcAge(p.date_of_birth);
   const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
   const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
   const location = [p.city, p.state].filter(Boolean).join(', ');
 
-  // Avatar
-  const avatarEl = document.getElementById('modal-avatar');
-  if (p.image_url) {
-    avatarEl.innerHTML = `<img src="${p.image_url}" alt="${name}">`;
+  // Topbar
+  const avatarEl = document.getElementById('modal-topbar-avatar');
+  avatarEl.innerHTML = p.image_url ? `<img src="${p.image_url}" alt="${name}">` : initials;
+  document.getElementById('modal-topbar-name').textContent = name;
+  document.getElementById('modal-topbar-sub').textContent = [age ? `Age ${age}` : null, p.gender, location].filter(Boolean).join(' · ') || '—';
+  document.getElementById('modal-role-badge').textContent = isMatchmaker ? '' : (p.import_batch || '');
+
+  // Photos
+  const allPhotos = p.photos && p.photos.length ? p.photos : (p.image_url ? [p.image_url] : []);
+  const mainPhotoEl = document.getElementById('modal-main-photo');
+  if (allPhotos.length) {
+    mainPhotoEl.innerHTML = `<img src="${allPhotos[0]}" alt="main photo" style="cursor:pointer" onclick="enlargePhoto('${allPhotos[0]}')">`;
   } else {
-    avatarEl.textContent = initials;
+    mainPhotoEl.innerHTML = `<div class="no-photo">${initials}</div>`;
   }
+  const extraEl = document.getElementById('modal-extra-photos');
+  extraEl.innerHTML = allPhotos.slice(1).map(url =>
+    `<div class="modal-extra-photo" onclick="enlargePhoto('${url}')"><img src="${url}" alt="photo"></div>`
+  ).join('');
 
-  document.getElementById('modal-name').textContent = name;
-  document.getElementById('modal-sub').textContent = [age ? `Age ${age}` : null, p.gender, location].filter(Boolean).join(' · ') || '—';
+  // Hide contact row for matchmakers
+  const contactRow = document.getElementById('m-contact-row');
+  if (contactRow) contactRow.style.display = isMatchmaker ? 'none' : '';
 
-  const fmtHeight = h => { if (!h) return '—'; const ft = Math.floor(h/12); const i = h%12; return `${ft}'${i}"`; };
-  const fmtBool = v => v === true ? 'Yes' : v === false ? 'No' : '—';
-  const fmtArr = v => Array.isArray(v) && v.length ? v.join(', ') : '—';
-  const fmtVal = v => v || '—';
+  // Hide save bar for matchmakers
+  document.getElementById('modal-save-bar').style.display = isMatchmaker ? 'none' : '';
 
-  document.getElementById('modal-body').innerHTML = `
-    ${p.bio ? `<div class="modal-section"><div class="modal-section-title">About</div><p class="bio-text">"${p.bio}"</p></div>` : ''}
+  // Reset to first tab
+  document.querySelectorAll('.modal-tab-btn')[0].click();
+  document.getElementById('modal-alert').className = 'modal-alert';
 
-    <div class="modal-section">
-      <div class="modal-section-title">Location</div>
-      <div class="detail-grid">
-        ${adminUser && adminUser.role !== 'matchmaker' ? `
-        <div class="detail-item"><label>Email</label><span>${fmtVal(p.email)}</span></div>
-        <div class="detail-item"><label>Phone</label><span>${fmtVal(p.phone)}</span></div>` : ''}
-        <div class="detail-item"><label>City</label><span>${fmtVal(p.city)}</span></div>
-        <div class="detail-item"><label>State</label><span>${fmtVal(p.state)}</span></div>
-        <div class="detail-item"><label>Joined</label><span>${new Date(p.created_at).toLocaleDateString()}</span></div>
-        ${adminUser && adminUser.role !== 'matchmaker' ? `
-        <div class="detail-item"><label>Last Updated</label><span>${p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '—'}</span></div>
-        <div class="detail-item"><label>Import Batch</label><span>${fmtVal(p.import_batch)}</span></div>` : ''}
-      </div>
-    </div>
+  // Populate fields
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
 
-    <div class="modal-section">
-      <div class="modal-section-title">Personal</div>
-      <div class="detail-grid">
-        <div class="detail-item"><label>Age</label><span>${age || '—'}</span></div>
-        <div class="detail-item"><label>Gender</label><span>${fmtVal(p.gender)}</span></div>
-        <div class="detail-item"><label>Height</label><span>${fmtHeight(p.height_inches)}</span></div>
-        <div class="detail-item"><label>Body Type</label><span>${fmtVal(p.body_type)}</span></div>
-        <div class="detail-item"><label>Ethnicity</label><span>${fmtArr(p.ethnicity)}</span></div>
-        <div class="detail-item"><label>Religion</label><span>${fmtVal(p.religion)}</span></div>
-        <div class="detail-item"><label>Politics</label><span>${fmtVal(p.politics)}</span></div>
-        <div class="detail-item"><label>Education</label><span>${fmtVal(p.education)}</span></div>
-        <div class="detail-item"><label>Occupation</label><span>${fmtVal(p.occupation)}</span></div>
-        <div class="detail-item"><label>Smoking</label><span>${fmtVal(p.smoking)}</span></div>
-        <div class="detail-item"><label>Drinking</label><span>${fmtVal(p.drinking)}</span></div>
-        <div class="detail-item"><label>Has Kids</label><span>${fmtVal(p.kids)}</span></div>
-        <div class="detail-item"><label>Wants Kids</label><span>${fmtVal(p.want_kids)}</span></div>
-        <div class="detail-item"><label>Activities</label><span>${fmtArr(p.activities_hobbies)}</span></div>
-      </div>
-    </div>
+  // Basic
+  setVal('m-first', p.first_name);
+  setVal('m-last', p.last_name);
+  setVal('m-email', p.email);
+  setVal('m-phone', p.phone);
+  setVal('m-dob', p.date_of_birth);
+  setVal('m-gender', p.gender);
+  setVal('m-address', p.street_address);
+  setVal('m-city', p.city);
+  setVal('m-state', p.state);
+  setVal('m-zip', p.postal_code);
+  setVal('m-closest-city', p.closest_major_city);
+  setVal('m-timezone', p.timezone);
+  setVal('m-bio', p.bio);
+  setChk('m-share-matchmakers', p.share_with_matchmakers);
+  setChk('m-interested-matchmaking', p.interested_in_matchmaking);
+  setChk('m-email-opt', p.email_opt_in);
+  setChk('m-services-text', p.services_text_opt_in);
+  setChk('m-marketing-text', p.marketing_text_opt_in);
+  // Seeking checkboxes
+  ['m-seek-date-men','m-seek-date-women','m-seek-any','m-seek-friend'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = Array.isArray(p.seeking) && p.seeking.includes(el.value);
+  });
 
-    <div class="modal-section">
-      <div class="modal-section-title">Matching</div>
-      <div class="detail-grid">
-        <div class="detail-item"><label>Seeking</label><span>${fmtArr(p.seeking)}</span></div>
-        <div class="detail-item"><label>Age Range</label><span>${p.min_age && p.max_age ? `${p.min_age}–${p.max_age}` : '—'}</span></div>
-        <div class="detail-item"><label>Dealbreakers</label><span>${fmtArr(p.dealbreakers)}</span></div>
-        <div class="detail-item"><label>Share w/ Matchmakers</label><span>${fmtBool(p.share_with_matchmakers)}</span></div>
-        <div class="detail-item"><label>Interested in Matchmaking</label><span>${fmtBool(p.interested_in_matchmaking)}</span></div>
-        ${p.ideal_match ? `<div class="detail-item full"><label>Ideal Match</label><span>${p.ideal_match}</span></div>` : ''}
-      </div>
-    </div>
+  // Lifestyle
+  if (p.height_inches) {
+    setVal('m-height-ft', Math.floor(p.height_inches / 12));
+    setVal('m-height-in', p.height_inches % 12);
+  } else { setVal('m-height-ft',''); setVal('m-height-in',''); }
+  setVal('m-education', p.education);
+  setVal('m-occupation', p.occupation);
+  setVal('m-employer', p.employer);
+  setVal('m-kids', p.kids);
+  setVal('m-want-kids', p.want_kids);
+  setVal('m-smoking', p.smoking);
+  setVal('m-drinking', p.drinking);
+  setVal('m-religion', p.religion);
+  setVal('m-politics', p.politics);
+  setVal('m-income', p.income_level);
+  setVal('m-body-type', p.body_type);
+  setVal('m-hair', p.hair_color);
+  setVal('m-eyes', p.eye_color);
+  setVal('m-ethnicity', Array.isArray(p.ethnicity) ? p.ethnicity[0] : p.ethnicity);
+  setVal('m-rel-status', p.relationship_status);
+  setVal('m-pets', p.pets);
+  setVal('m-languages', p.languages);
+  setVal('m-activities', Array.isArray(p.activities_hobbies) ? p.activities_hobbies.join(', ') : p.activities_hobbies);
+  setVal('m-ideal-match', p.ideal_match);
 
-    ${p.photos && p.photos.length ? `<div class="modal-section">
-      <div class="modal-section-title">Photos</div>
-      <div class="photos-row">${p.photos.map(url => `<img src="${url}" alt="photo">`).join('')}</div>
-    </div>` : ''}
-  `;
+  // Preferences
+  setVal('m-min-age', p.min_age);
+  setVal('m-max-age', p.max_age);
+  setVal('m-max-distance', p.max_distance);
+  setVal('m-pref-income', p.preferred_income);
+  setVal('m-pref-height-min', p.preferred_height_min);
+  setVal('m-pref-height-max', p.preferred_height_max);
+  setVal('m-date-with-kids', p.date_with_kids);
+  setVal('m-relocation-in', p.relocation_in);
+  setVal('m-relocation-out', p.relocation_out);
+  setVal('m-dealbreakers', Array.isArray(p.dealbreakers) ? p.dealbreakers.join(', ') : p.dealbreakers);
+  setVal('m-pref-body', Array.isArray(p.preferred_body_type) ? p.preferred_body_type.join(', ') : '');
+  setVal('m-pref-ethnicity', Array.isArray(p.preferred_ethnicities) ? p.preferred_ethnicities.join(', ') : '');
+  setVal('m-pref-religion', Array.isArray(p.preferred_religion) ? p.preferred_religion.join(', ') : '');
+  setVal('m-pref-politics', Array.isArray(p.preferred_politics) ? p.preferred_politics.join(', ') : '');
+  setVal('m-pref-education', Array.isArray(p.preferred_education) ? p.preferred_education.join(', ') : '');
+  setVal('m-pref-smoking', Array.isArray(p.preferred_smoking) ? p.preferred_smoking.join(', ') : '');
+  setVal('m-pref-alcohol', Array.isArray(p.preferred_alcohol) ? p.preferred_alcohol.join(', ') : '');
+  setVal('m-pref-rel-status', Array.isArray(p.preferred_relationship_status) ? p.preferred_relationship_status.join(', ') : '');
 
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
+function enlargePhoto(url) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  overlay.innerHTML = `<img src="${url}" style="max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain">`;
+  overlay.onclick = () => document.body.removeChild(overlay);
+  document.body.appendChild(overlay);
+}
+
+async function saveModalProfile() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const btn = document.getElementById('btn-modal-save');
+  const alertEl = document.getElementById('modal-alert');
+  alertEl.className = 'modal-alert';
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  const getVal = id => { const el = document.getElementById(id); return el ? el.value.trim() || null : null; };
+  const getChk = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+  const splitArr = id => { const v = getVal(id); return v ? v.split(',').map(s => s.trim()).filter(Boolean) : null; };
+
+  const seeking = ['m-seek-date-men','m-seek-date-women','m-seek-any','m-seek-friend']
+    .filter(id => document.getElementById(id)?.checked)
+    .map(id => document.getElementById(id).value);
+
+  const ft = parseInt(document.getElementById('m-height-ft')?.value);
+  const inches = parseInt(document.getElementById('m-height-in')?.value);
+  const heightInches = !isNaN(ft) && !isNaN(inches) ? ft * 12 + inches : null;
+
+  const params = {
+    p_email: p.email,
+    p_first_name: getVal('m-first'),
+    p_last_name: getVal('m-last'),
+    p_middle_name: null,
+    p_phone: getVal('m-phone'),
+    p_date_of_birth: getVal('m-dob'),
+    p_gender: getVal('m-gender'),
+    p_gender_identity: null,
+    p_street_address: getVal('m-address'),
+    p_city: getVal('m-city'),
+    p_state: getVal('m-state'),
+    p_postal_code: getVal('m-zip'),
+    p_country: 'US',
+    p_closest_major_city: getVal('m-closest-city'),
+    p_timezone: getVal('m-timezone'),
+    p_seeking: seeking.length ? seeking : null,
+    p_bio: getVal('m-bio'),
+    p_share_with_matchmakers: getChk('m-share-matchmakers'),
+    p_interested_in_matchmaking: getChk('m-interested-matchmaking'),
+    p_email_opt_in: getChk('m-email-opt'),
+    p_services_text_opt_in: getChk('m-services-text'),
+    p_marketing_text_opt_in: getChk('m-marketing-text'),
+    p_height_inches: heightInches,
+    p_education: getVal('m-education'),
+    p_occupation: getVal('m-occupation'),
+    p_employer: getVal('m-employer'),
+    p_kids: getVal('m-kids'),
+    p_want_kids: getVal('m-want-kids'),
+    p_smoking: getVal('m-smoking'),
+    p_drinking: getVal('m-drinking'),
+    p_religion: getVal('m-religion'),
+    p_politics: getVal('m-politics'),
+    p_income_level: getVal('m-income'),
+    p_body_type: getVal('m-body-type'),
+    p_hair_color: getVal('m-hair'),
+    p_eye_color: getVal('m-eyes'),
+    p_ethnicity: getVal('m-ethnicity') ? [getVal('m-ethnicity')] : null,
+    p_relationship_status: getVal('m-rel-status'),
+    p_pets: getVal('m-pets'),
+    p_languages: getVal('m-languages'),
+    p_activities_hobbies: splitArr('m-activities'),
+    p_ideal_match: getVal('m-ideal-match'),
+    p_university: null,
+    p_min_age: getVal('m-min-age') ? parseInt(getVal('m-min-age')) : null,
+    p_max_age: getVal('m-max-age') ? parseInt(getVal('m-max-age')) : null,
+    p_max_distance: getVal('m-max-distance') ? parseInt(getVal('m-max-distance')) : null,
+    p_preferred_income: getVal('m-pref-income'),
+    p_preferred_height_min: getVal('m-pref-height-min'),
+    p_preferred_height_max: getVal('m-pref-height-max'),
+    p_date_with_kids: getVal('m-date-with-kids'),
+    p_relocation_in: getVal('m-relocation-in'),
+    p_relocation_out: getVal('m-relocation-out'),
+    p_dealbreakers: splitArr('m-dealbreakers'),
+    p_preferred_body_type: splitArr('m-pref-body'),
+    p_preferred_ethnicities: splitArr('m-pref-ethnicity'),
+    p_preferred_religion: splitArr('m-pref-religion'),
+    p_preferred_politics: splitArr('m-pref-politics'),
+    p_preferred_education: splitArr('m-pref-education'),
+    p_preferred_smoking: splitArr('m-pref-smoking'),
+    p_preferred_alcohol: splitArr('m-pref-alcohol'),
+    p_preferred_relationship_status: splitArr('m-pref-rel-status'),
+    p_image_url: null,
+    p_photos: null,
+  };
+
+  try {
+    const token = supabaseSession || SUPABASE_ANON;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/intake_update_profile`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    alertEl.textContent = 'Profile saved successfully.';
+    alertEl.className = 'modal-alert success';
+    document.getElementById('modal-save-status').textContent = 'Saved ' + new Date().toLocaleTimeString();
+    // Update local copy
+    Object.assign(currentModalProfile, {
+      first_name: params.p_first_name, last_name: params.p_last_name,
+      city: params.p_city, state: params.p_state
+    });
+    loadProfiles(); // refresh list
+  } catch(e) {
+    alertEl.textContent = 'Save failed. Please try again.';
+    alertEl.className = 'modal-alert error';
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Save Changes';
+}
+
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('open');
   document.body.style.overflow = '';
+  currentModalProfile = null;
 }
 
 function closeModalOnBg(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── DISTANCE SEARCH ──────────────────────────────────────────────────────────
+let distanceCenter = null; // { lat, lng }
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 3958.8; // miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+async function geocodeZip(zip) {
+  const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&country=US&format=json&limit=1`;
+  const r = await fetch(url, { headers: { 'User-Agent': 'SmittenSinglesAdmin/1.0' } });
+  const data = await r.json();
+  if (!data.length) return null;
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+}
+
+async function applyFilters() {
+  const f = {
+    ageMin: document.getElementById('f-age-min').value,
+    ageMax: document.getElementById('f-age-max').value,
+    gender: document.getElementById('f-gender').value,
+    seeking: document.getElementById('f-seeking').value,
+    state: document.getElementById('f-state').value.trim(),
+    city: document.getElementById('f-city').value.trim(),
+    education: document.getElementById('f-education').value,
+    religion: document.getElementById('f-religion').value,
+    hasPhoto: document.getElementById('f-has-photo').value,
+    matchmakers: document.getElementById('f-matchmakers').value,
+    active: document.getElementById('f-active').value,
+    zip: document.getElementById('f-zip').value.trim(),
+    distanceZip: document.getElementById('f-distance-zip').value.trim(),
+    distanceMiles: document.getElementById('f-distance-miles').value,
+    politics: document.getElementById('f-politics').value,
+    bodyType: document.getElementById('f-body-type').value,
+    smoking: document.getElementById('f-smoking').value,
+    drinking: document.getElementById('f-drinking').value,
+    kids: document.getElementById('f-kids').value,
+    wantKids: document.getElementById('f-want-kids').value,
+    incomeMin: document.getElementById('f-income-min').value,
+    incomeMax: document.getElementById('f-income-max').value,
+    relStatus: document.getElementById('f-rel-status').value,
+    prefAgeMin: document.getElementById('f-pref-age-min').value,
+    prefAgeMax: document.getElementById('f-pref-age-max').value,
+    prefReligion: document.getElementById('f-pref-religion').value,
+    prefPolitics: document.getElementById('f-pref-politics').value,
+    prefBodyType: document.getElementById('f-pref-body-type').value,
+    prefEducation: document.getElementById('f-pref-education').value,
+    prefSmoking: document.getElementById('f-pref-smoking').value,
+    prefDrinking: document.getElementById('f-pref-drinking').value,
+    prefRelStatus: document.getElementById('f-pref-rel-status').value,
+    dateWithKids: document.getElementById('f-date-with-kids').value,
+    relocationIn: document.getElementById('f-relocation-in').value,
+    relocationOut: document.getElementById('f-relocation-out').value,
+  };
+
+  // Geocode distance zip if provided
+  if (f.distanceZip && f.distanceMiles) {
+    const statusEl = document.getElementById('f-distance-status');
+    statusEl.textContent = 'Locating zip code...';
+    try {
+      distanceCenter = await geocodeZip(f.distanceZip);
+      if (!distanceCenter) {
+        statusEl.textContent = 'Zip code not found.';
+        return;
+      }
+      statusEl.textContent = `Searching within ${f.distanceMiles} miles`;
+    } catch(e) {
+      statusEl.textContent = 'Could not geocode zip.';
+      return;
+    }
+  } else {
+    distanceCenter = null;
+    document.getElementById('f-distance-status').textContent = '';
+  }
+
+  activeFilters = f;
+  currentPage = 0;
+  loadProfiles();
+}
+
+// ── CSV EXPORT ────────────────────────────────────────────────────────────────
+async function exportCSV() {
+  const btn = document.getElementById('btn-export');
+  btn.textContent = 'Exporting...';
+  btn.disabled = true;
+
+  try {
+    // Fetch ALL matching profiles (no pagination)
+    const token = supabaseSession || SUPABASE_ANON;
+    const url = buildProfilesUrl() + '&limit=5000';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    let data = await r.json();
+
+    // Apply age filter
+    const f = activeFilters;
+    if (f.ageMin || f.ageMax) {
+      data = data.filter(p => {
+        const age = calcAge(p.date_of_birth);
+        if (age === null) return false;
+        if (f.ageMin && age < parseInt(f.ageMin)) return false;
+        if (f.ageMax && age > parseInt(f.ageMax)) return false;
+        return true;
+      });
+    }
+
+    // Apply distance filter
+    if (distanceCenter && f.distanceMiles) {
+      const miles = parseFloat(f.distanceMiles);
+      data = data.filter(p => {
+        if (!p.latitude || !p.longitude) return false;
+        return haversineDistance(distanceCenter.lat, distanceCenter.lng, p.latitude, p.longitude) <= miles;
+      });
+    }
+
+    // Build CSV
+    const isMatchmaker = adminUser.role === 'matchmaker';
+    const headers = isMatchmaker
+      ? ['First Name','Last Name','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Bio']
+      : ['First Name','Last Name','Email','Phone','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Kids','Want Kids','Smoking','Drinking','Share w/ Matchmakers','Joined','Import Batch'];
+
+    const rows = data.map(p => {
+      const age = calcAge(p.date_of_birth) || '';
+      const base = [
+        p.first_name || '', p.last_name || '',
+        ...(isMatchmaker ? [] : [p.email || '', p.phone || '']),
+        age, p.gender || '', p.city || '', p.state || '', p.postal_code || '',
+        (p.seeking || []).join('; '),
+        p.occupation || '', p.education || '', p.religion || '', p.politics || '',
+        ...(isMatchmaker
+          ? [p.bio || '']
+          : [p.kids || '', p.want_kids || '', p.smoking || '', p.drinking || '',
+             p.share_with_matchmakers ? 'Yes' : 'No',
+             p.created_at ? new Date(p.created_at).toLocaleDateString() : '',
+             p.import_batch || ''])
+      ];
+      return base.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+    });
+
+    const csv = [headers.join(','), ...rows].join('
+');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url2 = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url2;
+    a.download = `smitten-profiles-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url2);
+  } catch(e) {
+    alert('Export failed. Please try again.');
+    console.error(e);
+  }
+
+  btn.textContent = 'Export CSV';
+  btn.disabled = false;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
