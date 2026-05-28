@@ -444,6 +444,7 @@
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchTab('profiles', this)">Profiles</button>
         <button class="nav-tab" id="nav-tab-staff" onclick="switchTab('staff', this)" style="display:none">Staff</button>
+        <button class="nav-tab" id="nav-tab-matching" onclick="switchTab('matching', this)" style="display:none">Matching</button>
       </div>
     </div>
     <div class="topbar-right">
@@ -751,6 +752,129 @@
     </div>
   </div>
 
+
+  <!-- MATCHING TAB -->
+  <div id="tab-matching" class="tab-panel">
+    <div style="display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 56px)">
+      <!-- MATCHING SIDEBAR -->
+      <div style="background:white;border-right:1px solid #E8E8E8;padding:24px 20px;overflow-y:auto;position:sticky;top:56px;height:calc(100vh - 56px)">
+        <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gray-mid);margin-bottom:20px">Pool Filters</h3>
+
+        <div class="filter-group">
+          <label>Age Range</label>
+          <div class="age-range">
+            <input type="number" id="m-pool-age-min" placeholder="Min" min="18" max="99">
+            <input type="number" id="m-pool-age-max" placeholder="Max" min="18" max="99">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Gender</label>
+          <select id="m-pool-gender"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Seeking</label>
+          <select id="m-pool-seeking"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>State</label>
+          <input type="text" id="m-pool-state" placeholder="e.g. Nebraska">
+        </div>
+        <div class="filter-group">
+          <label>City</label>
+          <input type="text" id="m-pool-city" placeholder="e.g. Omaha">
+        </div>
+        <div class="filter-group">
+          <label>Religion</label>
+          <select id="m-pool-religion"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Politics</label>
+          <select id="m-pool-politics"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Education</label>
+          <select id="m-pool-education"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Income</label>
+          <select id="m-pool-income"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Has Photo</label>
+          <select id="m-pool-photo">
+            <option value="">Any</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+        <button class="btn-apply" onclick="buildPool()">Build Pool</button>
+        <div id="pool-status" style="font-size:12px;color:var(--gray-mid);margin-top:10px;text-align:center"></div>
+      </div>
+
+      <!-- MATCHING MAIN -->
+      <div style="padding:24px 28px">
+        <!-- MODE TABS -->
+        <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center">
+          <button class="btn btn-primary" id="match-mode-1to1" onclick="setMatchMode('1to1')">1-to-1 Match</button>
+          <button class="btn btn-outline" id="match-mode-group" onclick="setMatchMode('group')">Group Match</button>
+          <span id="pool-count-badge" style="font-size:12px;color:var(--gray-mid);margin-left:8px"></span>
+        </div>
+
+        <!-- 1-TO-1 MODE -->
+        <div id="match-1to1-panel">
+          <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">Find Matches For</h3>
+            <div style="display:flex;gap:10px">
+              <input type="text" id="match-subject-search" placeholder="Search by name or email..." style="flex:1;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:9px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none" oninput="searchMatchSubject()">
+            </div>
+            <div id="match-subject-results" style="margin-top:8px;display:none;background:#f9f9f9;border-radius:var(--radius-sm);border:1px solid #E8E8E8;max-height:200px;overflow-y:auto"></div>
+            <div id="match-subject-selected" style="margin-top:12px;display:none"></div>
+          </div>
+          <div id="match-1to1-results">
+            <div class="empty-state"><div class="icon">🎯</div><p>Build a pool and select a profile to find matches.</p></div>
+          </div>
+        </div>
+
+        <!-- GROUP MODE -->
+        <div id="match-group-panel" style="display:none">
+          <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Generate Match Groups</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+              <div class="modal-field">
+                <label>Group Name</label>
+                <input type="text" id="mg-name" value="Match Group" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+              </div>
+              <div class="modal-field">
+                <label>Number of Groups</label>
+                <input type="number" id="mg-count" value="4" min="2" max="20" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+              </div>
+              <div class="modal-field">
+                <label>Gender Balanced</label>
+                <select id="mg-balanced" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%;background:white">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <button class="btn btn-primary" id="btn-generate-groups" onclick="generateGroups()">Generate Groups</button>
+              <span id="mg-status" style="font-size:12px;color:var(--gray-mid)"></span>
+            </div>
+          </div>
+          <div id="match-group-results">
+            <div class="empty-state"><div class="icon">👥</div><p>Build a pool and generate groups.</p></div>
+          </div>
+          <!-- SAVED GROUPS -->
+          <div style="margin-top:32px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
+            <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- STAFF TAB -->
   <div id="tab-staff" class="tab-panel">
@@ -1243,11 +1367,11 @@ function launchApp() {
   document.getElementById('screen-app').style.display = 'block';
   const isMatchmaker = adminUser.role === 'matchmaker';
   document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
-  // Show staff tab for super_admin only
-  if (!isMatchmaker) {
-    const staffTab = document.getElementById('nav-tab-staff');
-    if (staffTab) staffTab.style.display = '';
-  }
+  // Show staff + matching tabs
+  const staffTab = document.getElementById('nav-tab-staff');
+  const matchTab = document.getElementById('nav-tab-matching');
+  if (!isMatchmaker) { if (staffTab) staffTab.style.display = ''; }
+  if (matchTab) matchTab.style.display = '';
   // Hide matchmaker filter for matchmakers
   if (isMatchmaker) {
     const mmFilter = document.getElementById('filter-matchmakers-group');
@@ -1256,6 +1380,7 @@ function launchApp() {
   // Clear any stale filter state
   activeFilters = {};
   searchQuery = '';
+  loadAllOptions();
   loadProfiles();
 }
 
@@ -1266,6 +1391,7 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'staff') loadStaff();
+  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); }
 }
 
 function toggleFilter(header) {
@@ -1344,6 +1470,7 @@ function buildProfilesUrl(forCount = false) {
   if (f.relStatus) params.push(`relationship_status=eq.${encodeURIComponent(f.relStatus)}`);
   if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
   if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
+  if (f.incomeExact) params.push(`income_level=eq.${encodeURIComponent(f.incomeExact)}`);
   if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
   if (f.prefReligion) params.push(`preferred_religion=cs.${encodeURIComponent('{"' + f.prefReligion + '"}')}`) ;
   if (f.prefPolitics) params.push(`preferred_politics=cs.${encodeURIComponent('{"' + f.prefPolitics + '"}')}`) ;
@@ -1409,8 +1536,8 @@ async function loadProfiles() {
       });
     }
 
-    // Client-side income range filter
-    const incomeOrder = ['Under $50,000','$50,000 - $74,999','$75,000 - $99,999','$100,000 - $149,999','$150,000 - $199,999','$200,000+'];
+    // Client-side income range filter using standardized values
+    const incomeOrder = ['Under $50k','$50k - $100k','$100k - $150k','$150k - $250k','$250k - $500k','$500k+'];
     if (f.incomeMin || f.incomeMax) {
       data = data.filter(p => {
         if (!p.income_level) return false;
@@ -1916,6 +2043,349 @@ async function exportCSV() {
 
   btn.textContent = 'Export CSV';
   btn.disabled = false;
+}
+
+// ── DYNAMIC OPTIONS ─────────────────────────────────────────────────────────
+let profileOptions = {};
+
+async function loadAllOptions() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profile_options?select=category,value,label,sort_order&is_active=eq.true&order=category,sort_order`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+    });
+    const opts = await r.json();
+    profileOptions = {};
+    opts.forEach(o => {
+      if (!profileOptions[o.category]) profileOptions[o.category] = [];
+      profileOptions[o.category].push(o);
+    });
+    populateSidebarFilters();
+    populateModalDropdowns();
+  } catch(e) { console.error('Could not load options', e); }
+}
+
+function optionsHtml(category, anyLabel = 'Any') {
+  const opts = profileOptions[category] || [];
+  return `<option value="">${anyLabel}</option>` + opts.filter(o => o.value !== 'Any').map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+}
+
+function populateSidebarFilters() {
+  const maps = [
+    ['f-gender', 'gender'],
+    ['f-seeking', 'seeking'],
+    ['f-education', 'education'],
+    ['f-religion', 'religion'],
+    ['f-politics', 'politics'],
+    ['f-body-type', 'body_type'],
+    ['f-smoking', 'smoking'],
+    ['f-drinking', 'drinking'],
+    ['f-kids', 'kids'],
+    ['f-want-kids', 'want_kids'],
+    ['f-rel-status', 'relationship_status'],
+    ['f-pref-religion', 'preferred_religion'],
+    ['f-pref-politics', 'preferred_politics'],
+    ['f-pref-body-type', 'preferred_body_type'],
+    ['f-pref-education', 'preferred_education'],
+    ['f-pref-smoking', 'preferred_smoking'],
+    ['f-pref-drinking', 'preferred_alcohol'],
+    ['f-pref-rel-status', 'preferred_relationship_status'],
+    ['f-date-with-kids', 'date_with_kids'],
+    ['f-relocation-in', 'relocation'],
+    ['f-relocation-out', 'relocation'],
+  ];
+  maps.forEach(([id, cat]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = optionsHtml(cat);
+  });
+
+  // Income dropdowns - use income_level options
+  const incomeOpts = (profileOptions['income_level'] || []).filter(o => o.value !== 'Prefer not to say');
+  ['f-income-min','f-income-max'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<option value="">Any</option>` + incomeOpts.map((o,i) => `<option value="${i+1}">${o.label}</option>`).join('');
+  });
+}
+
+function populateModalDropdowns() {
+  const maps = [
+    ['m-gender', 'gender'],
+    ['m-education', 'education'],
+    ['m-kids', 'kids'],
+    ['m-want-kids', 'want_kids'],
+    ['m-smoking', 'smoking'],
+    ['m-drinking', 'drinking'],
+    ['m-religion', 'religion'],
+    ['m-politics', 'politics'],
+    ['m-income', 'income_level'],
+    ['m-body-type', 'body_type'],
+    ['m-hair', 'hair_color'],
+    ['m-eyes', 'eye_color'],
+    ['m-ethnicity', 'ethnicity'],
+    ['m-rel-status', 'relationship_status'],
+    ['m-date-with-kids', 'date_with_kids'],
+    ['m-relocation-in', 'relocation'],
+    ['m-relocation-out', 'relocation'],
+    ['m-pref-income', 'preferred_income'],
+  ];
+  maps.forEach(([id, cat]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = optionsHtml(cat, 'Select...');
+  });
+}
+
+// ── MATCHING ──────────────────────────────────────────────────────────────────
+let matchPool = [];
+let matchMode = '1to1';
+let matchSubject = null;
+let subjectSearchTimer = null;
+
+function loadMatchingOptions() {
+  if (Object.keys(profileOptions).length === 0) loadAllOptions();
+  // Populate matching sidebar selects
+  const maps = [
+    ['m-pool-gender', 'gender'],
+    ['m-pool-seeking', 'seeking'],
+    ['m-pool-religion', 'religion'],
+    ['m-pool-politics', 'politics'],
+    ['m-pool-education', 'education'],
+    ['m-pool-income', 'income_level'],
+  ];
+  maps.forEach(([id, cat]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = optionsHtml(cat);
+  });
+}
+
+function setMatchMode(mode) {
+  matchMode = mode;
+  document.getElementById('match-1to1-panel').style.display = mode === '1to1' ? '' : 'none';
+  document.getElementById('match-group-panel').style.display = mode === 'group' ? '' : 'none';
+  document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
+  document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
+}
+
+async function buildPool() {
+  const statusEl = document.getElementById('pool-status');
+  statusEl.textContent = 'Building pool...';
+  const token = supabaseSession || SUPABASE_ANON;
+
+  let params = ['deleted_at=is.null', 'is_active=eq.true'];
+  const ageMin = document.getElementById('m-pool-age-min').value;
+  const ageMax = document.getElementById('m-pool-age-max').value;
+  const gender = document.getElementById('m-pool-gender').value;
+  const seeking = document.getElementById('m-pool-seeking').value;
+  const state = document.getElementById('m-pool-state').value.trim();
+  const city = document.getElementById('m-pool-city').value.trim();
+  const religion = document.getElementById('m-pool-religion').value;
+  const politics = document.getElementById('m-pool-politics').value;
+  const education = document.getElementById('m-pool-education').value;
+  const income = document.getElementById('m-pool-income').value;
+  const hasPhoto = document.getElementById('m-pool-photo').value;
+
+  if (gender) params.push(`gender=eq.${encodeURIComponent(gender)}`);
+  if (state) params.push(`state=ilike.*${encodeURIComponent(state)}*`);
+  if (city) params.push(`city=ilike.*${encodeURIComponent(city)}*`);
+  if (religion) params.push(`religion=eq.${encodeURIComponent(religion)}`);
+  if (politics) params.push(`politics=eq.${encodeURIComponent(politics)}`);
+  if (education) params.push(`education=eq.${encodeURIComponent(education)}`);
+  if (income) params.push(`income_level=eq.${encodeURIComponent(income)}`);
+  if (hasPhoto === 'yes') params.push('image_url=not.is.null');
+  if (hasPhoto === 'no') params.push('image_url=is.null');
+  if (seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + seeking + '"}')}`) ;
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&order=created_at.desc&limit=500`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    let data = await r.json();
+
+    // Client-side age filter
+    if (ageMin || ageMax) {
+      data = data.filter(p => {
+        const age = calcAge(p.date_of_birth);
+        if (!age) return false;
+        if (ageMin && age < parseInt(ageMin)) return false;
+        if (ageMax && age > parseInt(ageMax)) return false;
+        return true;
+      });
+    }
+
+    matchPool = data;
+    statusEl.textContent = `Pool: ${matchPool.length} profiles`;
+    document.getElementById('pool-count-badge').textContent = `${matchPool.length} profiles in pool`;
+  } catch(e) {
+    statusEl.textContent = 'Failed to build pool.';
+    console.error(e);
+  }
+}
+
+function searchMatchSubject() {
+  clearTimeout(subjectSearchTimer);
+  subjectSearchTimer = setTimeout(async () => {
+    const q = document.getElementById('match-subject-search').value.trim();
+    if (!q || q.length < 2) { document.getElementById('match-subject-results').style.display = 'none'; return; }
+    const token = supabaseSession || SUPABASE_ANON;
+    const sq = encodeURIComponent(q);
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&is_active=eq.true&or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,seeking,min_age,max_age,body_type,kids,want_kids,religion,politics,income_level,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&limit=10`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const results = await r.json();
+    const el = document.getElementById('match-subject-results');
+    if (!results.length) { el.innerHTML = '<div style="padding:10px;font-size:13px;color:var(--gray-mid)">No profiles found</div>'; el.style.display = 'block'; return; }
+    el.innerHTML = results.map(p => {
+      const age = calcAge(p.date_of_birth);
+      return `<div onclick="selectMatchSubject(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--red)">
+          ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
+        </div>
+        <div><strong>${p.first_name} ${p.last_name}</strong> <span style="color:var(--gray-mid)">${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}</span></div>
+      </div>`;
+    }).join('');
+    el.style.display = 'block';
+  }, 300);
+}
+
+function selectMatchSubject(p) {
+  matchSubject = p;
+  document.getElementById('match-subject-results').style.display = 'none';
+  document.getElementById('match-subject-search').value = `${p.first_name} ${p.last_name}`;
+  const age = calcAge(p.date_of_birth);
+  document.getElementById('match-subject-selected').innerHTML = `
+    <div style="background:#FFF5F5;border:1px solid var(--pink);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red)">
+        ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
+      </div>
+      <div style="flex:1"><strong>${p.first_name} ${p.last_name}</strong> · ${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}</div>
+      <button onclick="runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
+    </div>`;
+  document.getElementById('match-subject-selected').style.display = 'block';
+}
+
+async function runMatching() {
+  if (!matchSubject) { alert('Select a profile first.'); return; }
+  if (!matchPool.length) { alert('Build a pool first using the filters on the left.'); return; }
+  const el = document.getElementById('match-1to1-results');
+  el.innerHTML = '<div class="loading-state">Scoring matches...</div>';
+
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const poolIds = matchPool.map(p => p.id).filter(id => id !== matchSubject.id);
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/score_profile_against_pool`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_profile_id: matchSubject.id, p_pool_ids: poolIds })
+    });
+    let results = await r.json();
+    if (!Array.isArray(results)) { el.innerHTML = '<div class="empty-state"><p>Scoring failed.</p></div>'; return; }
+    results = results.sort((a,b) => b.compatibility_score - a.compatibility_score);
+    renderMatchResults(results, el);
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><p>Error running match.</p></div>';
+    console.error(e);
+  }
+}
+
+function renderMatchResults(results, el) {
+  if (!results.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No matches found in this pool.</p></div>'; return; }
+  el.innerHTML = `<h3 style="font-size:14px;font-weight:700;margin-bottom:14px">${results.length} Matches Ranked by Compatibility</h3>` +
+    results.map((p, i) => {
+      const score = Math.round(p.compatibility_score || 0);
+      const scoreColor = score >= 70 ? '#166534' : score >= 40 ? '#92400e' : '#C6302C';
+      const scoreBg = score >= 70 ? '#F0FFF4' : score >= 40 ? '#FFFBEB' : '#FFF0F0';
+      const warnings = p.missing_fields && p.missing_fields.length ? p.missing_fields.join(', ') : null;
+      return `<div style="background:white;border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--gray-mid);width:24px;text-align:center">${i+1}</div>
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red)">
+          ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${p.first_name} ${p.last_name}</div>
+          <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${p.age ? p.age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', '+p.state : ''}</div>
+          ${warnings ? `<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Missing: ${warnings}</div>` : ''}
+        </div>
+        <div style="text-align:center;background:${scoreBg};padding:8px 14px;border-radius:8px;min-width:60px">
+          <div style="font-size:20px;font-weight:800;color:${scoreColor}">${score}%</div>
+          <div style="font-size:10px;font-weight:600;color:${scoreColor}">match</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+async function generateGroups() {
+  if (!matchPool.length) { alert('Build a pool first.'); return; }
+  const name = document.getElementById('mg-name').value.trim() || 'Match Group';
+  const count = parseInt(document.getElementById('mg-count').value) || 4;
+  const balanced = document.getElementById('mg-balanced').value === 'true';
+  const statusEl = document.getElementById('mg-status');
+  const btn = document.getElementById('btn-generate-groups');
+  btn.disabled = true; btn.textContent = 'Generating...';
+  statusEl.textContent = '';
+
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/generate_match_groups_from_pool`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        p_profile_ids: matchPool.map(p => p.id),
+        p_group_count: count,
+        p_gender_balanced: balanced,
+        p_group_name: name,
+        p_event_id: null,
+        p_source_filters: null,
+        p_generated_by: null
+      })
+    });
+    const results = await r.json();
+    if (!Array.isArray(results)) throw new Error('Unexpected response');
+    renderGroupResults(results);
+    loadSavedGroups();
+    statusEl.textContent = `Generated ${results.length} groups`;
+  } catch(e) {
+    statusEl.textContent = 'Generation failed.';
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Generate Groups';
+}
+
+function renderGroupResults(groups) {
+  const el = document.getElementById('match-group-results');
+  el.innerHTML = `<h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Generated Groups</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">` +
+    groups.map(g => `
+      <div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:3px solid var(--red)">
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px">${g.group_name}</div>
+        <div style="font-size:13px;color:var(--gray-dark);margin-bottom:4px">👥 ${g.member_count} members</div>
+        <div style="font-size:13px;color:var(--gray-dark);margin-bottom:4px">⭐ ${Math.round(g.avg_compatibility)}% avg match</div>
+        ${g.incomplete_count > 0 ? `<div style="font-size:12px;color:var(--red);margin-top:6px">⚠ ${g.incomplete_count} incomplete profiles</div>` : ''}
+      </div>`).join('') + '</div>';
+}
+
+async function loadSavedGroups() {
+  const token = supabaseSession || SUPABASE_ANON;
+  const el = document.getElementById('saved-groups-list');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/event_match_groups?select=id,name,status,generated_at,profile_count,event_id,events(name)&order=generated_at.desc&limit=20`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const groups = await r.json();
+    if (!groups.length) { el.innerHTML = '<div class="empty-state"><p>No saved groups yet.</p></div>'; return; }
+    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` +
+      groups.map(g => `
+        <div style="background:white;border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px">${g.name}</div>
+            <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">
+              ${g.profile_count ? g.profile_count + ' profiles · ' : ''}
+              ${g.generated_at ? new Date(g.generated_at).toLocaleDateString() : ''}
+              ${g.events ? ' · Event: ' + g.events.name : ' · No event'}
+            </div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${g.status==='ready'?'#F0FFF4':'#FFF5F5'};color:${g.status==='ready'?'#166534':'#C6302C'}">${g.status}</span>
+        </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load groups.</p></div>';
+  }
 }
 
 // ── SOFT DELETE ──────────────────────────────────────────────────────────────
