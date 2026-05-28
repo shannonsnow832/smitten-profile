@@ -444,7 +444,7 @@
       <span class="topbar-badge">Admin</span>
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchTab('profiles', this)">Profiles</button>
-        <button class="nav-tab" id="nav-tab-staff" onclick="switchTab('staff', this)" style="display:none">Staff</button>
+        <button class="nav-tab" id="nav-tab-staff" onclick="switchTab('staff', this)" style="display:none">Users</button>
         <button class="nav-tab" id="nav-tab-matching" onclick="switchTab('matching', this)" style="display:none">Matching</button>
       </div>
     </div>
@@ -881,8 +881,8 @@
   <div id="tab-staff" class="tab-panel">
     <div style="max-width:800px;margin:32px auto;padding:0 24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-        <h2 style="font-size:20px;font-weight:700;color:var(--black)">Staff Management</h2>
-        <button class="btn btn-primary" onclick="openAddStaff()">+ Add Staff</button>
+        <h2 style="font-size:20px;font-weight:700;color:var(--black)">User Management</h2>
+        <button class="btn btn-primary" onclick="openAddStaff()">+ Add User</button>
       </div>
       <div id="staff-list" style="display:flex;flex-direction:column;gap:10px">
         <div class="loading-state">Loading staff...</div>
@@ -897,7 +897,7 @@
   <div class="modal" style="max-width:500px">
     <div class="modal-topbar">
       <div class="modal-topbar-left">
-        <div><h2 id="staff-modal-title" style="font-size:18px;font-weight:700;color:white">Add Staff</h2></div>
+        <div><h2 id="staff-modal-title" style="font-size:18px;font-weight:700;color:white">Add User</h2></div>
       </div>
       <div class="modal-topbar-actions">
         <button class="modal-close" onclick="closeStaffModal()">×</button>
@@ -930,7 +930,7 @@
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-light)">
         <button class="btn btn-outline" onclick="closeStaffModal()">Cancel</button>
-        <button class="btn btn-primary" id="btn-save-staff" onclick="saveStaff()">Add Staff</button>
+        <button class="btn btn-primary" id="btn-save-staff" onclick="saveStaff()">Add User</button>
       </div>
     </div>
   </div>
@@ -2474,8 +2474,8 @@ async function loadOrgsForStaff() {
 
 function openAddStaff() {
   editingStaffId = null;
-  document.getElementById('staff-modal-title').textContent = 'Add Staff';
-  document.getElementById('btn-save-staff').textContent = 'Add Staff';
+  document.getElementById('staff-modal-title').textContent = 'Add User';
+  document.getElementById('btn-save-staff').textContent = 'Add User';
   document.getElementById('staff-modal-alert').className = 'modal-alert';
   ['sf-first','sf-last','sf-email'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('sf-role').value = '';
@@ -2547,7 +2547,7 @@ async function saveStaff() {
     alertEl.className = 'modal-alert error';
   }
   btn.disabled = false;
-  btn.textContent = editingStaffId ? 'Save Changes' : 'Add Staff';
+  btn.textContent = editingStaffId ? 'Save Changes' : 'Add User';
 }
 
 async function toggleStaffActive(id, currentState) {
