@@ -220,9 +220,9 @@
 
   /* PROFILE DETAIL MODAL */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 500;
     display: none; align-items: flex-start; justify-content: center;
-    padding: 40px 20px; overflow-y: auto;
+    padding: 40px 20px; overflow-y: auto; backdrop-filter: blur(2px);
   }
   .modal-overlay.open { display: flex; }
   .modal {
@@ -286,7 +286,7 @@
   .filter-section .filter-group:last-child { margin-bottom: 0; }
 
   /* ── MODAL REWRITE ── */
-  .modal { background: var(--white); border-radius: var(--radius); width: 100%; max-width: 900px; box-shadow: var(--shadow-lg); position: relative; margin: auto; }
+  .modal { background: var(--white); border-radius: var(--radius); width: 100%; max-width: 900px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; margin: auto; }
   .modal-topbar {
     background: var(--black); border-radius: var(--radius) var(--radius) 0 0;
     padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
@@ -303,7 +303,7 @@
   .modal-topbar-actions { display: flex; align-items: center; gap: 10px; }
   .modal-close { background: none; border: none; font-size: 22px; color: rgba(255,255,255,0.5); cursor: pointer; line-height: 1; transition: color 0.2s; padding: 0; }
   .modal-close:hover { color: white; }
-  .modal-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 500px; max-height: 80vh; }
+  .modal-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 500px; max-height: calc(90vh - 120px); }
   .modal-photos { padding: 20px; border-right: 1px solid var(--gray-light); overflow-y: auto; background: #fafafa; border-radius: 0 0 0 var(--radius); }
   .modal-photos h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-mid); margin-bottom: 12px; }
   .modal-main-photo { width: 100%; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--gray-light); margin-bottom: 10px; }
@@ -370,11 +370,11 @@
 
   /* ── OTP INPUTS ── */
   .otp-inputs {
-    display: flex; gap: 8px; justify-content: center; margin: 20px 0 8px;
+    display: flex; gap: 6px; justify-content: center; margin: 20px 0 8px; flex-wrap: wrap;
   }
   .otp-box {
-    width: 38px; height: 48px; border: 2px solid #E8E8E8; border-radius: var(--radius-sm);
-    text-align: center; font-size: 20px; font-weight: 700; color: var(--black);
+    width: 44px; height: 52px; border: 2px solid #E8E8E8; border-radius: var(--radius-sm);
+    text-align: center; font-size: 22px; font-weight: 700; color: var(--black);
     font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s;
   }
   .otp-box:focus { border-color: var(--red); }
@@ -443,6 +443,7 @@
       <span class="topbar-badge">Admin</span>
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchTab('profiles', this)">Profiles</button>
+        <button class="nav-tab" id="nav-tab-staff" onclick="switchTab('staff', this)" style="display:none">Staff</button>
       </div>
     </div>
     <div class="topbar-right">
@@ -751,6 +752,63 @@
   </div>
 
 
+  <!-- STAFF TAB -->
+  <div id="tab-staff" class="tab-panel">
+    <div style="max-width:800px;margin:32px auto;padding:0 24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <h2 style="font-size:20px;font-weight:700;color:var(--black)">Staff Management</h2>
+        <button class="btn btn-primary" onclick="openAddStaff()">+ Add Staff</button>
+      </div>
+      <div id="staff-list" style="display:flex;flex-direction:column;gap:10px">
+        <div class="loading-state">Loading staff...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div id="staff-modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeStaffModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-topbar">
+      <div class="modal-topbar-left">
+        <div><h2 id="staff-modal-title" style="font-size:18px;font-weight:700;color:white">Add Staff</h2></div>
+      </div>
+      <div class="modal-topbar-actions">
+        <button class="modal-close" onclick="closeStaffModal()">×</button>
+      </div>
+    </div>
+    <div style="padding:24px">
+      <div id="staff-modal-alert" class="modal-alert" style="margin:0 0 16px"></div>
+      <div class="modal-form-row">
+        <div class="modal-field"><label>First Name *</label><input type="text" id="sf-first"></div>
+        <div class="modal-field"><label>Last Name *</label><input type="text" id="sf-last"></div>
+      </div>
+      <div class="modal-form-row full">
+        <div class="modal-field"><label>Email *</label><input type="email" id="sf-email"></div>
+      </div>
+      <div class="modal-form-row full">
+        <div class="modal-field"><label>Role *</label>
+          <select id="sf-role">
+            <option value="">Select...</option>
+            <option value="super_admin">Super Admin</option>
+            <option value="matchmaker">Matchmaker</option>
+            <option value="org_admin">Org Admin</option>
+            <option value="host">Host</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-form-row full" id="sf-org-row">
+        <div class="modal-field"><label>Organization</label>
+          <select id="sf-org"><option value="">Platform-level (no org)</option></select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-light)">
+        <button class="btn btn-outline" onclick="closeStaffModal()">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-staff" onclick="saveStaff()">Add Staff</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- PROFILE DETAIL MODAL -->
@@ -1023,7 +1081,8 @@
         </div>
 
         <div id="modal-save-bar" class="modal-save-bar">
-          <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;"></span>
+          <button class="btn" id="btn-modal-delete" onclick="softDeleteProfile()" style="background:transparent;color:#C6302C;border:1.5px solid #C6302C;font-size:12px;padding:6px 14px">Delete Profile</button>
+          <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;flex:1;text-align:center;"></span>
           <button class="btn btn-primary" id="btn-modal-save" onclick="saveModalProfile()">Save Changes</button>
         </div>
       </div>
@@ -1184,6 +1243,11 @@ function launchApp() {
   document.getElementById('screen-app').style.display = 'block';
   const isMatchmaker = adminUser.role === 'matchmaker';
   document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
+  // Show staff tab for super_admin only
+  if (!isMatchmaker) {
+    const staffTab = document.getElementById('nav-tab-staff');
+    if (staffTab) staffTab.style.display = '';
+  }
   // Hide matchmaker filter for matchmakers
   if (isMatchmaker) {
     const mmFilter = document.getElementById('filter-matchmakers-group');
@@ -1201,6 +1265,7 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'staff') loadStaff();
 }
 
 function toggleFilter(header) {
@@ -1851,6 +1916,179 @@ async function exportCSV() {
 
   btn.textContent = 'Export CSV';
   btn.disabled = false;
+}
+
+// ── SOFT DELETE ──────────────────────────────────────────────────────────────
+async function softDeleteProfile() {
+  const p = currentModalProfile;
+  if (!p) return;
+  if (!confirm(`Are you sure you want to delete ${p.first_name} ${p.last_name}? This cannot be undone from here.`)) return;
+
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ deleted_at: new Date().toISOString(), deletion_reason: 'admin_deleted' })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    closeModal();
+    loadProfiles();
+  } catch(e) {
+    alert('Delete failed: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ── STAFF MANAGEMENT ──────────────────────────────────────────────────────────
+let editingStaffId = null;
+
+async function loadStaff() {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?select=id,first_name,last_name,email,role,is_active,organization_id,organizations(name)&order=role,first_name`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await r.json();
+    renderStaff(data);
+  } catch(e) {
+    document.getElementById('staff-list').innerHTML = '<div class="empty-state"><p>Failed to load staff.</p></div>';
+  }
+}
+
+function renderStaff(staff) {
+  const el = document.getElementById('staff-list');
+  if (!staff.length) { el.innerHTML = '<div class="empty-state"><p>No staff found.</p></div>'; return; }
+
+  const roleColors = { super_admin: '#C6302C', matchmaker: '#7c3aed', org_admin: '#0369a1', host: '#166534' };
+  const roleLabels = { super_admin: 'Super Admin', matchmaker: 'Matchmaker', org_admin: 'Org Admin', host: 'Host' };
+
+  el.innerHTML = staff.map(s => `
+    <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);flex-shrink:0">
+        ${(s.first_name||'?')[0]}${(s.last_name||'')[0]}
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px;color:var(--black)">${s.first_name} ${s.last_name}</div>
+        <div style="font-size:12px;color:var(--gray-dark);margin-top:2px">${s.email}</div>
+        <div style="font-size:11px;color:var(--gray-mid);margin-top:2px">${s.organizations?.name || 'Platform-level'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${roleColors[s.role]||'#666'}22;color:${roleColors[s.role]||'#666'}">${roleLabels[s.role]||s.role}</span>
+        <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:${s.is_active?'#F0FFF4':'#FFF0F0'};color:${s.is_active?'#166534':'#C6302C'}">${s.is_active?'Active':'Inactive'}</span>
+        <button onclick="editStaff(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:var(--gray-dark)">Edit</button>
+        <button onclick="toggleStaffActive('${s.id}', ${s.is_active})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:${s.is_active?'#C6302C':'#166534'}">${s.is_active?'Deactivate':'Activate'}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadOrgsForStaff() {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/organizations?select=id,name&is_active=eq.true&order=name`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const orgs = await r.json();
+    const sel = document.getElementById('sf-org');
+    sel.innerHTML = '<option value="">Platform-level (no org)</option>' +
+      orgs.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+  } catch(e) {}
+}
+
+function openAddStaff() {
+  editingStaffId = null;
+  document.getElementById('staff-modal-title').textContent = 'Add Staff';
+  document.getElementById('btn-save-staff').textContent = 'Add Staff';
+  document.getElementById('staff-modal-alert').className = 'modal-alert';
+  ['sf-first','sf-last','sf-email'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sf-role').value = '';
+  loadOrgsForStaff();
+  document.getElementById('staff-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function editStaff(s) {
+  editingStaffId = s.id;
+  document.getElementById('staff-modal-title').textContent = 'Edit Staff';
+  document.getElementById('btn-save-staff').textContent = 'Save Changes';
+  document.getElementById('staff-modal-alert').className = 'modal-alert';
+  document.getElementById('sf-first').value = s.first_name || '';
+  document.getElementById('sf-last').value = s.last_name || '';
+  document.getElementById('sf-email').value = s.email || '';
+  document.getElementById('sf-role').value = s.role || '';
+  loadOrgsForStaff().then(() => {
+    document.getElementById('sf-org').value = s.organization_id || '';
+  });
+  document.getElementById('staff-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStaffModal() {
+  document.getElementById('staff-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function saveStaff() {
+  const first = document.getElementById('sf-first').value.trim();
+  const last = document.getElementById('sf-last').value.trim();
+  const email = document.getElementById('sf-email').value.trim().toLowerCase();
+  const role = document.getElementById('sf-role').value;
+  const orgId = document.getElementById('sf-org').value || null;
+  const alertEl = document.getElementById('staff-modal-alert');
+  alertEl.className = 'modal-alert';
+
+  if (!first || !last || !email || !role) {
+    alertEl.textContent = 'Please fill in all required fields.';
+    alertEl.className = 'modal-alert error';
+    return;
+  }
+
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-save-staff');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    let r;
+    if (editingStaffId) {
+      r = await fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${editingStaffId}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ first_name: first, last_name: last, email, role, organization_id: orgId, updated_at: new Date().toISOString() })
+      });
+    } else {
+      r = await fetch(`${SUPABASE_URL}/rest/v1/staff`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ first_name: first, last_name: last, email, role, organization_id: orgId, is_active: true, permissions: {} })
+      });
+    }
+    if (!r.ok) throw new Error(await r.text());
+    closeStaffModal();
+    loadStaff();
+  } catch(e) {
+    alertEl.textContent = 'Save failed: ' + e.message;
+    alertEl.className = 'modal-alert error';
+  }
+  btn.disabled = false;
+  btn.textContent = editingStaffId ? 'Save Changes' : 'Add Staff';
+}
+
+async function toggleStaffActive(id, currentState) {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ is_active: !currentState, updated_at: new Date().toISOString() })
+    });
+    loadStaff();
+  } catch(e) { alert('Failed to update staff.'); }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
