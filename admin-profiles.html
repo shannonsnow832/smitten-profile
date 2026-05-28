@@ -371,12 +371,13 @@
 
   /* ── OTP INPUTS ── */
   .otp-inputs {
-    display: flex; gap: 6px; justify-content: center; margin: 20px 0 8px; flex-wrap: wrap;
+    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 6px; justify-content: center; margin: 20px 0 8px;
   }
   .otp-box {
-    width: 44px; height: 52px; border: 2px solid #E8E8E8; border-radius: var(--radius-sm);
-    text-align: center; font-size: 22px; font-weight: 700; color: var(--black);
+    width: 36px; height: 44px; border: 2px solid #E8E8E8; border-radius: var(--radius-sm);
+    text-align: center; font-size: 18px; font-weight: 700; color: var(--black);
     font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s;
+    flex-shrink: 0;
   }
   .otp-box:focus { border-color: var(--red); }
 
