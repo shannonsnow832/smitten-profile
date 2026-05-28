@@ -1297,7 +1297,7 @@ async function doRequestOtp() {
         'apikey': SUPABASE_ANON,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ email, create_user: true, options: { shouldCreateUser: true } })
+      body: JSON.stringify({ email, create_user: true })
     });
     if (!otpRes.ok) {
       let errMsg = 'Could not send code. Try again.';
