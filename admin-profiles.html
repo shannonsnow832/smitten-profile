@@ -16,7 +16,7 @@
     --gray-mid: #BFBFBF;
     --white: #FFFFFF;
     --black: #1A1414;
-    --bg: #F5F4F4;
+    --bg: #EFEFF1;
     --radius: 12px;
     --radius-sm: 8px;
     --shadow: 0 2px 12px rgba(90,83,83,0.10);
@@ -311,6 +311,18 @@
   .btn-primary { background: var(--red); color: white; }
   .btn-primary:hover { background: var(--red-light); }
 
+
+  /* ── OTP INPUTS ── */
+  .otp-inputs {
+    display: flex; gap: 8px; justify-content: center; margin: 20px 0 8px;
+  }
+  .otp-box {
+    width: 38px; height: 48px; border: 2px solid #E8E8E8; border-radius: var(--radius-sm);
+    text-align: center; font-size: 20px; font-weight: 700; color: var(--black);
+    font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s;
+  }
+  .otp-box:focus { border-color: var(--red); }
+
   @media (max-width: 768px) {
     .profiles-layout { grid-template-columns: 1fr; }
     .filter-sidebar { position: static; height: auto; }
@@ -324,19 +336,46 @@
 
 <!-- LOGIN -->
 <div id="screen-login">
-  <div class="login-box">
+  <!-- STEP 1: Email -->
+  <div class="login-box" id="login-step-email">
     <div class="login-logo">
       <div>
         <span>Smitten Singles</span>
-        <small>Admin Portal</small>
+        <small>Staff Portal</small>
       </div>
     </div>
     <h2>Sign In</h2>
-    <p>Super admin access only.</p>
+    <p>Enter your email to receive a verification code.</p>
     <div id="login-error" class="login-error"></div>
     <label>Email Address</label>
-    <input type="email" id="login-email" placeholder="shannon@thesmittenproject.com" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Continue</button>
+    <input type="email" id="login-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doRequestOtp()">
+    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="doRequestOtp()" id="btn-send-otp">Send Code</button>
+  </div>
+  <!-- STEP 2: OTP -->
+  <div class="login-box" id="login-step-otp" style="display:none;text-align:center;">
+    <div class="login-logo" style="justify-content:center;">
+      <div>
+        <span>Smitten Singles</span>
+        <small>Staff Portal</small>
+      </div>
+    </div>
+    <h2>Check Your Email</h2>
+    <p id="otp-sent-msg">We sent an 8-digit code to your email.</p>
+    <div id="login-error-otp" class="login-error" style="text-align:left"></div>
+    <div class="otp-inputs" id="otp-inputs">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+      <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doVerifyOtp()" id="btn-verify-otp">Verify</button>
+    <p style="margin-top:14px;font-size:12px;color:var(--gray-mid)">
+      <a href="#" onclick="backToEmail();return false;" style="color:var(--red);font-weight:600;text-decoration:none;">Use a different email</a>
+    </p>
   </div>
 </div>
 
@@ -443,7 +482,7 @@
           </select>
         </div>
 
-        <div class="filter-group">
+        <div class="filter-group" id="filter-matchmakers-group">
           <label>Share w/ Matchmakers</label>
           <select id="f-matchmakers">
             <option value="">Any</option>
@@ -529,46 +568,146 @@ let searchTimer = null;
 let allKbArticles = [];
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
-async function doLogin() {
+let otpEmail = '';
+let supabaseSession = null;
+
+async function doRequestOtp() {
   const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const errEl = document.getElementById('login-error');
-  errEl.style.display = 'none';
+  showLoginError('');
   if (!email) { showLoginError('Please enter your email.'); return; }
 
+  // Check staff table first - only super_admin and matchmaker allowed
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(email)}&role=eq.super_admin&is_active=eq.true&select=id,email,first_name,last_name,role`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(email)}&is_active=eq.true&role=in.(super_admin,matchmaker)&select=id,email,first_name,last_name,role`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
     });
     const data = await r.json();
-    if (!data.length) { showLoginError('Access denied. Super admin only.'); return; }
-    adminUser = data[0];
-    sessionStorage.setItem('smitten_admin', JSON.stringify(adminUser));
-    launchApp();
+    if (!data.length) { showLoginError('Access denied. Authorized staff only.'); return; }
+
+    // Send OTP
+    const otpRes = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, create_user: true })
+    });
+    if (!otpRes.ok) { showLoginError('Could not send code. Try again.'); return; }
+
+    otpEmail = email;
+    document.getElementById('otp-sent-msg').textContent = `We sent an 8-digit code to ${email}.`;
+    document.getElementById('login-step-email').style.display = 'none';
+    document.getElementById('login-step-otp').style.display = 'block';
+    setTimeout(() => document.querySelector('.otp-box').focus(), 100);
+    initOtpInputs();
   } catch(e) {
     showLoginError('Could not connect. Try again.');
   }
 }
 
+function initOtpInputs() {
+  const boxes = document.querySelectorAll('.otp-box');
+  boxes.forEach((box, i) => {
+    box.value = '';
+    box.addEventListener('input', () => {
+      if (box.value.length === 1 && i < boxes.length - 1) boxes[i+1].focus();
+      if (getOtpValue().length === 8) doVerifyOtp();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
+    });
+    box.addEventListener('paste', (e) => {
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,8);
+      if (paste.length) {
+        boxes.forEach((b, j) => b.value = paste[j] || '');
+        boxes[Math.min(paste.length, 7)].focus();
+        if (paste.length === 8) doVerifyOtp();
+      }
+      e.preventDefault();
+    });
+  });
+}
+
+function getOtpValue() {
+  return [...document.querySelectorAll('.otp-box')].map(b => b.value).join('');
+}
+
+async function doVerifyOtp() {
+  const token = getOtpValue();
+  showLoginErrorOtp('');
+  if (token.length !== 8) { showLoginErrorOtp('Please enter all 8 digits.'); return; }
+  const btn = document.getElementById('btn-verify-otp');
+  btn.disabled = true; btn.textContent = 'Verifying...';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: otpEmail, token, type: 'email' })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) {
+      showLoginErrorOtp('Invalid or expired code. Please try again.');
+      btn.disabled = false; btn.textContent = 'Verify';
+      return;
+    }
+    supabaseSession = data.access_token;
+
+    // Load staff record
+    const staffRes = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(otpEmail)}&is_active=eq.true&select=id,email,first_name,last_name,role`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
+    });
+    const staffData = await staffRes.json();
+    if (!staffData.length) { showLoginErrorOtp('Staff record not found.'); btn.disabled = false; btn.textContent = 'Verify'; return; }
+    adminUser = staffData[0];
+    sessionStorage.setItem('smitten_admin', JSON.stringify(adminUser));
+    sessionStorage.setItem('smitten_session', supabaseSession);
+    launchApp();
+  } catch(e) {
+    showLoginErrorOtp('Could not verify. Try again.');
+    btn.disabled = false; btn.textContent = 'Verify';
+  }
+}
+
+function backToEmail() {
+  document.getElementById('login-step-otp').style.display = 'none';
+  document.getElementById('login-step-email').style.display = 'block';
+  showLoginError('');
+}
+
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
-  el.textContent = msg;
-  el.style.display = 'block';
+  el.textContent = msg; el.style.display = msg ? 'block' : 'none';
+}
+
+function showLoginErrorOtp(msg) {
+  const el = document.getElementById('login-error-otp');
+  el.textContent = msg; el.style.display = msg ? 'block' : 'none';
 }
 
 function doLogout() {
   sessionStorage.removeItem('smitten_admin');
-  adminUser = null;
+  sessionStorage.removeItem('smitten_session');
+  adminUser = null; supabaseSession = null; otpEmail = '';
   document.getElementById('screen-login').style.display = 'flex';
   document.getElementById('screen-app').style.display = 'none';
   document.getElementById('login-email').value = '';
+  document.getElementById('login-step-email').style.display = 'block';
+  document.getElementById('login-step-otp').style.display = 'none';
+  document.querySelectorAll('.otp-box').forEach(b => b.value = '');
 }
 
 function launchApp() {
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-app').style.display = 'block';
+  const isMatchmaker = adminUser.role === 'matchmaker';
   document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
+  // Hide KB tab and matchmaker filter for matchmakers
+  if (isMatchmaker) {
+    document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent === 'Knowledgebase') t.style.display = 'none'; });
+    const mmFilter = document.getElementById('filter-matchmakers-group');
+    if (mmFilter) mmFilter.style.display = 'none';
+  }
   loadProfiles();
-  loadKb();
+  if (!isMatchmaker) loadKb();
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
@@ -633,6 +772,10 @@ function buildProfilesUrl(forCount = false) {
   // Always exclude deleted and sample data
   params.push('deleted_at=is.null');
   params.push('import_batch=not.eq.sample_data');
+  // Matchmakers only see opted-in profiles
+  if (adminUser && adminUser.role === 'matchmaker') {
+    params.push('share_with_matchmakers=eq.true');
+  }
 
   if (f.gender) params.push(`gender=ilike.${encodeURIComponent(f.gender)}`);
   if (f.state) params.push(`state=ilike.${encodeURIComponent('*' + f.state + '*')}`);
@@ -669,10 +812,11 @@ async function loadProfiles() {
     const to = from + PAGE_SIZE - 1;
     const url = buildProfilesUrl();
 
+    const token = supabaseSession || SUPABASE_ANON;
     const r = await fetch(url, {
       headers: {
         'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Authorization': `Bearer ${token}`,
         'Range': `${from}-${to}`,
         'Range-Unit': 'items',
         'Prefer': 'count=exact'
@@ -741,7 +885,7 @@ function renderProfiles(profiles) {
       </div>
       <div class="profile-card-right">
         <div class="date">Joined ${date}</div>
-        <div class="email">${p.email || ''}</div>
+        ${adminUser && adminUser.role !== 'matchmaker' ? `<div class="email">${p.email || ''}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -795,15 +939,17 @@ function openProfile(p) {
     ${p.bio ? `<div class="modal-section"><div class="modal-section-title">About</div><p class="bio-text">"${p.bio}"</p></div>` : ''}
 
     <div class="modal-section">
-      <div class="modal-section-title">Contact</div>
+      <div class="modal-section-title">Location</div>
       <div class="detail-grid">
+        ${adminUser && adminUser.role !== 'matchmaker' ? `
         <div class="detail-item"><label>Email</label><span>${fmtVal(p.email)}</span></div>
-        <div class="detail-item"><label>Phone</label><span>${fmtVal(p.phone)}</span></div>
+        <div class="detail-item"><label>Phone</label><span>${fmtVal(p.phone)}</span></div>` : ''}
         <div class="detail-item"><label>City</label><span>${fmtVal(p.city)}</span></div>
         <div class="detail-item"><label>State</label><span>${fmtVal(p.state)}</span></div>
         <div class="detail-item"><label>Joined</label><span>${new Date(p.created_at).toLocaleDateString()}</span></div>
+        ${adminUser && adminUser.role !== 'matchmaker' ? `
         <div class="detail-item"><label>Last Updated</label><span>${p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '—'}</span></div>
-        <div class="detail-item"><label>Import Batch</label><span>${fmtVal(p.import_batch)}</span></div>
+        <div class="detail-item"><label>Import Batch</label><span>${fmtVal(p.import_batch)}</span></div>` : ''}
       </div>
     </div>
 
@@ -908,8 +1054,13 @@ function toggleKb(i) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 const saved = sessionStorage.getItem('smitten_admin');
-if (saved) {
-  try { adminUser = JSON.parse(saved); launchApp(); } catch(e) { /* bad session */ }
+const savedSession = sessionStorage.getItem('smitten_session');
+if (saved && savedSession) {
+  try {
+    adminUser = JSON.parse(saved);
+    supabaseSession = savedSession;
+    launchApp();
+  } catch(e) { /* bad session */ }
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
