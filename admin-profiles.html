@@ -811,6 +811,7 @@
 
         <div class="divider"></div>
         <button class="btn-apply" onclick="buildPool()">Build Pool</button>
+        <button class="btn-apply" onclick="buildPool()" style="margin-top:8px">Build Pool</button>
         <div id="pool-status" style="font-size:12px;color:var(--gray-mid);margin-top:10px;text-align:center"></div>
       </div>
 
@@ -834,7 +835,7 @@
             <div id="match-subject-selected" style="margin-top:12px;display:none"></div>
           </div>
           <div id="match-1to1-results">
-            <div class="empty-state"><div class="icon">🎯</div><p>Build a pool and select a profile to find matches.</p></div>
+            <div class="empty-state"><div class="icon">🎯</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Search for a profile above<br>3. Click <strong>Find Matches →</strong></p></div>
           </div>
         </div>
 
@@ -865,7 +866,7 @@
             </div>
           </div>
           <div id="match-group-results">
-            <div class="empty-state"><div class="icon">👥</div><p>Build a pool and generate groups.</p></div>
+            <div class="empty-state"><div class="icon">👥</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Set group settings above<br>3. Click <strong>Generate Groups</strong></p></div>
           </div>
           <!-- SAVED GROUPS -->
           <div style="margin-top:32px">
@@ -2422,8 +2423,8 @@ let editingStaffId = null;
 async function loadStaff() {
   const token = supabaseSession || SUPABASE_ANON;
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?select=id,first_name,last_name,email,role,is_active,organization_id,organizations(name)&order=role,first_name`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?select=id,first_name,last_name,email,role,is_active,organization_id,organizations(name)&order=role,first_name&limit=200`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Accept-Profile': 'public' }
     });
     const data = await r.json();
     renderStaff(data);
