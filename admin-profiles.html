@@ -809,9 +809,41 @@
           </select>
         </div>
 
+        <div class="filter-group">
+          <label>Body Type</label>
+          <select id="m-pool-body-type"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Smoking</label>
+          <select id="m-pool-smoking"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Drinking</label>
+          <select id="m-pool-drinking"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Has Kids</label>
+          <select id="m-pool-kids"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Wants Kids</label>
+          <select id="m-pool-want-kids"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Relationship Status</label>
+          <select id="m-pool-rel-status"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Share w/ Matchmakers</label>
+          <select id="m-pool-matchmakers">
+            <option value="">Any</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
         <div class="divider"></div>
         <button class="btn-apply" onclick="buildPool()">Build Pool</button>
-        <button class="btn-apply" onclick="buildPool()" style="margin-top:8px">Build Pool</button>
         <div id="pool-status" style="font-size:12px;color:var(--gray-mid);margin-top:10px;text-align:center"></div>
       </div>
 
@@ -2151,6 +2183,12 @@ function loadMatchingOptions() {
     ['m-pool-politics', 'politics'],
     ['m-pool-education', 'education'],
     ['m-pool-income', 'income_level'],
+    ['m-pool-body-type', 'body_type'],
+    ['m-pool-smoking', 'smoking'],
+    ['m-pool-drinking', 'drinking'],
+    ['m-pool-kids', 'kids'],
+    ['m-pool-want-kids', 'want_kids'],
+    ['m-pool-rel-status', 'relationship_status'],
   ];
   maps.forEach(([id, cat]) => {
     const el = document.getElementById(id);
@@ -2183,6 +2221,13 @@ async function buildPool() {
   const education = document.getElementById('m-pool-education').value;
   const income = document.getElementById('m-pool-income').value;
   const hasPhoto = document.getElementById('m-pool-photo').value;
+  const bodyType = document.getElementById('m-pool-body-type').value;
+  const smoking = document.getElementById('m-pool-smoking').value;
+  const drinking = document.getElementById('m-pool-drinking').value;
+  const kids = document.getElementById('m-pool-kids').value;
+  const wantKids = document.getElementById('m-pool-want-kids').value;
+  const relStatus = document.getElementById('m-pool-rel-status').value;
+  const matchmakers = document.getElementById('m-pool-matchmakers').value;
 
   if (gender) params.push(`gender=eq.${encodeURIComponent(gender)}`);
   if (state) params.push(`state=ilike.*${encodeURIComponent(state)}*`);
@@ -2194,6 +2239,13 @@ async function buildPool() {
   if (hasPhoto === 'yes') params.push('image_url=not.is.null');
   if (hasPhoto === 'no') params.push('image_url=is.null');
   if (seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + seeking + '"}')}`) ;
+  if (bodyType) params.push(`body_type=eq.${encodeURIComponent(bodyType)}`);
+  if (smoking) params.push(`smoking=eq.${encodeURIComponent(smoking)}`);
+  if (drinking) params.push(`drinking=eq.${encodeURIComponent(drinking)}`);
+  if (kids) params.push(`kids=eq.${encodeURIComponent(kids)}`);
+  if (wantKids) params.push(`want_kids=eq.${encodeURIComponent(wantKids)}`);
+  if (relStatus) params.push(`relationship_status=eq.${encodeURIComponent(relStatus)}`);
+  if (matchmakers) params.push(`share_with_matchmakers=eq.${matchmakers}`);
 
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&order=created_at.desc&limit=500`, {
