@@ -1322,8 +1322,9 @@ function initOtpInputs() {
   boxes.forEach((box, i) => {
     box.value = '';
     box.addEventListener('input', () => {
+      // Only allow digits
+      box.value = box.value.replace(/\D/g, '');
       if (box.value.length === 1 && i < boxes.length - 1) boxes[i+1].focus();
-      if (getOtpValue().length === 8) doVerifyOtp();
     });
     box.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
@@ -1333,7 +1334,7 @@ function initOtpInputs() {
       if (paste.length) {
         boxes.forEach((b, j) => b.value = paste[j] || '');
         boxes[Math.min(paste.length, 7)].focus();
-        if (paste.length === 8) doVerifyOtp();
+        // Don't auto-trigger - let user click Verify
       }
       e.preventDefault();
     });
@@ -1355,7 +1356,7 @@ async function doVerifyOtp() {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: otpEmail, token, type: 'email' })
+      body: JSON.stringify({ email: otpEmail, token, type: 'recovery' })
     });
     const data = await res.json();
     if (!res.ok || !data.access_token) {
