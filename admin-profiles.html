@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Smitten Singles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C6302C;
+    --red-light: #DA5C58;
+    --pink: #FBB3B1;
+    --gray-light: #EFEFF1;
+    --gray-dark: #5A5353;
+    --gray-mid: #BFBFBF;
+    --white: #FFFFFF;
+    --black: #1A1414;
+    --bg: #F5F4F4;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(90,83,83,0.10);
+    --shadow-lg: 0 8px 32px rgba(90,83,83,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--gray-dark); min-height: 100vh; }
+
+  /* ── LOGIN ── */
+  #screen-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--black);
+  }
+  .login-box {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 48px 44px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+  }
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .login-logo span {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: -0.02em;
+  }
+  .login-logo small {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+  }
+  .login-box h2 { font-size: 24px; color: var(--black); margin-bottom: 6px; }
+  .login-box p { font-size: 13px; color: var(--gray-dark); margin-bottom: 28px; }
+  .login-box label { font-size: 12px; font-weight: 600; color: var(--gray-dark); display: block; margin-bottom: 5px; }
+  .login-box input {
+    width: 100%; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    padding: 11px 14px; font-family: 'Montserrat', sans-serif; font-size: 14px;
+    color: var(--black); outline: none; margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--red); }
+  .login-error { font-size: 13px; color: var(--red); margin-bottom: 14px; display: none; }
+
+  /* ── APP SHELL ── */
+  #screen-app { display: none; }
+  .topbar {
+    background: var(--black);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 32px; }
+  .topbar-brand { font-size: 16px; font-weight: 700; color: var(--red); letter-spacing: -0.02em; }
+  .topbar-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    background: var(--red); color: white; padding: 2px 8px; border-radius: 4px;
+  }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; border: none;
+    background: transparent; font-family: 'Montserrat', sans-serif;
+  }
+  .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
+  .nav-tab.active { color: white; background: rgba(255,255,255,0.12); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .admin-name { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .btn-logout {
+    font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.4); background: none;
+    border: none; cursor: pointer; font-family: 'Montserrat', sans-serif;
+    transition: color 0.2s;
+  }
+  .btn-logout:hover { color: white; }
+
+  /* ── TABS ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── PROFILES TAB ── */
+  .profiles-layout { display: grid; grid-template-columns: 280px 1fr; gap: 0; min-height: calc(100vh - 56px); }
+
+  /* FILTER SIDEBAR */
+  .filter-sidebar {
+    background: var(--white);
+    border-right: 1px solid #E8E8E8;
+    padding: 24px 20px;
+    overflow-y: auto;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+  .filter-sidebar h3 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--gray-mid); margin-bottom: 20px;
+  }
+  .filter-group { margin-bottom: 22px; }
+  .filter-group label {
+    font-size: 12px; font-weight: 600; color: var(--gray-dark);
+    display: block; margin-bottom: 6px;
+  }
+  .filter-group input,
+  .filter-group select {
+    width: 100%; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    padding: 8px 10px; font-family: 'Montserrat', sans-serif; font-size: 13px;
+    color: var(--gray-dark); outline: none; background: var(--white);
+    transition: border-color 0.2s;
+  }
+  .filter-group input:focus,
+  .filter-group select:focus { border-color: var(--red); }
+  .age-range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .age-range input { width: 100%; }
+  .btn-apply {
+    width: 100%; padding: 10px; background: var(--red); color: white;
+    border: none; border-radius: var(--radius-sm); font-family: 'Montserrat', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .btn-apply:hover { background: var(--red-light); }
+  .btn-clear {
+    width: 100%; padding: 8px; background: transparent; color: var(--gray-dark);
+    border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm); font-family: 'Montserrat', sans-serif;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  }
+  .btn-clear:hover { border-color: var(--gray-dark); }
+  .divider { height: 1px; background: var(--gray-light); margin: 16px 0; }
+
+  /* PROFILE LIST */
+  .profiles-main { padding: 24px 28px; }
+  .profiles-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+  }
+  .profiles-header h2 { font-size: 18px; font-weight: 700; color: var(--black); }
+  .profile-count { font-size: 13px; color: var(--gray-mid); font-weight: 500; }
+  .search-bar {
+    display: flex; gap: 10px; margin-bottom: 20px;
+  }
+  .search-bar input {
+    flex: 1; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    padding: 9px 14px; font-family: 'Montserrat', sans-serif; font-size: 14px;
+    color: var(--gray-dark); outline: none; transition: border-color 0.2s;
+  }
+  .search-bar input:focus { border-color: var(--red); }
+
+  /* PROFILE CARDS */
+  .profiles-grid { display: flex; flex-direction: column; gap: 12px; }
+  .profile-card {
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 18px 20px; display: grid; grid-template-columns: 64px 1fr auto;
+    gap: 16px; align-items: start; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s;
+    border: 1.5px solid transparent;
+  }
+  .profile-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); border-color: var(--pink); }
+  .profile-avatar {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--gray-light);
+    overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: var(--red);
+  }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-info h4 { font-size: 15px; font-weight: 700; color: var(--black); margin-bottom: 3px; }
+  .profile-info .meta { font-size: 12px; color: var(--gray-dark); margin-bottom: 6px; }
+  .profile-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tag {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    background: var(--gray-light); color: var(--gray-dark);
+  }
+  .tag.red { background: #FFF0F0; color: var(--red); }
+  .tag.green { background: #F0FFF4; color: #166534; }
+  .profile-card-right { text-align: right; flex-shrink: 0; }
+  .profile-card-right .date { font-size: 11px; color: var(--gray-mid); }
+  .profile-card-right .email { font-size: 12px; color: var(--gray-dark); margin-top: 4px; }
+
+  /* PAGINATION */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 28px; padding-bottom: 40px; }
+  .page-btn {
+    padding: 7px 14px; border-radius: var(--radius-sm); border: 1.5px solid #E8E8E8;
+    background: white; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600;
+    color: var(--gray-dark); cursor: pointer; transition: all 0.2s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+  .page-btn.active { background: var(--red); color: white; border-color: var(--red); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-info { font-size: 13px; color: var(--gray-mid); }
+
+  /* PROFILE DETAIL MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500;
+    display: none; align-items: flex-start; justify-content: center;
+    padding: 40px 20px; overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white); border-radius: var(--radius); width: 100%; max-width: 720px;
+    box-shadow: var(--shadow-lg); position: relative; margin: auto;
+  }
+  .modal-header {
+    padding: 24px 28px 20px; border-bottom: 1px solid var(--gray-light);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .modal-avatar {
+    width: 72px; height: 72px; border-radius: 50%; background: var(--gray-light);
+    overflow: hidden; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 26px; font-weight: 700; color: var(--red);
+  }
+  .modal-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-title h2 { font-size: 22px; font-weight: 700; color: var(--black); }
+  .modal-title p { font-size: 13px; color: var(--gray-dark); margin-top: 2px; }
+  .modal-close {
+    position: absolute; top: 16px; right: 20px; background: none; border: none;
+    font-size: 22px; color: var(--gray-mid); cursor: pointer; line-height: 1;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--black); }
+  .modal-body { padding: 24px 28px; }
+  .modal-section { margin-bottom: 24px; }
+  .modal-section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--gray-mid); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .modal-section-title::after { content: ''; flex: 1; height: 1px; background: var(--gray-light); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .detail-item label { font-size: 11px; font-weight: 600; color: var(--gray-mid); display: block; }
+  .detail-item span { font-size: 13px; color: var(--black); }
+  .detail-item.full { grid-column: 1 / -1; }
+  .bio-text { font-size: 14px; color: var(--gray-dark); line-height: 1.6; font-style: italic; }
+  .photos-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .photos-row img {
+    width: 100px; height: 100px; object-fit: cover; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--gray-light);
+  }
+
+  /* KNOWLEDGEBASE TAB */
+  .kb-layout { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
+  .kb-header { margin-bottom: 28px; }
+  .kb-header h2 { font-size: 24px; font-weight: 700; color: var(--black); }
+  .kb-header p { font-size: 14px; color: var(--gray-dark); margin-top: 4px; }
+  .kb-search { margin-bottom: 24px; }
+  .kb-search input {
+    width: 100%; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    padding: 11px 16px; font-family: 'Montserrat', sans-serif; font-size: 14px;
+    color: var(--gray-dark); outline: none; transition: border-color 0.2s;
+  }
+  .kb-search input:focus { border-color: var(--red); }
+  .kb-articles { display: flex; flex-direction: column; gap: 12px; }
+  .kb-card {
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px 24px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.2s;
+  }
+  .kb-card:hover { border-color: var(--pink); box-shadow: var(--shadow-lg); }
+  .kb-card.open { border-color: var(--red); }
+  .kb-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .kb-card h3 { font-size: 15px; font-weight: 700; color: var(--black); }
+  .kb-card .kb-category {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--red); background: #FFF0F0; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+  }
+  .kb-card .kb-content {
+    font-size: 13px; color: var(--gray-dark); line-height: 1.7; margin-top: 14px;
+    display: none; white-space: pre-wrap;
+  }
+  .kb-card.open .kb-content { display: block; }
+  .kb-card .kb-toggle { font-size: 18px; color: var(--gray-mid); flex-shrink: 0; margin-top: 2px; }
+  .kb-card.open .kb-toggle { color: var(--red); }
+  .kb-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .kb-tag { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--gray-light); color: var(--gray-dark); }
+
+  /* EMPTY + LOADING */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-mid); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+  .loading-state { text-align: center; padding: 40px; color: var(--gray-mid); font-size: 14px; }
+
+  /* BUTTONS */
+  .btn { padding: 10px 20px; border-radius: var(--radius-sm); border: none; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--red); color: white; }
+  .btn-primary:hover { background: var(--red-light); }
+
+  @media (max-width: 768px) {
+    .profiles-layout { grid-template-columns: 1fr; }
+    .filter-sidebar { position: static; height: auto; }
+    .profile-card { grid-template-columns: 48px 1fr; }
+    .profile-card-right { display: none; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <div>
+        <span>Smitten Singles</span>
+        <small>Admin Portal</small>
+      </div>
+    </div>
+    <h2>Sign In</h2>
+    <p>Super admin access only.</p>
+    <div id="login-error" class="login-error"></div>
+    <label>Email Address</label>
+    <input type="email" id="login-email" placeholder="shannon@thesmittenproject.com" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Continue</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="screen-app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">Smitten Singles</span>
+      <span class="topbar-badge">Admin</span>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('profiles', this)">Profiles</button>
+        <button class="nav-tab" onclick="switchTab('kb', this)">Knowledgebase</button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="admin-name" id="admin-name-display"></span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- PROFILES TAB -->
+  <div id="tab-profiles" class="tab-panel active">
+    <div class="profiles-layout">
+      <!-- SIDEBAR FILTERS -->
+      <div class="filter-sidebar">
+        <h3>Filters</h3>
+
+        <div class="filter-group">
+          <label>Age Range</label>
+          <div class="age-range">
+            <input type="number" id="f-age-min" placeholder="Min" min="18" max="99">
+            <input type="number" id="f-age-max" placeholder="Max" min="18" max="99">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Gender</label>
+          <select id="f-gender">
+            <option value="">Any</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Non-binary</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Seeking</label>
+          <select id="f-seeking">
+            <option value="">Any</option>
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+            <option value="Everyone">Everyone / Any</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>State</label>
+          <input type="text" id="f-state" placeholder="e.g. Nebraska">
+        </div>
+
+        <div class="filter-group">
+          <label>City</label>
+          <input type="text" id="f-city" placeholder="e.g. Omaha">
+        </div>
+
+        <div class="filter-group">
+          <label>Education</label>
+          <select id="f-education">
+            <option value="">Any</option>
+            <option>High School</option>
+            <option>Some College</option>
+            <option>Associate's Degree</option>
+            <option>Bachelor's Degree</option>
+            <option>Master's Degree</option>
+            <option>Doctoral Degree</option>
+            <option>Trade / Vocational</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Religion</label>
+          <select id="f-religion">
+            <option value="">Any</option>
+            <option>Christian</option>
+            <option>Catholic</option>
+            <option>Jewish</option>
+            <option>Muslim</option>
+            <option>Hindu</option>
+            <option>Buddhist</option>
+            <option>Spiritual</option>
+            <option>Agnostic</option>
+            <option>Atheist</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Has Photo</label>
+          <select id="f-has-photo">
+            <option value="">Any</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Share w/ Matchmakers</label>
+          <select id="f-matchmakers">
+            <option value="">Any</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Profile Status</label>
+          <select id="f-active">
+            <option value="">Any</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+        <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
+        <button class="btn-clear" onclick="clearFilters()">Clear All</button>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="profiles-main">
+        <div class="profiles-header">
+          <h2>All Profiles</h2>
+          <span class="profile-count" id="profile-count"></span>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
+        </div>
+        <div id="profiles-list" class="profiles-grid">
+          <div class="loading-state">Loading profiles…</div>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KB TAB -->
+  <div id="tab-kb" class="tab-panel">
+    <div class="kb-layout">
+      <div class="kb-header">
+        <h2>Knowledgebase</h2>
+        <p>Internal reference articles for the Smitten Singles team.</p>
+      </div>
+      <div class="kb-search">
+        <input type="text" id="kb-search" placeholder="Search articles…" oninput="filterKb()">
+      </div>
+      <div id="kb-list" class="kb-articles">
+        <div class="loading-state">Loading articles…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE DETAIL MODAL -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModalOnBg(event)">
+  <div class="modal" id="profile-modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-header">
+      <div class="modal-avatar" id="modal-avatar"></div>
+      <div class="modal-title">
+        <h2 id="modal-name"></h2>
+        <p id="modal-sub"></p>
+      </div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgctltxcgsnbrdtbhmay.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+const PAGE_SIZE = 25;
+
+let adminUser = null;
+let currentPage = 0;
+let totalCount = 0;
+let activeFilters = {};
+let searchQuery = '';
+let searchTimer = null;
+let allKbArticles = [];
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  if (!email) { showLoginError('Please enter your email.'); return; }
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(email)}&role=eq.super_admin&is_active=eq.true&select=id,email,first_name,last_name,role`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+    });
+    const data = await r.json();
+    if (!data.length) { showLoginError('Access denied. Super admin only.'); return; }
+    adminUser = data[0];
+    sessionStorage.setItem('smitten_admin', JSON.stringify(adminUser));
+    launchApp();
+  } catch(e) {
+    showLoginError('Could not connect. Try again.');
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function doLogout() {
+  sessionStorage.removeItem('smitten_admin');
+  adminUser = null;
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('screen-app').style.display = 'none';
+  document.getElementById('login-email').value = '';
+}
+
+function launchApp() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-app').style.display = 'block';
+  document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
+  loadProfiles();
+  loadKb();
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── PROFILES ──────────────────────────────────────────────────────────────────
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchQuery = document.getElementById('search-input').value.trim();
+    currentPage = 0;
+    loadProfiles();
+  }, 400);
+}
+
+function applyFilters() {
+  activeFilters = {
+    ageMin: document.getElementById('f-age-min').value,
+    ageMax: document.getElementById('f-age-max').value,
+    gender: document.getElementById('f-gender').value,
+    seeking: document.getElementById('f-seeking').value,
+    state: document.getElementById('f-state').value.trim(),
+    city: document.getElementById('f-city').value.trim(),
+    education: document.getElementById('f-education').value,
+    religion: document.getElementById('f-religion').value,
+    hasPhoto: document.getElementById('f-has-photo').value,
+    matchmakers: document.getElementById('f-matchmakers').value,
+    active: document.getElementById('f-active').value,
+  };
+  currentPage = 0;
+  loadProfiles();
+}
+
+function clearFilters() {
+  ['f-age-min','f-age-max','f-state','f-city'].forEach(id => document.getElementById(id).value = '');
+  ['f-gender','f-seeking','f-education','f-religion','f-has-photo','f-matchmakers','f-active'].forEach(id => document.getElementById(id).value = '');
+  activeFilters = {};
+  currentPage = 0;
+  loadProfiles();
+}
+
+function calcAge(dob) {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d)) return null;
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const m = today.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+  return age;
+}
+
+function buildProfilesUrl(forCount = false) {
+  const f = activeFilters;
+  let params = [];
+
+  // Always exclude deleted and sample data
+  params.push('deleted_at=is.null');
+  params.push('import_batch=not.eq.sample_data');
+
+  if (f.gender) params.push(`gender=ilike.${encodeURIComponent(f.gender)}`);
+  if (f.state) params.push(`state=ilike.${encodeURIComponent('*' + f.state + '*')}`);
+  if (f.city) params.push(`city=ilike.${encodeURIComponent('*' + f.city + '*')}`);
+  if (f.education) params.push(`education=eq.${encodeURIComponent(f.education)}`);
+  if (f.religion) params.push(`religion=eq.${encodeURIComponent(f.religion)}`);
+  if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
+  if (f.active) params.push(`is_active=eq.${f.active}`);
+  if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
+  if (f.hasPhoto === 'no') params.push('image_url=is.null');
+  if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
+
+  if (searchQuery) {
+    const q = encodeURIComponent(`*${searchQuery}*`);
+    params.push(`or=(first_name.ilike.${q},last_name.ilike.${q},email.ilike.${q})`);
+  }
+
+  const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
+
+  if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,image_url,seeking,share_with_matchmakers,is_active,created_at,updated_at,bio,occupation,education,religion,ethnicity,height_inches,kids,want_kids,smoking,drinking,politics,body_type,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,interested_in_matchmaking,import_batch&order=created_at.desc`;
+}
+
+async function loadProfiles() {
+  document.getElementById('profiles-list').innerHTML = '<div class="loading-state">Loading…</div>';
+  document.getElementById('pagination').innerHTML = '';
+
+  try {
+    const f = activeFilters;
+    const needAgeFilter = f.ageMin || f.ageMax;
+
+    // Fetch with range
+    const from = currentPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const url = buildProfilesUrl();
+
+    const r = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Range': `${from}-${to}`,
+        'Range-Unit': 'items',
+        'Prefer': 'count=exact'
+      }
+    });
+
+    let data = await r.json();
+    const contentRange = r.headers.get('content-range');
+    let total = 0;
+    if (contentRange) {
+      const match = contentRange.match(/\/(\d+)/);
+      if (match) total = parseInt(match[1]);
+    }
+
+    // Client-side age filter (DOB is stored as text)
+    if (needAgeFilter) {
+      data = data.filter(p => {
+        const age = calcAge(p.date_of_birth);
+        if (age === null) return false;
+        if (f.ageMin && age < parseInt(f.ageMin)) return false;
+        if (f.ageMax && age > parseInt(f.ageMax)) return false;
+        return true;
+      });
+    }
+
+    totalCount = needAgeFilter ? data.length : total;
+    renderProfiles(data);
+    renderPagination(needAgeFilter ? 1 : Math.ceil(total / PAGE_SIZE));
+    document.getElementById('profile-count').textContent = `${totalCount.toLocaleString()} profile${totalCount !== 1 ? 's' : ''}`;
+
+  } catch(e) {
+    document.getElementById('profiles-list').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load profiles.</p></div>';
+    console.error(e);
+  }
+}
+
+function renderProfiles(profiles) {
+  const el = document.getElementById('profiles-list');
+  if (!profiles.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No profiles match your filters.</p></div>';
+    return;
+  }
+  el.innerHTML = profiles.map(p => {
+    const age = calcAge(p.date_of_birth);
+    const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
+    const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
+    const location = [p.city, p.state].filter(Boolean).join(', ');
+    const meta = [age ? `${age} yrs` : null, p.gender, location].filter(Boolean).join(' · ');
+    const avatar = p.image_url
+      ? `<img src="${p.image_url}" alt="${name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">`
+      : initials;
+    const seeking = p.seeking?.join(', ') || '';
+    const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    return `<div class="profile-card" onclick="openProfile(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+      <div class="profile-avatar">${avatar}</div>
+      <div class="profile-info">
+        <h4>${name}</h4>
+        <div class="meta">${meta || '—'}</div>
+        <div class="profile-tags">
+          ${p.occupation ? `<span class="tag">${p.occupation}</span>` : ''}
+          ${seeking ? `<span class="tag red">Seeking: ${seeking}</span>` : ''}
+          ${p.share_with_matchmakers ? '<span class="tag green">Matchmaker</span>' : ''}
+          ${!p.is_active ? '<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>' : ''}
+        </div>
+      </div>
+      <div class="profile-card-right">
+        <div class="date">Joined ${date}</div>
+        <div class="email">${p.email || ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPagination(totalPages) {
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>← Prev</button>`;
+  const start = Math.max(0, currentPage - 2);
+  const end = Math.min(totalPages - 1, currentPage + 2);
+  if (start > 0) html += `<button class="page-btn" onclick="goPage(0)">1</button>${start > 1 ? '<span class="page-info">…</span>' : ''}`;
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i + 1}</button>`;
+  }
+  if (end < totalPages - 1) html += `${end < totalPages - 2 ? '<span class="page-info">…</span>' : ''}<button class="page-btn" onclick="goPage(${totalPages - 1})">${totalPages}</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(n) {
+  currentPage = n;
+  loadProfiles();
+  window.scrollTo(0, 0);
+}
+
+// ── PROFILE MODAL ─────────────────────────────────────────────────────────────
+function openProfile(p) {
+  const age = calcAge(p.date_of_birth);
+  const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
+  const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
+  const location = [p.city, p.state].filter(Boolean).join(', ');
+
+  // Avatar
+  const avatarEl = document.getElementById('modal-avatar');
+  if (p.image_url) {
+    avatarEl.innerHTML = `<img src="${p.image_url}" alt="${name}">`;
+  } else {
+    avatarEl.textContent = initials;
+  }
+
+  document.getElementById('modal-name').textContent = name;
+  document.getElementById('modal-sub').textContent = [age ? `Age ${age}` : null, p.gender, location].filter(Boolean).join(' · ') || '—';
+
+  const fmtHeight = h => { if (!h) return '—'; const ft = Math.floor(h/12); const i = h%12; return `${ft}'${i}"`; };
+  const fmtBool = v => v === true ? 'Yes' : v === false ? 'No' : '—';
+  const fmtArr = v => Array.isArray(v) && v.length ? v.join(', ') : '—';
+  const fmtVal = v => v || '—';
+
+  document.getElementById('modal-body').innerHTML = `
+    ${p.bio ? `<div class="modal-section"><div class="modal-section-title">About</div><p class="bio-text">"${p.bio}"</p></div>` : ''}
+
+    <div class="modal-section">
+      <div class="modal-section-title">Contact</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Email</label><span>${fmtVal(p.email)}</span></div>
+        <div class="detail-item"><label>Phone</label><span>${fmtVal(p.phone)}</span></div>
+        <div class="detail-item"><label>City</label><span>${fmtVal(p.city)}</span></div>
+        <div class="detail-item"><label>State</label><span>${fmtVal(p.state)}</span></div>
+        <div class="detail-item"><label>Joined</label><span>${new Date(p.created_at).toLocaleDateString()}</span></div>
+        <div class="detail-item"><label>Last Updated</label><span>${p.updated_at ? new Date(p.updated_at).toLocaleDateString() : '—'}</span></div>
+        <div class="detail-item"><label>Import Batch</label><span>${fmtVal(p.import_batch)}</span></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Personal</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Age</label><span>${age || '—'}</span></div>
+        <div class="detail-item"><label>Gender</label><span>${fmtVal(p.gender)}</span></div>
+        <div class="detail-item"><label>Height</label><span>${fmtHeight(p.height_inches)}</span></div>
+        <div class="detail-item"><label>Body Type</label><span>${fmtVal(p.body_type)}</span></div>
+        <div class="detail-item"><label>Ethnicity</label><span>${fmtArr(p.ethnicity)}</span></div>
+        <div class="detail-item"><label>Religion</label><span>${fmtVal(p.religion)}</span></div>
+        <div class="detail-item"><label>Politics</label><span>${fmtVal(p.politics)}</span></div>
+        <div class="detail-item"><label>Education</label><span>${fmtVal(p.education)}</span></div>
+        <div class="detail-item"><label>Occupation</label><span>${fmtVal(p.occupation)}</span></div>
+        <div class="detail-item"><label>Smoking</label><span>${fmtVal(p.smoking)}</span></div>
+        <div class="detail-item"><label>Drinking</label><span>${fmtVal(p.drinking)}</span></div>
+        <div class="detail-item"><label>Has Kids</label><span>${fmtVal(p.kids)}</span></div>
+        <div class="detail-item"><label>Wants Kids</label><span>${fmtVal(p.want_kids)}</span></div>
+        <div class="detail-item"><label>Activities</label><span>${fmtArr(p.activities_hobbies)}</span></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Matching</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Seeking</label><span>${fmtArr(p.seeking)}</span></div>
+        <div class="detail-item"><label>Age Range</label><span>${p.min_age && p.max_age ? `${p.min_age}–${p.max_age}` : '—'}</span></div>
+        <div class="detail-item"><label>Dealbreakers</label><span>${fmtArr(p.dealbreakers)}</span></div>
+        <div class="detail-item"><label>Share w/ Matchmakers</label><span>${fmtBool(p.share_with_matchmakers)}</span></div>
+        <div class="detail-item"><label>Interested in Matchmaking</label><span>${fmtBool(p.interested_in_matchmaking)}</span></div>
+        ${p.ideal_match ? `<div class="detail-item full"><label>Ideal Match</label><span>${p.ideal_match}</span></div>` : ''}
+      </div>
+    </div>
+
+    ${p.photos && p.photos.length ? `<div class="modal-section">
+      <div class="modal-section-title">Photos</div>
+      <div class="photos-row">${p.photos.map(url => `<img src="${url}" alt="photo">`).join('')}</div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOnBg(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── KNOWLEDGEBASE ─────────────────────────────────────────────────────────────
+async function loadKb() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/knowledgebase?is_active=eq.true&order=category,title`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+    });
+    allKbArticles = await r.json();
+    renderKb(allKbArticles);
+  } catch(e) {
+    document.getElementById('kb-list').innerHTML = '<div class="empty-state"><p>Failed to load knowledgebase.</p></div>';
+  }
+}
+
+function filterKb() {
+  const q = document.getElementById('kb-search').value.trim().toLowerCase();
+  if (!q) { renderKb(allKbArticles); return; }
+  renderKb(allKbArticles.filter(a =>
+    a.title?.toLowerCase().includes(q) ||
+    a.content?.toLowerCase().includes(q) ||
+    a.category?.toLowerCase().includes(q) ||
+    (a.tags && a.tags.some(t => t.toLowerCase().includes(q)))
+  ));
+}
+
+function renderKb(articles) {
+  const el = document.getElementById('kb-list');
+  if (!articles.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No articles found.</p></div>'; return; }
+  el.innerHTML = articles.map((a, i) => `
+    <div class="kb-card" id="kb-card-${i}" onclick="toggleKb(${i})">
+      <div class="kb-card-header">
+        <div>
+          <h3>${a.title}</h3>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          ${a.category ? `<span class="kb-category">${a.category}</span>` : ''}
+          <span class="kb-toggle">▾</span>
+        </div>
+      </div>
+      <div class="kb-content">${a.content || ''}</div>
+      ${a.tags && a.tags.length ? `<div class="kb-tags">${a.tags.map(t => `<span class="kb-tag">${t}</span>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function toggleKb(i) {
+  document.getElementById(`kb-card-${i}`).classList.toggle('open');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+const saved = sessionStorage.getItem('smitten_admin');
+if (saved) {
+  try { adminUser = JSON.parse(saved); launchApp(); } catch(e) { /* bad session */ }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
