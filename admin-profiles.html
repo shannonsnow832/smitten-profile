@@ -1544,8 +1544,15 @@ function buildProfilesUrl(forCount = false) {
   if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
 
   if (searchQuery) {
-    const sq = encodeURIComponent(searchQuery);
-    params.push(`or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)`);
+    const words = searchQuery.trim().split(/\s+/);
+    if (words.length === 1) {
+      const sq = encodeURIComponent(words[0]);
+      params.push(`or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)`);
+    } else {
+      const first = encodeURIComponent(words[0]);
+      const last = encodeURIComponent(words.slice(1).join(' '));
+      params.push(`or=(and(first_name.ilike.*${first}*,last_name.ilike.*${last}*),email.ilike.*${encodeURIComponent(searchQuery)}*)`);
+    }
   }
 
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
