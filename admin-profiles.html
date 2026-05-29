@@ -475,6 +475,68 @@
       <div class="filter-sidebar">
         <h3>Filters</h3>
 
+        <!-- PRIORITY FILTERS — always open -->
+        <div class="filter-section">
+          <div class="filter-section-header open" onclick="toggleFilter(this)">
+            Priority Filters <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body open">
+            <div class="filter-group">
+              <label>Gender</label>
+              <select id="f-priority-gender" onchange="applyFilters()">
+                <option value="">Any</option>
+                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Income</label>
+              <select id="f-income" onchange="applyFilters()">
+                <option value="">Any</option>
+                <option>Under $50k</option>
+                <option>$50k - $100k</option>
+                <option>$100k - $150k</option>
+                <option>$150k - $250k</option>
+                <option>$250k - $500k</option>
+                <option>$500k+</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Has Kids</label>
+              <select id="f-priority-kids" onchange="applyFilters()">
+                <option value="">Any</option>
+                <option>No</option>
+                <option value="Yes, at home">Yes, at home</option>
+                <option value="Yes, not at home">Yes, not at home</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Wants Kids</label>
+              <select id="f-priority-want-kids" onchange="applyFilters()">
+                <option value="">Any</option>
+                <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Religion</label>
+              <select id="f-priority-religion" onchange="applyFilters()">
+                <option value="">Any</option>
+                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
+                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option>
+                <option>Agnostic</option><option>Atheist</option><option>Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Education</label>
+              <select id="f-priority-education" onchange="applyFilters()">
+                <option value="">Any</option>
+                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
+                <option>Bachelor's Degree</option><option>Master's Degree</option>
+                <option>Doctoral Degree</option><option>Trade / Vocational</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <!-- BASIC — always open -->
         <div class="filter-section">
           <div class="filter-section-header open" onclick="toggleFilter(this)">
@@ -599,30 +661,9 @@
                 <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
               </select>
             </div>
-            <div class="filter-group">
-              <label>Income (Min)</label>
-              <select id="f-income-min">
-                <option value="">Any</option>
-                <option value="Under $50k">Under $50k</option>
-                <option value="$50k - $100k">$50k - $100k</option>
-                <option value="$100k - $150k">$100k - $150k</option>
-                <option value="$150k - $250k">$150k - $250k</option>
-                <option value="$250k - $500k">$250k - $500k</option>
-                <option value="$500k+">$500k+</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Income (Max)</label>
-              <select id="f-income-max">
-                <option value="">Any</option>
-                <option value="Under $50k">Under $50k</option>
-                <option value="$50k - $100k">$50k - $100k</option>
-                <option value="$100k - $150k">$100k - $150k</option>
-                <option value="$150k - $250k">$150k - $250k</option>
-                <option value="$250k - $500k">$250k - $500k</option>
-                <option value="$500k+">$500k+</option>
-              </select>
-            </div>
+            <!-- income min/max hidden, replaced by f-income in priority filters -->
+            <select id="f-income-min" style="display:none"></select>
+            <select id="f-income-max" style="display:none"></select>
             <div class="filter-group">
               <label>Relationship Status</label>
               <select id="f-rel-status">
@@ -765,48 +806,7 @@
         <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
         </div>
-        <div id="quick-filters" style="display:flex;flex-wrap:wrap;gap:8px;padding:0 0 12px 0">
-          <select id="qf-gender" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Any Gender</option>
-            <option>Male</option><option>Female</option><option>Non-binary</option>
-          </select>
-          <select id="qf-income" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Any Income</option>
-            <option>Under $50k</option>
-            <option>$50k - $100k</option>
-            <option>$100k - $150k</option>
-            <option>$150k - $250k</option>
-            <option>$250k - $500k</option>
-            <option>$500k+</option>
-          </select>
-          <select id="qf-kids" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Has Kids?</option>
-            <option value="No">No</option>
-            <option value="Yes, at home">Yes, at home</option>
-            <option value="Yes, not at home">Yes, not at home</option>
-          </select>
-          <select id="qf-want-kids" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Wants Kids?</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-            <option value="Open to it">Open to it</option>
-            <option value="Undecided">Undecided</option>
-          </select>
-          <select id="qf-religion" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Any Religion</option>
-            <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option><option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
-          </select>
-          <select id="qf-education" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Any Education</option>
-            <option>High School</option><option>Some College</option><option>Associate's</option><option>Bachelor's</option><option>Master's</option><option>Doctorate</option><option>Trade School</option>
-          </select>
-          <select id="qf-active" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
-            <option value="">Any Status</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-          <button onclick="clearQuickFilters()" style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:#5A5353;cursor:pointer">Clear</button>
-        </div>
+        <!-- quick filters moved to sidebar priority section -->
         <div id="profiles-list" class="profiles-grid">
           <div class="loading-state">Loading profiles…</div>
         </div>
@@ -1571,6 +1571,8 @@ function debounceSearch() {
 
 function clearFilters() {
   ['f-age-min','f-age-max','f-state','f-city','f-zip','f-distance-zip','f-distance-miles',
+   'f-income'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['f-priority-gender','f-priority-kids','f-priority-want-kids','f-priority-religion','f-priority-education',
    'f-pref-age-min','f-pref-age-max'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   ['f-gender','f-seeking','f-education','f-religion','f-has-photo','f-matchmakers','f-active',
    'f-politics','f-body-type','f-smoking','f-drinking','f-kids','f-want-kids','f-income-min','f-income-max',
@@ -2111,9 +2113,14 @@ async function applyFilters() {
     drinking: document.getElementById('f-drinking').value,
     kids: document.getElementById('f-kids').value,
     wantKids: document.getElementById('f-want-kids').value,
-    incomeMin: document.getElementById('qf-income').value ? '' : document.getElementById('f-income-min').value,
-    incomeMax: document.getElementById('qf-income').value ? '' : document.getElementById('f-income-max').value,
-    incomeExact: document.getElementById('qf-income') ? document.getElementById('qf-income').value : '',
+    incomeMin: '',
+    incomeMax: '',
+    incomeExact: document.getElementById('f-income') ? document.getElementById('f-income').value : '',
+    gender: document.getElementById('f-priority-gender') && document.getElementById('f-priority-gender').value ? document.getElementById('f-priority-gender').value : document.getElementById('f-gender').value,
+    kids: document.getElementById('f-priority-kids') && document.getElementById('f-priority-kids').value ? document.getElementById('f-priority-kids').value : document.getElementById('f-kids').value,
+    wantKids: document.getElementById('f-priority-want-kids') && document.getElementById('f-priority-want-kids').value ? document.getElementById('f-priority-want-kids').value : document.getElementById('f-want-kids').value,
+    religion: document.getElementById('f-priority-religion') && document.getElementById('f-priority-religion').value ? document.getElementById('f-priority-religion').value : document.getElementById('f-religion').value,
+    education: document.getElementById('f-priority-education') && document.getElementById('f-priority-education').value ? document.getElementById('f-priority-education').value : document.getElementById('f-education').value,
     relStatus: document.getElementById('f-rel-status').value,
     prefAgeMin: document.getElementById('f-pref-age-min').value,
     prefAgeMax: document.getElementById('f-pref-age-max').value,
