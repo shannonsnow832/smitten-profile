@@ -836,7 +836,23 @@
           </select>
         </div>
 
+        <div class="filter-group">
+          <label>Activities / Interests</label>
+          <input type="text" id="m-pool-activities" placeholder="e.g. hiking, cooking..." style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+
         <div class="divider"></div>
+
+        <div class="filter-group">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-mid)">Or Build from Event</label>
+          <select id="m-pool-event" style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;background:white">
+            <option value="">Manual filters above</option>
+          </select>
+          <div style="font-size:11px;color:var(--gray-mid);margin-top:4px">Loads all invited attendees</div>
+        </div>
+
+        <div id="pool-mf-count" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-bottom:8px;display:none"></div>
+
         <button class="btn-apply" onclick="buildPool()">Build Pool</button>
         <button onclick="clearPoolFilters()" style="width:100%;margin-top:8px;padding:9px;border:1px solid #ddd;border-radius:var(--radius-sm);background:white;color:var(--gray-dark);font-size:13px;font-family:Montserrat,sans-serif;cursor:pointer">Clear Filters</button>
         <div id="pool-status" style="font-size:12px;color:var(--gray-mid);margin-top:10px;text-align:center"></div>
@@ -898,7 +914,7 @@
         <div id="match-group-panel" style="display:none">
           <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
             <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Generate Match Groups</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
               <div class="modal-field">
                 <label>Group Name</label>
                 <input type="text" id="mg-name" value="Match Group" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
@@ -907,26 +923,24 @@
                 <label>Number of Groups</label>
                 <input type="number" id="mg-count" value="4" min="2" max="20" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
               </div>
-              <div class="modal-field">
-                <label>Gender Balanced</label>
-                <select id="mg-balanced" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%;background:white">
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
-              </div>
             </div>
-            <div style="display:flex;gap:10px;align-items:center">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-primary" id="btn-generate-groups" onclick="generateGroups()">Generate Groups</button>
+              <span id="pool-gender-breakdown" style="font-size:13px;color:var(--gray-dark)"></span>
               <span id="mg-status" style="font-size:12px;color:var(--gray-mid)"></span>
             </div>
           </div>
           <!-- POOL PREVIEW -->
           <div id="pool-preview" style="margin-bottom:20px;display:none">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
               <h3 style="font-size:14px;font-weight:700">Pool Members <span id="pool-preview-count" style="color:var(--gray-mid);font-weight:400"></span></h3>
-              <button onclick="exportPoolCSV()" style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export Pool CSV</button>
+              <div style="display:flex;gap:8px">
+                <button id="btn-pool-view-grid" onclick="setPoolView('grid')" style="font-size:11px;padding:4px 10px;border:1px solid var(--red);border-radius:6px;background:var(--red);color:white;cursor:pointer">Grid</button>
+                <button id="btn-pool-view-list" onclick="setPoolView('list')" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">List</button>
+                <button onclick="exportPoolCSV()" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export CSV</button>
+              </div>
             </div>
-            <div id="pool-preview-list" style="display:flex;flex-wrap:wrap;gap:8px;max-height:180px;overflow-y:auto"></div>
+            <div id="pool-preview-list" style="display:flex;flex-wrap:wrap;gap:8px;max-height:220px;overflow-y:auto"></div>
           </div>
 
           <div id="match-group-results">
@@ -1488,7 +1502,7 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'staff') loadStaff();
-  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); }
+  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); }
   if (name === 'archived') loadArchivedProfiles();
 }
 
@@ -2315,6 +2329,20 @@ let matchMode = '1to1';
 let matchSubject = null;
 let subjectSearchTimer = null;
 
+async function loadEventOptions() {
+  const el = document.getElementById('m-pool-event');
+  if (!el) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/events?deleted_at=is.null&select=id,name,event_date&order=event_date.desc&limit=50`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const events = await r.json();
+    el.innerHTML = '<option value="">Manual filters above</option>' +
+      events.map(e => `<option value="${e.id}">${e.name}${e.event_date ? ' · ' + new Date(e.event_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</option>`).join('');
+  } catch(e) { console.warn('loadEventOptions failed', e); }
+}
+
 function loadMatchingOptions() {
   if (Object.keys(profileOptions).length === 0) loadAllOptions();
   // Populate matching sidebar selects
@@ -2488,7 +2516,7 @@ async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
 }
 
 function clearPoolFilters() {
-  ['m-pool-age-min','m-pool-age-max','m-pool-state','m-pool-city','m-pool-distance-zip','m-pool-distance-miles'].forEach(id => {
+  ['m-pool-age-min','m-pool-age-max','m-pool-state','m-pool-city','m-pool-distance-zip','m-pool-distance-miles','m-pool-activities'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['m-pool-gender','m-pool-income','m-pool-kids','m-pool-want-kids','m-pool-religion',
@@ -2518,6 +2546,34 @@ function exportPoolCSV() {
   a.click();
 }
 
+let poolExcluded = new Set();
+let poolViewMode = 'grid';
+
+function setPoolView(mode) {
+  poolViewMode = mode;
+  document.getElementById('btn-pool-view-grid').style.background = mode === 'grid' ? 'var(--red)' : 'white';
+  document.getElementById('btn-pool-view-grid').style.color = mode === 'grid' ? 'white' : 'inherit';
+  document.getElementById('btn-pool-view-grid').style.borderColor = mode === 'grid' ? 'var(--red)' : '#ddd';
+  document.getElementById('btn-pool-view-list').style.background = mode === 'list' ? 'var(--red)' : 'white';
+  document.getElementById('btn-pool-view-list').style.color = mode === 'list' ? 'white' : 'inherit';
+  document.getElementById('btn-pool-view-list').style.borderColor = mode === 'list' ? 'var(--red)' : '#ddd';
+  renderPoolPreview();
+}
+
+function excludeFromPool(id) {
+  poolExcluded.add(id);
+  matchPool = matchPool.filter(p => p.id !== id);
+  renderPoolPreview();
+  // Update counts
+  const maleCount = matchPool.filter(p => p.gender === 'Male').length;
+  const femaleCount = matchPool.filter(p => p.gender === 'Female').length;
+  const otherCount = matchPool.length - maleCount - femaleCount;
+  const mfText = `${maleCount}M · ${femaleCount}F${otherCount > 0 ? ' · ' + otherCount + ' Other' : ''}`;
+  const genderBreakdown = document.getElementById('pool-gender-breakdown');
+  if (genderBreakdown) genderBreakdown.textContent = mfText;
+  document.getElementById('pool-count-badge').textContent = `${matchPool.length} in pool`;
+}
+
 function renderPoolPreview() {
   const el = document.getElementById('pool-preview');
   const list = document.getElementById('pool-preview-list');
@@ -2526,16 +2582,43 @@ function renderPoolPreview() {
   if (!matchPool.length) { el.style.display = 'none'; return; }
   el.style.display = '';
   count.textContent = `(${matchPool.length})`;
-  list.innerHTML = matchPool.map(p => {
-    const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
-    const avatar = p.image_url
-      ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-      : `<span style="font-size:11px;font-weight:700;color:var(--red)">${initials}</span>`;
-    return `<div title="${p.first_name} ${p.last_name}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:56px">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">${avatar}</div>
-      <span style="font-size:10px;color:var(--gray-dark);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">${p.first_name}</span>
-    </div>`;
-  }).join('');
+
+  if (poolViewMode === 'list') {
+    list.style.flexDirection = 'column';
+    list.style.flexWrap = 'nowrap';
+    list.style.maxHeight = '320px';
+    list.innerHTML = matchPool.map(p => {
+      const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
+      const avatar = p.image_url
+        ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">`
+        : `<span style="font-size:11px;font-weight:700;color:var(--red)">${initials}</span>`;
+      const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+      const travel = (p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;background:white;border:1px solid #f0f0f0;margin-bottom:4px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="openProfileById('${p.id}')">${avatar}</div>
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="openProfileById('${p.id}')">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.first_name} ${p.last_name}</div>
+          <div style="font-size:11px;color:var(--gray-mid)">${age ? age+' · ' : ''}${p.gender||''} · ${p.city||''}${p.state ? ', '+p.state : ''}${travel ? ' <span style="color:#1D4ED8">✈</span>' : ''}</div>
+        </div>
+        <button onclick="excludeFromPool('${p.id}')" title="Exclude from pool" style="font-size:11px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:white;color:#C6302C;cursor:pointer;flex-shrink:0">✕</button>
+      </div>`;
+    }).join('');
+  } else {
+    list.style.flexDirection = 'row';
+    list.style.flexWrap = 'wrap';
+    list.style.maxHeight = '220px';
+    list.innerHTML = matchPool.map(p => {
+      const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
+      const avatar = p.image_url
+        ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+        : `<span style="font-size:11px;font-weight:700;color:var(--red)">${initials}</span>`;
+      return `<div title="${p.first_name} ${p.last_name}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:56px;position:relative">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer" onclick="openProfileById('${p.id}')">${avatar}</div>
+        <span style="font-size:10px;color:var(--gray-dark);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">${p.first_name}</span>
+        <div onclick="excludeFromPool('${p.id}')" title="Exclude" style="position:absolute;top:-4px;right:2px;width:14px;height:14px;background:#C6302C;border-radius:50%;color:white;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 async function buildPool() {
@@ -2608,11 +2691,28 @@ async function buildPool() {
     }
   }
 
+  // Activities filter
+  const activities = document.getElementById('m-pool-activities') ? document.getElementById('m-pool-activities').value.trim() : '';
+  if (activities) params.push(`activities_hobbies=ilike.*${encodeURIComponent(activities)}*`);
+
+  // Event-based pool
+  const eventId = document.getElementById('m-pool-event') ? document.getElementById('m-pool-event').value : '';
+
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&order=created_at.desc&limit=500`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
-    });
-    let data = await r.json();
+    let data = [];
+    if (eventId) {
+      const r2 = await fetch(`${SUPABASE_URL}/rest/v1/event_invites?event_id=eq.${eventId}&select=profiles(id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies)&limit=500`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const invites = await r2.json();
+      data = Array.isArray(invites) ? invites.map(i => i.profiles).filter(Boolean) : [];
+    } else {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies&order=created_at.desc&limit=500`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      data = await r.json();
+      data = Array.isArray(data) ? data : [];
+    }
 
     // Client-side age filter
     if (ageMin || ageMax) {
@@ -2626,8 +2726,16 @@ async function buildPool() {
     }
 
     matchPool = data;
-    statusEl.textContent = `Pool: ${matchPool.length} profiles`;
-    document.getElementById('pool-count-badge').textContent = `${matchPool.length} profiles in pool`;
+    const maleCount = matchPool.filter(p => p.gender === 'Male').length;
+    const femaleCount = matchPool.filter(p => p.gender === 'Female').length;
+    const otherCount = matchPool.length - maleCount - femaleCount;
+    const mfText = `${maleCount}M · ${femaleCount}F${otherCount > 0 ? ' · ' + otherCount + ' Other' : ''}`;
+    statusEl.textContent = `Pool: ${matchPool.length} · ${mfText}`;
+    document.getElementById('pool-count-badge').textContent = matchPool.length ? `${matchPool.length} in pool` : '';
+    const genderBreakdown = document.getElementById('pool-gender-breakdown');
+    if (genderBreakdown) genderBreakdown.textContent = matchPool.length ? mfText : '';
+    const mfCountEl = document.getElementById('pool-mf-count');
+    if (mfCountEl) { mfCountEl.textContent = mfText; mfCountEl.style.display = matchPool.length ? '' : 'none'; }
     renderPoolPreview();
   } catch(e) {
     statusEl.textContent = 'Failed to build pool.';
@@ -2780,7 +2888,8 @@ async function generateGroups() {
   if (!matchPool.length) { alert('Build a pool first.'); return; }
   const name = document.getElementById('mg-name').value.trim() || 'Match Group';
   const count = parseInt(document.getElementById('mg-count').value) || 4;
-  const balanced = document.getElementById('mg-balanced').value === 'true';
+  const balanced = true; // Always attempt gender balance
+  const eventId = document.getElementById('m-pool-event') && document.getElementById('m-pool-event').value ? document.getElementById('m-pool-event').value : null;
   const statusEl = document.getElementById('mg-status');
   const btn = document.getElementById('btn-generate-groups');
   btn.disabled = true; btn.textContent = 'Generating...';
@@ -2796,7 +2905,7 @@ async function generateGroups() {
         p_group_count: count,
         p_gender_balanced: balanced,
         p_group_name: name,
-        p_event_id: null,
+        p_event_id: eventId,
         p_source_filters: null,
         p_generated_by: null
       })
