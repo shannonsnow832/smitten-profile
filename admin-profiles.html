@@ -269,6 +269,14 @@
 
   /* ── COLLAPSIBLE FILTERS ── */
 
+
+  /* ── MATCH TOGGLES ───────────────────────────────────────────── */
+  .match-toggles { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px; }
+  .match-toggle { display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;border:1.5px solid #E8E8E8;background:white;font-size:12px;font-family:Montserrat,sans-serif;cursor:pointer;user-select:none;transition:all 0.15s; }
+  .match-toggle.on { background:#FFF0F0;border-color:var(--red);color:var(--red);font-weight:600; }
+  .match-toggle .dot { width:8px;height:8px;border-radius:50%;background:#ddd;flex-shrink:0; }
+  .match-toggle.on .dot { background:var(--red); }
+
   /* ── MULTI-SELECT WIDGET ─────────────────────────────────────── */
   .ms-wrap { position: relative; }
   .ms-display {
@@ -845,7 +853,7 @@
 
         <!-- 1-TO-1 MODE -->
         <div id="match-1to1-panel">
-          <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
+          <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px">
             <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">Find Matches For</h3>
             <div style="display:flex;gap:10px">
               <input type="text" id="match-subject-search" placeholder="Search by name or email..." style="flex:1;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:9px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none" oninput="searchMatchSubject()">
@@ -853,8 +861,36 @@
             <div id="match-subject-results" style="margin-top:8px;display:none;background:#f9f9f9;border-radius:var(--radius-sm);border:1px solid #E8E8E8;max-height:200px;overflow-y:auto"></div>
             <div id="match-subject-selected" style="margin-top:12px;display:none"></div>
           </div>
+
+          <!-- SCORING TOGGLES -->
+          <div style="background:white;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Score Using</div>
+            <div class="match-toggles">
+              <div class="match-toggle on" id="mt-seeking" onclick="toggleMatchField('seeking')"><span class="dot"></span>Seeking</div>
+              <div class="match-toggle on" id="mt-age" onclick="toggleMatchField('age')"><span class="dot"></span>Age Range</div>
+              <div class="match-toggle on" id="mt-kids" onclick="toggleMatchField('kids')"><span class="dot"></span>Kids</div>
+              <div class="match-toggle on" id="mt-religion" onclick="toggleMatchField('religion')"><span class="dot"></span>Religion</div>
+              <div class="match-toggle on" id="mt-politics" onclick="toggleMatchField('politics')"><span class="dot"></span>Politics</div>
+              <div class="match-toggle on" id="mt-body_type" onclick="toggleMatchField('body_type')"><span class="dot"></span>Body Type</div>
+              <div class="match-toggle on" id="mt-income" onclick="toggleMatchField('income')"><span class="dot"></span>Income</div>
+              <div class="match-toggle on" id="mt-location" onclick="toggleMatchField('location')"><span class="dot"></span>Location</div>
+            </div>
+          </div>
+
+          <!-- LOCATION FILTERS -->
+          <div style="background:white;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Location</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="mt-zip" placeholder="Center zip code" style="width:130px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
+              <input type="number" id="mt-miles" placeholder="Miles" min="1" max="500" style="width:70px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
+              <label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer">
+                <input type="checkbox" id="mt-include-travel" style="accent-color:var(--red)"> Include willing to travel
+              </label>
+            </div>
+          </div>
+
           <div id="match-1to1-results">
-            <div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Optionally set pool filters on the left to narrow candidates</span></p></div>
+            <div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Toggle scoring fields above to customize results</span></p></div>
           </div>
         </div>
 
@@ -1610,7 +1646,7 @@ function buildProfilesUrl(forCount = false) {
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
   if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
-  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason&order=created_at.desc`;
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,relocation_in,relocation_out&order=created_at.desc`;
 }
 
 async function loadProfiles() {
@@ -1708,6 +1744,7 @@ function renderProfiles(profiles) {
           ${p.share_with_matchmakers ? '<span class="tag green">Matchmaker</span>' : ''}
           ${!p.is_active ? '<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>' : ''}
           ${p.invite_paused ? '<span class="tag" style="background:#fffbeb;color:#92400e;border:1px solid #f59e0b">Invite Paused</span>' : ''}
+          ${(p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe') ? '<span class="tag" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">Open to Travel</span>' : ''}
         </div>
       </div>
       <div class="profile-card-right">
@@ -2307,6 +2344,9 @@ function setMatchMode(mode) {
   document.getElementById('match-group-panel').style.display = mode === 'group' ? '' : 'none';
   document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
   document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
+  // Show pool sidebar only for group mode
+  const sidebar = document.querySelector('#tab-matching > div > div:first-child');
+  if (sidebar) sidebar.style.display = mode === 'group' ? '' : 'none';
 }
 
 
@@ -2391,7 +2431,7 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.ms-display.open').forEach(d => d.classList.remove('open'));
 });
 
-async function autoBuildPoolForSubject(subject) {
+async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
   const token = supabaseSession || SUPABASE_ANON;
   // Build basic opposite-seeking pool based on subject profile
   let params = ['deleted_at=is.null', 'is_active=eq.true', 'invite_paused=eq.false'];
@@ -2418,8 +2458,24 @@ async function autoBuildPoolForSubject(subject) {
   if (subject.min_age) params.push(`date_of_birth=lte.${new Date(new Date().setFullYear(new Date().getFullYear() - subject.min_age)).toISOString().split('T')[0]}`);
   if (subject.max_age) params.push(`date_of_birth=gte.${new Date(new Date().setFullYear(new Date().getFullYear() - subject.max_age)).toISOString().split('T')[0]}`);
 
+  // Location filter
+  if (zip && miles) {
+    try {
+      const geo = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=US&format=json&limit=1`);
+      const geoData = await geo.json();
+      if (geoData && geoData[0]) {
+        const lat = parseFloat(geoData[0].lat);
+        const lon = parseFloat(geoData[0].lon);
+        const latD = miles / 69.0;
+        const lonD = miles / (69.0 * Math.cos(lat * Math.PI / 180));
+        const travelFilter = includeTravel ? `,and(latitude.is.null,relocation_out.in.("Yes","Maybe"))` : '';
+        params.push(`or=(and(latitude.gte.${(lat-latD).toFixed(4)},latitude.lte.${(lat+latD).toFixed(4)},longitude.gte.${(lon-lonD).toFixed(4)},longitude.lte.${(lon+lonD).toFixed(4)})${travelFilter})`);
+      }
+    } catch(e) { console.warn('Geocode failed', e); }
+  }
+
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&order=created_at.desc&limit=500`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&order=created_at.desc&limit=500`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
     const data = await r.json();
@@ -2641,15 +2697,35 @@ async function openProfileById(id) {
   } catch(e) { console.error(e); }
 }
 
+// ── 1-TO-1 MATCH FIELDS ──────────────────────────────────────────────────────
+let activeMatchFields = ['seeking','age','kids','religion','politics','body_type','income','location'];
+
+function toggleMatchField(field) {
+  const idx = activeMatchFields.indexOf(field);
+  const btn = document.getElementById('mt-' + field);
+  if (idx === -1) {
+    activeMatchFields.push(field);
+    if (btn) btn.classList.add('on');
+  } else {
+    activeMatchFields.splice(idx, 1);
+    if (btn) btn.classList.remove('on');
+  }
+}
+
 async function runMatching() {
   if (!matchSubject) { alert('Select a profile first.'); return; }
   const el = document.getElementById('match-1to1-results');
-  // Auto-build pool from subject preferences if none exists
-  if (!matchPool.length) {
-    el.innerHTML = '<div class="loading-state">Building pool from profile preferences...</div>';
-    await autoBuildPoolForSubject(matchSubject);
+
+  // Build pool with location filter if zip provided
+  const zip = document.getElementById('mt-zip').value.trim();
+  const miles = parseFloat(document.getElementById('mt-miles').value) || 0;
+  const includeTravel = document.getElementById('mt-include-travel').checked;
+
+  if (!matchPool.length || zip) {
+    el.innerHTML = '<div class="loading-state">Building pool...</div>';
+    await autoBuildPoolForSubject(matchSubject, zip, miles, includeTravel);
     if (!matchPool.length) {
-      el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting filters on the left.</p></div>';
+      el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting location or removing filters.</p></div>';
       return;
     }
   }
@@ -2658,10 +2734,10 @@ async function runMatching() {
   const token = supabaseSession || SUPABASE_ANON;
   try {
     const poolIds = matchPool.map(p => p.id).filter(id => id !== matchSubject.id);
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/score_profile_against_pool`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/score_profile_against_pool_custom`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_profile_id: matchSubject.id, p_pool_ids: poolIds })
+      body: JSON.stringify({ p_profile_id: matchSubject.id, p_pool_ids: poolIds, p_fields: activeMatchFields })
     });
     let results = await r.json();
     if (!Array.isArray(results)) { el.innerHTML = '<div class="empty-state"><p>Scoring failed.</p></div>'; return; }
@@ -2689,6 +2765,7 @@ function renderMatchResults(results, el) {
         <div style="flex:1">
           <div style="font-weight:700;font-size:14px;cursor:pointer;color:var(--red)" onclick="openProfileById('${p.profile_id}')">${p.first_name} ${p.last_name}</div>
           <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${p.age ? p.age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', '+p.state : ''}</div>
+          ${(p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe') ? '<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;padding:2px 6px;border-radius:10px;margin-top:3px;display:inline-block">Open to Travel</span>' : ''}
           ${warnings ? `<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Missing: ${warnings}</div>` : ''}
         </div>
         <div style="text-align:center;background:${scoreBg};padding:8px 14px;border-radius:8px;min-width:60px">
