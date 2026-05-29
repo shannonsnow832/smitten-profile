@@ -817,6 +817,7 @@
 
         <div class="divider"></div>
         <button class="btn-apply" onclick="buildPool()">Build Pool</button>
+        <button onclick="clearPoolFilters()" style="width:100%;margin-top:8px;padding:9px;border:1px solid #ddd;border-radius:var(--radius-sm);background:white;color:var(--gray-dark);font-size:13px;font-family:Montserrat,sans-serif;cursor:pointer">Clear Filters</button>
         <div id="pool-status" style="font-size:12px;color:var(--gray-mid);margin-top:10px;text-align:center"></div>
       </div>
 
@@ -840,7 +841,7 @@
             <div id="match-subject-selected" style="margin-top:12px;display:none"></div>
           </div>
           <div id="match-1to1-results">
-            <div class="empty-state"><div class="icon">🎯</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Search for a profile above<br>3. Click <strong>Find Matches →</strong></p></div>
+            <div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Optionally set pool filters on the left to narrow candidates</span></p></div>
           </div>
         </div>
 
@@ -870,6 +871,15 @@
               <span id="mg-status" style="font-size:12px;color:var(--gray-mid)"></span>
             </div>
           </div>
+          <!-- POOL PREVIEW -->
+          <div id="pool-preview" style="margin-bottom:20px;display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <h3 style="font-size:14px;font-weight:700">Pool Members <span id="pool-preview-count" style="color:var(--gray-mid);font-weight:400"></span></h3>
+              <button onclick="exportPoolCSV()" style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export Pool CSV</button>
+            </div>
+            <div id="pool-preview-list" style="display:flex;flex-wrap:wrap;gap:8px;max-height:180px;overflow-y:auto"></div>
+          </div>
+
           <div id="match-group-results">
             <div class="empty-state"><div class="icon">👥</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Set group settings above<br>3. Click <strong>Generate Groups</strong></p></div>
           </div>
@@ -2275,6 +2285,89 @@ function setMatchMode(mode) {
   document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
 }
 
+async function autoBuildPoolForSubject(subject) {
+  const token = supabaseSession || SUPABASE_ANON;
+  // Build basic opposite-seeking pool based on subject profile
+  let params = ['deleted_at=is.null', 'is_active=eq.true', 'invite_paused=eq.false'];
+
+  // Exclude self
+  params.push(`id=neq.${subject.id}`);
+
+  // Use subject's seeking to filter gender
+  if (subject.seeking) {
+    const s = Array.isArray(subject.seeking) ? subject.seeking : JSON.parse(subject.seeking || '[]');
+    if (s.includes('Date Men') && !s.includes('Date Women')) params.push('gender=eq.Male');
+    else if (s.includes('Date Women') && !s.includes('Date Men')) params.push('gender=eq.Female');
+  }
+
+  // Use subject's age preferences
+  if (subject.min_age) params.push(`date_of_birth=lte.${new Date(new Date().setFullYear(new Date().getFullYear() - subject.min_age)).toISOString().split('T')[0]}`);
+  if (subject.max_age) params.push(`date_of_birth=gte.${new Date(new Date().setFullYear(new Date().getFullYear() - subject.max_age)).toISOString().split('T')[0]}`);
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&order=created_at.desc&limit=500`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await r.json();
+    matchPool = Array.isArray(data) ? data : [];
+    document.getElementById('pool-count-badge').textContent = matchPool.length ? `${matchPool.length} profiles in pool` : '';
+    document.getElementById('pool-status').textContent = matchPool.length ? `Auto-pool: ${matchPool.length} profiles` : '';
+  } catch(e) {
+    matchPool = [];
+  }
+}
+
+function clearPoolFilters() {
+  ['m-pool-age-min','m-pool-age-max','m-pool-state','m-pool-city'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['m-pool-gender','m-pool-income','m-pool-kids','m-pool-want-kids','m-pool-religion',
+   'm-pool-education','m-pool-seeking','m-pool-photo','m-pool-rel-status','m-pool-politics',
+   'm-pool-body-type','m-pool-smoking','m-pool-drinking','m-pool-matchmakers'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  matchPool = [];
+  document.getElementById('pool-status').textContent = '';
+  document.getElementById('pool-count-badge').textContent = '';
+  const preview = document.getElementById('pool-preview');
+  if (preview) preview.style.display = 'none';
+}
+
+function exportPoolCSV() {
+  if (!matchPool.length) { alert('Build a pool first.'); return; }
+  const headers = ['First Name','Last Name','Gender','Age','City','State','Income','Religion','Education','Kids','Wants Kids'];
+  const rows = matchPool.map(p => {
+    const age = p.date_of_birth ? Math.floor((new Date() - new Date(p.date_of_birth)) / 31557600000) : '';
+    return [p.first_name,p.last_name,p.gender,age,p.city,p.state,p.income_level,p.religion,p.education,p.kids,p.want_kids]
+      .map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'match-pool.csv';
+  a.click();
+}
+
+function renderPoolPreview() {
+  const el = document.getElementById('pool-preview');
+  const list = document.getElementById('pool-preview-list');
+  const count = document.getElementById('pool-preview-count');
+  if (!el || !list) return;
+  if (!matchPool.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  count.textContent = `(${matchPool.length})`;
+  list.innerHTML = matchPool.map(p => {
+    const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
+    const avatar = p.image_url
+      ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+      : `<span style="font-size:11px;font-weight:700;color:var(--red)">${initials}</span>`;
+    return `<div title="${p.first_name} ${p.last_name}" style="display:flex;flex-direction:column;align-items:center;gap:4px;width:56px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">${avatar}</div>
+      <span style="font-size:10px;color:var(--gray-dark);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">${p.first_name}</span>
+    </div>`;
+  }).join('');
+}
+
 async function buildPool() {
   const statusEl = document.getElementById('pool-status');
   statusEl.textContent = 'Building pool...';
@@ -2338,6 +2431,7 @@ async function buildPool() {
     matchPool = data;
     statusEl.textContent = `Pool: ${matchPool.length} profiles`;
     document.getElementById('pool-count-badge').textContent = `${matchPool.length} profiles in pool`;
+    renderPoolPreview();
   } catch(e) {
     statusEl.textContent = 'Failed to build pool.';
     console.error(e);
@@ -2388,8 +2482,16 @@ function selectMatchSubject(p) {
 
 async function runMatching() {
   if (!matchSubject) { alert('Select a profile first.'); return; }
-  if (!matchPool.length) { alert('Build a pool first using the filters on the left.'); return; }
   const el = document.getElementById('match-1to1-results');
+  // Auto-build pool from subject preferences if none exists
+  if (!matchPool.length) {
+    el.innerHTML = '<div class="loading-state">Building pool from profile preferences...</div>';
+    await autoBuildPoolForSubject(matchSubject);
+    if (!matchPool.length) {
+      el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting filters on the left.</p></div>';
+      return;
+    }
+  }
   el.innerHTML = '<div class="loading-state">Scoring matches...</div>';
 
   const token = supabaseSession || SUPABASE_ANON;
@@ -2473,17 +2575,105 @@ async function generateGroups() {
   btn.disabled = false; btn.textContent = 'Generate Groups';
 }
 
-function renderGroupResults(groups) {
+async function renderGroupResults(groups) {
   const el = document.getElementById('match-group-results');
-  el.innerHTML = `<h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Generated Groups</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">` +
-    groups.map(g => `
-      <div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:3px solid var(--red)">
-        <div style="font-weight:700;font-size:14px;margin-bottom:8px">${g.group_name}</div>
-        <div style="font-size:13px;color:var(--gray-dark);margin-bottom:4px">👥 ${g.member_count} members</div>
-        <div style="font-size:13px;color:var(--gray-dark);margin-bottom:4px">⭐ ${Math.round(g.avg_compatibility)}% avg match</div>
-        ${g.incomplete_count > 0 ? `<div style="font-size:12px;color:var(--red);margin-top:6px">⚠ ${g.incomplete_count} incomplete profiles</div>` : ''}
-      </div>`).join('') + '</div>';
+  el.innerHTML = '<div class="loading-state">Loading group details...</div>';
+  const token = supabaseSession || SUPABASE_ANON;
+
+  // Fetch members for each group
+  const groupDetails = await Promise.all(groups.map(async g => {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${g.group_id}&select=profile_id,compatibility_score,profiles(first_name,last_name,gender,image_url,city,state,date_of_birth,income_level,religion,education,kids,want_kids)&order=compatibility_score.desc`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const members = await r.json();
+      return { ...g, members: Array.isArray(members) ? members : [] };
+    } catch(e) { return { ...g, members: [] }; }
+  }));
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-size:14px;font-weight:700">${groups.length} Groups Generated</h3>
+      <button onclick="exportAllGroupsCSV()" style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export All CSV</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">` +
+    groupDetails.map(g => {
+      const scoreColor = g.avg_compatibility >= 70 ? '#166534' : g.avg_compatibility >= 40 ? '#92400e' : '#C6302C';
+      const memberHtml = g.members.map(m => {
+        const p = m.profiles || {};
+        const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
+        const avatar = p.image_url
+          ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">`
+          : `<span style="font-size:10px;font-weight:700;color:var(--red)">${initials}</span>`;
+        const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-light)">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">${avatar}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.first_name||''} ${p.last_name||''}</div>
+            <div style="font-size:11px;color:var(--gray-mid)">${age ? age+' · ' : ''}${p.gender||''}</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:${scoreColor}">${Math.round(m.compatibility_score||0)}%</div>
+        </div>`;
+      }).join('');
+      return `<div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:3px solid var(--red)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-weight:700;font-size:14px">${g.group_name}</div>
+          <div style="font-size:11px;color:${scoreColor};font-weight:700">${Math.round(g.avg_compatibility)}% avg</div>
+        </div>
+        <div style="margin-bottom:10px">${memberHtml}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <span style="font-size:11px;color:var(--gray-mid)">${g.member_count} members${g.incomplete_count > 0 ? ' · ⚠ '+g.incomplete_count+' incomplete' : ''}</span>
+          <button onclick="exportGroupCSV('${g.group_id}','${g.group_name}')" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;background:white;cursor:pointer">CSV</button>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+
+  // Store for export
+  window._lastGroupDetails = groupDetails;
+}
+
+async function exportGroupCSV(groupId, groupName) {
+  const token = supabaseSession || SUPABASE_ANON;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${groupId}&select=compatibility_score,profiles(first_name,last_name,email,gender,date_of_birth,city,state,income_level,religion,education,kids,want_kids)`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+  });
+  const members = await r.json();
+  const headers = ['Group','First Name','Last Name','Email','Gender','Age','City','State','Income','Religion','Education','Has Kids','Wants Kids','Compatibility'];
+  const rows = members.map(m => {
+    const p = m.profiles || {};
+    const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+    return [groupName,p.first_name,p.last_name,p.email,p.gender,age,p.city,p.state,p.income_level,p.religion,p.education,p.kids,p.want_kids,Math.round(m.compatibility_score||0)+'%']
+      .map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = groupName.replace(/\s+/g,'-') + '.csv';
+  a.click();
+}
+
+async function exportAllGroupsCSV() {
+  if (!window._lastGroupDetails) { alert('Generate groups first.'); return; }
+  const token = supabaseSession || SUPABASE_ANON;
+  const headers = ['Group','First Name','Last Name','Gender','Age','City','State','Income','Religion','Education','Has Kids','Wants Kids','Compatibility'];
+  const rows = [];
+  for (const g of window._lastGroupDetails) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${g.group_id}&select=compatibility_score,profiles(first_name,last_name,email,gender,date_of_birth,city,state,income_level,religion,education,kids,want_kids)`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const members = await r.json();
+    members.forEach(m => {
+      const p = m.profiles || {};
+      const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+      rows.push([g.group_name,p.first_name,p.last_name,p.gender,age,p.city,p.state,p.income_level,p.religion,p.education,p.kids,p.want_kids,Math.round(m.compatibility_score||0)+'%']
+        .map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+    });
+  }
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'all-match-groups.csv';
+  a.click();
 }
 
 async function loadSavedGroups() {
