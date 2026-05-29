@@ -2527,8 +2527,8 @@ function selectMatchSubject(p) {
         ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
       </div>
       <div style="flex:1"><strong>${p.first_name} ${p.last_name}</strong> · ${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}</div>
-      <button onclick="clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;margin-right:6px">✕ Clear</button>
-      <button onclick="runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
+      <button onclick="event.stopPropagation();clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;margin-right:6px">✕ Clear</button>
+      <button onclick="event.stopPropagation();runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
     </div>`;
   document.getElementById('match-subject-selected').style.display = 'block';
 }
