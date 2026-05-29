@@ -496,6 +496,13 @@
                 <option value="Date Men">Men</option><option value="Date Women">Women</option><option value="Date Any/Other Gender">Any/Other</option><option value="Friendship">Friendship</option>
               </select>
             </div>
+            <div class="filter-group">
+              <label>Gender</label>
+              <select id="f-gender">
+                <option value="">Any</option>
+                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -505,13 +512,7 @@
             Priority Filters <span class="filter-section-toggle">▾</span>
           </div>
           <div class="filter-section-body">
-            <div class="filter-group">
-              <label>Gender</label>
-              <select id="f-gender" onchange="applyFilters()">
-                <option value="">Any</option>
-                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
-              </select>
-            </div>
+
             <div class="filter-group">
               <label>Income</label>
               <select id="f-income" onchange="applyFilters()">
