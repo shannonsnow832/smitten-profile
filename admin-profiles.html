@@ -1534,7 +1534,7 @@ function buildProfilesUrl(forCount = false) {
 
   // Always exclude deleted and sample data
   params.push('deleted_at=is.null');
-  params.push('import_batch=not.eq.sample_data');
+  params.push('or=(import_batch.is.null,import_batch.neq.sample_data)');
   // Matchmakers only see opted-in profiles
   if (adminUser && adminUser.role === 'matchmaker') {
     params.push('share_with_matchmakers=eq.true');
