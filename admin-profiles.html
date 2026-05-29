@@ -2278,7 +2278,7 @@ async function buildPool() {
   statusEl.textContent = 'Building pool...';
   const token = supabaseSession || SUPABASE_ANON;
 
-  let params = ['deleted_at=is.null', 'is_active=eq.true'];
+  let params = ['deleted_at=is.null', 'is_active=eq.true', 'invite_paused=eq.false'];
   const ageMin = document.getElementById('m-pool-age-min').value;
   const ageMax = document.getElementById('m-pool-age-max').value;
   const gender = document.getElementById('m-pool-gender').value;
