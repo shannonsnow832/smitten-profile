@@ -787,6 +787,15 @@
           <input type="text" id="m-pool-city" placeholder="e.g. Omaha">
         </div>
         <div class="filter-group">
+          <label>Distance Search</label>
+          <input type="text" id="m-pool-distance-zip" placeholder="Center zip code" style="margin-bottom:6px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="number" id="m-pool-distance-miles" placeholder="Miles" min="1" max="500" style="width:80px">
+            <span style="font-size:12px;color:var(--gray-mid)">miles radius</span>
+          </div>
+          <div id="m-pool-distance-status" style="font-size:11px;color:var(--gray-mid);margin-top:4px"></div>
+        </div>
+        <div class="filter-group">
           <label>Relationship Status</label>
           <select id="m-pool-rel-status"><option value="">Any</option></select>
         </div>
@@ -1697,6 +1706,14 @@ function renderProfiles(profiles) {
       <div class="profile-card-right">
         <div class="date">Joined ${date}</div>
         ${adminUser && adminUser.role !== 'matchmaker' ? '<div class="email">' + (p.email || '') + '</div>' : ''}
+        ${(function(){
+          const fields = ['seeking','kids','want_kids','religion','politics','body_type','min_age','max_age','preferred_body_type','income_level','gender'];
+          const filled = fields.filter(f => p[f] !== null && p[f] !== undefined && p[f] !== '' && !(Array.isArray(p[f]) && p[f].length === 0)).length;
+          const pct = Math.round((filled / fields.length) * 100);
+          if (pct < 50) return '<div style="font-size:11px;font-weight:700;color:#C6302C;margin-top:4px">⚠ ' + pct + '% complete</div>';
+          if (pct < 80) return '<div style="font-size:11px;font-weight:700;color:#92400e;margin-top:4px">' + pct + '% complete</div>';
+          return '';
+        })()}
       </div>
     </div>`;
   }).join('');
@@ -2326,7 +2343,7 @@ async function autoBuildPoolForSubject(subject) {
 }
 
 function clearPoolFilters() {
-  ['m-pool-age-min','m-pool-age-max','m-pool-state','m-pool-city'].forEach(id => {
+  ['m-pool-age-min','m-pool-age-max','m-pool-state','m-pool-city','m-pool-distance-zip','m-pool-distance-miles'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['m-pool-gender','m-pool-income','m-pool-kids','m-pool-want-kids','m-pool-religion',
@@ -2419,6 +2436,33 @@ async function buildPool() {
   if (relStatus) params.push(`relationship_status=eq.${encodeURIComponent(relStatus)}`);
   if (matchmakers) params.push(`share_with_matchmakers=eq.${matchmakers}`);
 
+  // Distance filter
+  const distZip = document.getElementById('m-pool-distance-zip').value.trim();
+  const distMiles = parseFloat(document.getElementById('m-pool-distance-miles').value);
+  if (distZip && distMiles) {
+    const statusEl2 = document.getElementById('m-pool-distance-status');
+    statusEl2.textContent = 'Geocoding zip...';
+    try {
+      const geo = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${distZip}&country=US&format=json&limit=1`);
+      const geoData = await geo.json();
+      if (geoData && geoData[0]) {
+        const centerLat = parseFloat(geoData[0].lat);
+        const centerLon = parseFloat(geoData[0].lon);
+        const latDelta = distMiles / 69.0;
+        const lonDelta = distMiles / (69.0 * Math.cos(centerLat * Math.PI / 180));
+        params.push(`latitude=gte.${(centerLat - latDelta).toFixed(4)}`);
+        params.push(`latitude=lte.${(centerLat + latDelta).toFixed(4)}`);
+        params.push(`longitude=gte.${(centerLon - lonDelta).toFixed(4)}`);
+        params.push(`longitude=lte.${(centerLon + lonDelta).toFixed(4)}`);
+        statusEl2.textContent = `Within ${distMiles}mi of ${distZip}`;
+      } else {
+        statusEl2.textContent = 'Zip not found';
+      }
+    } catch(e) {
+      statusEl2.textContent = 'Geocode failed';
+    }
+  }
+
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&order=created_at.desc&limit=500`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
@@ -2483,9 +2527,18 @@ function selectMatchSubject(p) {
         ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
       </div>
       <div style="flex:1"><strong>${p.first_name} ${p.last_name}</strong> · ${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}</div>
+      <button onclick="clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;margin-right:6px">✕ Clear</button>
       <button onclick="runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
     </div>`;
   document.getElementById('match-subject-selected').style.display = 'block';
+}
+
+function clearMatchSubject() {
+  matchSubject = null;
+  document.getElementById('match-subject-search').value = '';
+  document.getElementById('match-subject-selected').style.display = 'none';
+  document.getElementById('match-subject-selected').innerHTML = '';
+  document.getElementById('match-1to1-results').innerHTML = '<div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Optionally set pool filters on the left to narrow candidates</span></p></div>';
 }
 
 async function openProfileById(id) {
@@ -2615,7 +2668,7 @@ async function renderGroupResults(groups) {
       <h3 style="font-size:14px;font-weight:700">${groups.length} Groups Generated</h3>
       <button onclick="exportAllGroupsCSV()" style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export All CSV</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">` +
+    <div style="display:flex;flex-direction:column">` +
     groupDetails.map(g => {
       const scoreColor = g.avg_compatibility >= 70 ? '#166534' : g.avg_compatibility >= 40 ? '#92400e' : '#C6302C';
       const memberHtml = g.members.map(m => {
@@ -2625,25 +2678,26 @@ async function renderGroupResults(groups) {
           ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">`
           : `<span style="font-size:10px;font-weight:700;color:var(--red)">${initials}</span>`;
         const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-light)">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">${avatar}</div>
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-light);cursor:pointer" onclick="openProfileById('${m.profile_id}')">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">${avatar}</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.first_name||''} ${p.last_name||''}</div>
-            <div style="font-size:11px;color:var(--gray-mid)">${age ? age+' · ' : ''}${p.gender||''}</div>
+            <div style="font-size:14px;font-weight:700;color:var(--red)">${p.first_name||''} ${p.last_name||''}</div>
+            <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${age ? age+' · ' : ''}${p.gender||''} · ${p.city||''}${p.state ? ', '+p.state : ''}</div>
+            <div style="font-size:11px;color:var(--gray-dark);margin-top:2px">${[p.religion,p.politics,p.income_level].filter(Boolean).join(' · ')}</div>
           </div>
-          <div style="font-size:11px;font-weight:700;color:${scoreColor}">${Math.round(m.compatibility_score||0)}%</div>
+          <div style="font-size:14px;font-weight:800;color:${scoreColor};min-width:40px;text-align:right">${Math.round(m.compatibility_score||0)}%</div>
         </div>`;
       }).join('');
-      return `<div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:3px solid var(--red)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-weight:700;font-size:14px">${g.group_name}</div>
-          <div style="font-size:11px;color:${scoreColor};font-weight:700">${Math.round(g.avg_compatibility)}% avg</div>
+      return `<div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-left:4px solid var(--red);margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-weight:700;font-size:15px">${g.group_name}</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;color:${scoreColor};font-weight:700;background:${scoreBg};padding:4px 10px;border-radius:20px">${Math.round(g.avg_compatibility)}% avg</span>
+            <button onclick="exportGroupCSV('${g.group_id}','${g.group_name}')" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export CSV</button>
+          </div>
         </div>
-        <div style="margin-bottom:10px">${memberHtml}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-          <span style="font-size:11px;color:var(--gray-mid)">${g.member_count} members${g.incomplete_count > 0 ? ' · ⚠ '+g.incomplete_count+' incomplete' : ''}</span>
-          <button onclick="exportGroupCSV('${g.group_id}','${g.group_name}')" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;background:white;cursor:pointer">CSV</button>
-        </div>
+        <div>${memberHtml}</div>
+        ${g.incomplete_count > 0 ? `<div style="font-size:11px;color:var(--red);margin-top:8px">⚠ ${g.incomplete_count} profiles with missing fields</div>` : ''}
       </div>`;
     }).join('') + '</div>';
 
