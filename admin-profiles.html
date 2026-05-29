@@ -2293,11 +2293,19 @@ async function autoBuildPoolForSubject(subject) {
   // Exclude self
   params.push(`id=neq.${subject.id}`);
 
-  // Use subject's seeking to filter gender
+  // Use subject's seeking to filter gender, fall back to opposite gender
+  let seekingFiltered = false;
   if (subject.seeking) {
-    const s = Array.isArray(subject.seeking) ? subject.seeking : JSON.parse(subject.seeking || '[]');
-    if (s.includes('Date Men') && !s.includes('Date Women')) params.push('gender=eq.Male');
-    else if (s.includes('Date Women') && !s.includes('Date Men')) params.push('gender=eq.Female');
+    try {
+      const s = Array.isArray(subject.seeking) ? subject.seeking : JSON.parse(subject.seeking || '[]');
+      if (s.includes('Date Men') && !s.includes('Date Women')) { params.push('gender=eq.Male'); seekingFiltered = true; }
+      else if (s.includes('Date Women') && !s.includes('Date Men')) { params.push('gender=eq.Female'); seekingFiltered = true; }
+    } catch(e) {}
+  }
+  if (!seekingFiltered && subject.gender) {
+    // Default: show opposite gender
+    if (subject.gender.toLowerCase() === 'female') params.push('gender=eq.Male');
+    else if (subject.gender.toLowerCase() === 'male') params.push('gender=eq.Female');
   }
 
   // Use subject's age preferences
@@ -2480,6 +2488,17 @@ function selectMatchSubject(p) {
   document.getElementById('match-subject-selected').style.display = 'block';
 }
 
+async function openProfileById(id) {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}&select=*&limit=1`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await r.json();
+    if (data && data[0]) openProfile(data[0]);
+  } catch(e) { console.error(e); }
+}
+
 async function runMatching() {
   if (!matchSubject) { alert('Select a profile first.'); return; }
   const el = document.getElementById('match-1to1-results');
@@ -2522,11 +2541,11 @@ function renderMatchResults(results, el) {
       const warnings = p.missing_fields && p.missing_fields.length ? p.missing_fields.join(', ') : null;
       return `<div style="background:white;border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
         <div style="font-size:13px;font-weight:700;color:var(--gray-mid);width:24px;text-align:center">${i+1}</div>
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red)">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);cursor:pointer" onclick="openProfileById('${p.profile_id}')">
           ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
         </div>
         <div style="flex:1">
-          <div style="font-weight:700;font-size:14px">${p.first_name} ${p.last_name}</div>
+          <div style="font-weight:700;font-size:14px;cursor:pointer;color:var(--red)" onclick="openProfileById('${p.profile_id}')">${p.first_name} ${p.last_name}</div>
           <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${p.age ? p.age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', '+p.state : ''}</div>
           ${warnings ? `<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Missing: ${warnings}</div>` : ''}
         </div>
