@@ -1269,6 +1269,7 @@
         <div id="modal-save-bar" class="modal-save-bar">
           <button class="btn" id="btn-modal-delete" onclick="softDeleteProfile()" style="background:transparent;color:#C6302C;border:1.5px solid #C6302C;font-size:12px;padding:6px 14px">Archive</button>
           <button class="btn" id="btn-modal-hard-delete" onclick="hardDeleteProfile()" style="background:#C6302C;color:white;font-size:12px;padding:6px 14px">Delete</button>
+          <button class="btn" id="btn-modal-invite-paused" onclick="toggleInvitePaused()" style="background:transparent;color:#92400e;border:1.5px solid #92400e;font-size:12px;padding:6px 14px">Invite Paused</button>
           <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;flex:1;text-align:center;"></span>
           <button class="btn btn-primary" id="btn-modal-save" onclick="saveModalProfile()">Save Changes</button>
         </div>
@@ -1576,7 +1577,7 @@ function buildProfilesUrl(forCount = false) {
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
   if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
-  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude&order=created_at.desc`;
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason&order=created_at.desc`;
 }
 
 async function loadProfiles() {
@@ -1684,6 +1685,7 @@ function renderProfiles(profiles) {
           ${seeking ? '<span class="tag red">Seeking: ' + seeking + '</span>' : ''}
           ${p.share_with_matchmakers ? '<span class="tag green">Matchmaker</span>' : ''}
           ${!p.is_active ? '<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>' : ''}
+          ${p.invite_paused ? '<span class="tag" style="background:#fffbeb;color:#92400e;border:1px solid #f59e0b">Invite Paused</span>' : ''}
         </div>
       </div>
       <div class="profile-card-right">
@@ -1783,6 +1785,21 @@ function openProfile(p) {
   setVal('m-timezone', p.timezone);
   setVal('m-bio', p.bio);
   setChk('m-share-matchmakers', p.share_with_matchmakers);
+  // Invite Paused button state
+  const ipBtn = document.getElementById('btn-modal-invite-paused');
+  if (ipBtn) {
+    if (p.invite_paused) {
+      ipBtn.textContent = 'Resume Invites';
+      ipBtn.style.background = '#92400e';
+      ipBtn.style.color = 'white';
+      ipBtn.style.border = '1.5px solid #92400e';
+    } else {
+      ipBtn.textContent = 'Invite Paused';
+      ipBtn.style.background = 'transparent';
+      ipBtn.style.color = '#92400e';
+      ipBtn.style.border = '1.5px solid #92400e';
+    }
+  }
   setChk('m-interested-matchmaking', p.interested_in_matchmaking);
   setChk('m-email-opt', p.email_opt_in);
   setChk('m-services-text', p.services_text_opt_in);
@@ -2495,6 +2512,49 @@ async function loadSavedGroups() {
 }
 
 // ── SOFT DELETE ──────────────────────────────────────────────────────────────
+async function toggleInvitePaused() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const isPaused = !!p.invite_paused;
+  let reason = null;
+  if (!isPaused) {
+    reason = prompt(`Pause invites for ${fullName}?\n\nOptional: enter a reason (internal only, not shown to member):`);
+    if (reason === null) return; // cancelled
+    reason = reason.trim() || null;
+  } else {
+    if (!confirm(`Resume invites for ${fullName}?`)) return;
+  }
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-modal-invite-paused');
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ invite_paused: !isPaused, invite_paused_reason: isPaused ? null : reason })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.invite_paused = !isPaused;
+    currentModalProfile.invite_paused_reason = isPaused ? null : reason;
+    if (!isPaused) {
+      btn.textContent = 'Resume Invites';
+      btn.style.background = '#92400e';
+      btn.style.color = 'white';
+    } else {
+      btn.textContent = 'Invite Paused';
+      btn.style.background = 'transparent';
+      btn.style.color = '#92400e';
+    }
+    document.getElementById('modal-save-status').textContent = isPaused ? 'Invites resumed.' : 'Invites paused.';
+    setTimeout(() => { document.getElementById('modal-save-status').textContent = ''; }, 3000);
+    loadProfiles();
+  } catch(e) {
+    alert('Failed: ' + e.message);
+  }
+  btn.disabled = false;
+}
+
 async function softDeleteProfile() {
   const p = currentModalProfile;
   if (!p) return;
