@@ -459,6 +459,7 @@
         <button class="nav-tab active" onclick="switchTab('profiles', this)">Profiles</button>
         <button class="nav-tab" id="nav-tab-staff" onclick="switchTab('staff', this)" style="display:none">Users</button>
         <button class="nav-tab" id="nav-tab-matching" onclick="switchTab('matching', this)" style="display:none">Matching</button>
+        <button class="nav-tab" id="nav-tab-archived" onclick="switchTab('archived', this)" style="display:none">Archived</button>
       </div>
     </div>
     <div class="topbar-right">
@@ -932,6 +933,20 @@
       </div>
       <div id="staff-list" style="display:flex;flex-direction:column;gap:10px">
         <div class="loading-state">Loading staff...</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ARCHIVED TAB -->
+  <div id="tab-archived" class="tab-panel">
+    <div style="max-width:1000px;margin:32px auto;padding:0 24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <h2 style="font-size:20px;font-weight:700;color:var(--black)">Archived Profiles</h2>
+        <span style="font-size:13px;color:var(--gray-mid)">These profiles are hidden from all lists. Restore to reinstate or Delete Everything to permanently remove.</span>
+      </div>
+      <div id="archived-list" style="display:flex;flex-direction:column;gap:10px">
+        <div class="loading-state">Loading...</div>
       </div>
     </div>
   </div>
@@ -1432,6 +1447,8 @@ function launchApp() {
   const staffTab = document.getElementById('nav-tab-staff');
   const matchTab = document.getElementById('nav-tab-matching');
   if (!isMatchmaker) { if (staffTab) staffTab.style.display = ''; }
+  const archivedTab = document.getElementById('nav-tab-archived');
+  if (adminUser.role === 'super_admin') { if (archivedTab) archivedTab.style.display = ''; }
   if (matchTab) matchTab.style.display = '';
   // Hide matchmaker filter for matchmakers
   if (isMatchmaker) {
@@ -1453,6 +1470,7 @@ function switchTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'staff') loadStaff();
   if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); }
+  if (name === 'archived') loadArchivedProfiles();
 }
 
 function toggleFilter(header) {
@@ -2480,8 +2498,13 @@ async function loadSavedGroups() {
 async function softDeleteProfile() {
   const p = currentModalProfile;
   if (!p) return;
-  if (!confirm(`Are you sure you want to delete ${p.first_name} ${p.last_name}? This cannot be undone from here.`)) return;
-
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const confirmation = prompt(`This will hide ${fullName} from all profile lists. They can be restored from the Archived tab.\n\nType their full name to confirm:`);
+  if (confirmation === null) return;
+  if (confirmation.trim().toLowerCase() !== fullName.trim().toLowerCase()) {
+    alert('Name did not match. Archive cancelled.');
+    return;
+  }
   const token = supabaseSession || SUPABASE_ANON;
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
@@ -2492,15 +2515,77 @@ async function softDeleteProfile() {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({ deleted_at: new Date().toISOString(), deletion_reason: 'admin_deleted' })
+      body: JSON.stringify({ deleted_at: new Date().toISOString(), deletion_reason: 'admin_deleted', is_active: false })
     });
     if (!r.ok) throw new Error(await r.text());
     closeModal();
     loadProfiles();
   } catch(e) {
-    alert('Delete failed: ' + e.message);
+    alert('Archive failed: ' + e.message);
     console.error(e);
   }
+}
+
+// ── ARCHIVED PROFILES ────────────────────────────────────────────────────────
+async function loadArchivedProfiles() {
+  const el = document.getElementById('archived-list');
+  el.innerHTML = '<div class="loading-state">Loading...</div>';
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=not.is.null&select=id,first_name,last_name,email,deleted_at,deletion_reason,image_url&order=deleted_at.desc&limit=200`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await r.json();
+    if (!data.length) { el.innerHTML = '<div class="empty-state"><p>No archived profiles.</p></div>'; return; }
+    el.innerHTML = data.map(p => {
+      const name = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
+      const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
+      const avatar = p.image_url
+        ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`
+        : `<span style="font-size:16px;font-weight:700;color:var(--red)">${initials}</span>`;
+      const archivedDate = new Date(p.deleted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">${avatar}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px;color:var(--black)">${name}</div>
+          <div style="font-size:12px;color:var(--gray-dark);margin-top:2px">${p.email || ''}</div>
+          <div style="font-size:11px;color:var(--gray-mid);margin-top:2px">Archived ${archivedDate}${p.deletion_reason ? ' · ' + p.deletion_reason : ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button onclick="restoreProfile('${p.id}')" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1.5px solid #166534;background:white;color:#166534;cursor:pointer">Restore</button>
+          <button onclick="deleteEverything(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:none;background:var(--red);color:white;cursor:pointer">Delete Everything</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><p>Failed to load archived profiles.</p></div>';
+  }
+}
+
+async function restoreProfile(id) {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ deleted_at: null, deletion_reason: null, is_active: true })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    loadArchivedProfiles();
+  } catch(e) {
+    alert('Restore failed: ' + e.message);
+  }
+}
+
+async function deleteEverything(p) {
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const confirmation = prompt(`WARNING: This will permanently delete:\n\n• ${fullName}'s profile\n• Their staff record (if one exists)\n• Their login account\n\nThis cannot be undone under any circumstances.\n\nType their full name to confirm:`);
+  if (confirmation === null) return;
+  if (confirmation.trim().toLowerCase() !== fullName.trim().toLowerCase()) {
+    alert('Name did not match. Delete cancelled.');
+    return;
+  }
+  alert('Delete Everything is not yet available. Please contact your system administrator to remove this user completely.');
 }
 
 // ── DELETE STAFF ─────────────────────────────────────────────────────────────
@@ -2508,7 +2593,7 @@ async function hardDeleteProfile() {
   const p = currentModalProfile;
   if (!p) return;
   const fullName = `${p.first_name} ${p.last_name}`;
-  const confirmation = prompt(`This will permanently remove ${fullName} from staff.\n\nType their full name to confirm:`);
+  const confirmation = prompt(`This will permanently delete ${fullName}'s profile. This cannot be undone.\n\nType their full name to confirm:`);
   if (confirmation === null) return;
   if (confirmation.trim().toLowerCase() !== fullName.trim().toLowerCase()) {
     alert('Name did not match. Delete cancelled.');
@@ -2517,7 +2602,7 @@ async function hardDeleteProfile() {
   const btn = document.getElementById('btn-modal-hard-delete');
   btn.disabled = true; btn.textContent = 'Deleting...';
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${p.id}`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
       method: 'DELETE',
       headers: {
         'apikey': SUPABASE_ANON,
@@ -2527,7 +2612,7 @@ async function hardDeleteProfile() {
     });
     if (!r.ok) throw new Error(await r.text());
     closeModal();
-    loadStaff();
+    loadProfiles();
   } catch(e) {
     alert('Delete failed: ' + e.message);
     console.error(e);
