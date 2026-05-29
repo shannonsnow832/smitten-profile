@@ -270,6 +270,19 @@
   /* ── COLLAPSIBLE FILTERS ── */
 
 
+
+  /* ── PHOTO LIGHTBOX ──────────────────────────────────────────── */
+  #photo-lightbox { position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column; }
+  #photo-lightbox.open { display:flex; }
+  #photo-lightbox img { max-width:88vw;max-height:82vh;object-fit:contain;border-radius:8px;user-select:none; }
+  #photo-lightbox .lb-counter { color:rgba(255,255,255,0.7);font-size:13px;margin-top:12px;font-family:Montserrat,sans-serif; }
+  #photo-lightbox .lb-close { position:absolute;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;opacity:0.8;line-height:1; }
+  #photo-lightbox .lb-close:hover { opacity:1; }
+  #photo-lightbox .lb-arrow { position:absolute;top:50%;transform:translateY(-50%);color:white;font-size:36px;cursor:pointer;opacity:0.7;padding:0 20px;user-select:none; }
+  #photo-lightbox .lb-arrow:hover { opacity:1; }
+  #photo-lightbox .lb-prev { left:0; }
+  #photo-lightbox .lb-next { right:0; }
+
   /* ── MATCH TOGGLES ───────────────────────────────────────────── */
   .match-toggles { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px; }
   .match-toggle { display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;border:1.5px solid #E8E8E8;background:white;font-size:12px;font-family:Montserrat,sans-serif;cursor:pointer;user-select:none;transition:all 0.15s; }
@@ -983,6 +996,16 @@
     </div>
   </div>
 
+</div>
+
+
+<!-- PHOTO LIGHTBOX -->
+<div id="photo-lightbox" onclick="lbClose()">
+  <span class="lb-close" onclick="lbClose()">×</span>
+  <span class="lb-arrow lb-prev" onclick="event.stopPropagation();lbNav(-1)">&#8249;</span>
+  <img id="lb-img" src="" alt="photo" onclick="event.stopPropagation()">
+  <span class="lb-arrow lb-next" onclick="event.stopPropagation();lbNav(1)">&#8250;</span>
+  <div class="lb-counter" id="lb-counter"></div>
 </div>
 
 <!-- ADD STAFF MODAL -->
@@ -1827,13 +1850,13 @@ function openProfile(p) {
   const allPhotos = p.photos && p.photos.length ? p.photos : (p.image_url ? [p.image_url] : []);
   const mainPhotoEl = document.getElementById('modal-main-photo');
   if (allPhotos.length) {
-    mainPhotoEl.innerHTML = `<img src="${allPhotos[0]}" alt="main photo" style="cursor:pointer" onclick="enlargePhoto('${allPhotos[0]}')">`;
+    mainPhotoEl.innerHTML = '<img src="' + allPhotos[0] + '" alt="main photo" style="cursor:pointer" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', 0)">';
   } else {
     mainPhotoEl.innerHTML = `<div class="no-photo">${initials}</div>`;
   }
   const extraEl = document.getElementById('modal-extra-photos');
-  extraEl.innerHTML = allPhotos.slice(1).map(url =>
-    `<div class="modal-extra-photo" onclick="enlargePhoto('${url}')"><img src="${url}" alt="photo"></div>`
+  extraEl.innerHTML = allPhotos.slice(1).map((url, i) =>
+    '<div class="modal-extra-photo" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', ' + (i+1) + ')"><img src="' + url + '" alt="photo"></div>'
   ).join('');
 
   // Hide contact row for matchmakers
@@ -1940,12 +1963,50 @@ function openProfile(p) {
   document.body.style.overflow = 'hidden';
 }
 
+
+// ── PHOTO LIGHTBOX ────────────────────────────────────────────────────────
+let lbPhotos = [];
+let lbIndex = 0;
+
+function lbOpen(photos, startIndex) {
+  lbPhotos = Array.isArray(photos) ? photos.filter(Boolean) : [photos];
+  lbIndex = startIndex || 0;
+  lbShow();
+  document.getElementById('photo-lightbox').classList.add('open');
+  document.addEventListener('keydown', lbKeydown);
+}
+
+function lbShow() {
+  const img = document.getElementById('lb-img');
+  const counter = document.getElementById('lb-counter');
+  img.src = lbPhotos[lbIndex];
+  counter.textContent = lbPhotos.length > 1 ? (lbIndex + 1) + ' of ' + lbPhotos.length : '';
+  document.querySelectorAll('.lb-arrow').forEach(a => a.style.display = lbPhotos.length > 1 ? '' : 'none');
+}
+
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  lbShow();
+}
+
+function lbClose() {
+  document.getElementById('photo-lightbox').classList.remove('open');
+  document.removeEventListener('keydown', lbKeydown);
+}
+
+function lbKeydown(e) {
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  else if (e.key === 'ArrowRight') lbNav(1);
+  else if (e.key === 'Escape') lbClose();
+}
+
 function enlargePhoto(url) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
-  overlay.innerHTML = `<img src="${url}" style="max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain">`;
-  overlay.onclick = () => document.body.removeChild(overlay);
-  document.body.appendChild(overlay);
+  // Legacy single-photo call -- open lightbox with just this photo
+  const allPhotos = currentModalProfile && currentModalProfile.photos && currentModalProfile.photos.length
+    ? currentModalProfile.photos
+    : (currentModalProfile && currentModalProfile.image_url ? [currentModalProfile.image_url] : [url]);
+  const idx = allPhotos.indexOf(url);
+  lbOpen(allPhotos, idx >= 0 ? idx : 0);
 }
 
 async function saveModalProfile() {

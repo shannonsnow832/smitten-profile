@@ -499,6 +499,19 @@
     .profile-wrap { padding: 0 12px 40px; }
     .save-bar { padding: 12px 16px; }
   }
+
+  /* ── PHOTO LIGHTBOX ──────────────────────────────────────────── */
+  #photo-lightbox { position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column; }
+  #photo-lightbox.open { display:flex; }
+  #photo-lightbox img { max-width:88vw;max-height:82vh;object-fit:contain;border-radius:8px;user-select:none; }
+  #photo-lightbox .lb-counter { color:rgba(255,255,255,0.7);font-size:13px;margin-top:12px;font-family:Montserrat,sans-serif; }
+  #photo-lightbox .lb-close { position:absolute;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;opacity:0.8;line-height:1; }
+  #photo-lightbox .lb-close:hover { opacity:1; }
+  #photo-lightbox .lb-arrow { position:absolute;top:50%;transform:translateY(-50%);color:white;font-size:36px;cursor:pointer;opacity:0.7;padding:0 20px;user-select:none; }
+  #photo-lightbox .lb-arrow:hover { opacity:1; }
+  #photo-lightbox .lb-prev { left:0; }
+  #photo-lightbox .lb-next { right:0; }
+
 </style>
 </head>
 <body>
@@ -1117,6 +1130,16 @@
   <a href="https://thesmittenproject.com/code-of-conduct/">Code of Conduct</a>
 </div>
 
+
+<!-- PHOTO LIGHTBOX -->
+<div id="photo-lightbox" onclick="lbClose()">
+  <span class="lb-close" onclick="lbClose()">×</span>
+  <span class="lb-arrow lb-prev" onclick="event.stopPropagation();lbNav(-1)">&#8249;</span>
+  <img id="lb-img" src="" alt="photo" onclick="event.stopPropagation()">
+  <span class="lb-arrow lb-next" onclick="event.stopPropagation();lbNav(1)">&#8250;</span>
+  <div class="lb-counter" id="lb-counter"></div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://qgctltxcgsnbrdtbhmay.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
@@ -1131,6 +1154,43 @@ let isExistingUser = false;
 const orgSlug = new URLSearchParams(window.location.search).get('org') || 'smitten-singles';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// ── PHOTO LIGHTBOX ────────────────────────────────────────────────────────
+let lbPhotos = [];
+let lbIndex = 0;
+
+function lbOpen(photos, startIndex) {
+  lbPhotos = Array.isArray(photos) ? photos.filter(Boolean) : [photos];
+  lbIndex = startIndex || 0;
+  lbShow();
+  document.getElementById('photo-lightbox').classList.add('open');
+  document.addEventListener('keydown', lbKeydown);
+}
+
+function lbShow() {
+  const img = document.getElementById('lb-img');
+  const counter = document.getElementById('lb-counter');
+  img.src = lbPhotos[lbIndex];
+  counter.textContent = lbPhotos.length > 1 ? (lbIndex + 1) + ' of ' + lbPhotos.length : '';
+  document.querySelectorAll('.lb-arrow').forEach(a => a.style.display = lbPhotos.length > 1 ? '' : 'none');
+}
+
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  lbShow();
+}
+
+function lbClose() {
+  document.getElementById('photo-lightbox').classList.remove('open');
+  document.removeEventListener('keydown', lbKeydown);
+}
+
+function lbKeydown(e) {
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  else if (e.key === 'ArrowRight') lbNav(1);
+  else if (e.key === 'Escape') lbClose();
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
@@ -1469,13 +1529,31 @@ async function loadExistingProfile() {
     }
 
     // Show existing photo if present
-    if (profile.image_url) {
+    const allProfilePhotos = [];
+    if (profile.image_url) allProfilePhotos.push(profile.image_url);
+    if (profile.photos && profile.photos.length) {
+      profile.photos.forEach(u => { if (u && !allProfilePhotos.includes(u)) allProfilePhotos.push(u); });
+    }
+    if (allProfilePhotos.length) {
       const img = document.getElementById('main-photo-preview');
-      img.src = profile.image_url;
+      img.src = allProfilePhotos[0];
+      img.style.cursor = 'pointer';
+      img.onclick = () => lbOpen(allProfilePhotos, 0);
       img.style.display = 'block';
       document.getElementById('main-photo-icon').style.display = 'none';
       document.getElementById('main-photo-label').style.display = 'none';
     }
+    // Populate extra photo slots
+    allProfilePhotos.slice(1).forEach((url, i) => {
+      const slot = document.querySelectorAll('.extra-photo')[i];
+      if (!slot) return;
+      let img2 = slot.querySelector('img');
+      if (!img2) { img2 = document.createElement('img'); slot.appendChild(img2); }
+      img2.src = url;
+      img2.style.display = 'block';
+      slot.querySelector('.cam') && (slot.querySelector('.cam').style.display = 'none');
+      slot.onclick = (e) => { e.stopPropagation(); lbOpen(allProfilePhotos, i + 1); };
+    });
 
     updateProgress();
   } catch (e) {
