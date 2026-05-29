@@ -682,11 +682,11 @@
           <div class="form-full">
             <div class="form-row">
               <div class="field">
-                <label>Date of Birth</label>
+                <label>Date of Birth <span style="color:#C6302C">*</span></label>
                 <input type="date" id="p-dob">
               </div>
               <div class="field">
-                <label>Gender</label>
+                <label>Gender <span style="color:#C6302C">*</span></label>
                 <select id="p-gender" data-category="gender"><option value="">Select...</option></select>
               </div>
             </div>
@@ -702,11 +702,11 @@
           <div class="form-full">
             <div class="form-row three">
               <div class="field">
-                <label>City</label>
+                <label>City <span style="color:#C6302C">*</span></label>
                 <input type="text" id="p-city" placeholder="Omaha">
               </div>
               <div class="field">
-                <label>State</label>
+                <label>State <span style="color:#C6302C">*</span></label>
                 <input type="text" id="p-state" placeholder="NE">
               </div>
               <div class="field">
@@ -730,7 +730,7 @@
           </div>
 
           <div class="divider"></div>
-          <div class="section-title">Seeking</div>
+          <div class="section-title">Seeking <span style="color:#C6302C">*</span></div>
 
           <div class="form-full">
             <div class="checkbox-group">
@@ -1486,9 +1486,30 @@ async function loadExistingProfile() {
 // ── STEP 3: Save / Update Profile ────────────────────────────────────────────
 async function saveProfile(silent = false) {
   if (!silent) { hideAlert('profile-alert'); hideAlert('profile-success'); }
-  if (!silent) setLoading('btn-save', true, 'Saving...');
 
   const seeking = [...document.querySelectorAll('.seeking-cb:checked')].map(c => c.value);
+
+  // Required field validation
+  if (!silent) {
+    const dob = document.getElementById('p-dob').value;
+    const gender = document.getElementById('p-gender').value;
+    const city = document.getElementById('p-city').value.trim();
+    const state = document.getElementById('p-state').value.trim();
+    const errors = [];
+    if (!dob) errors.push('Date of birth is required');
+    if (!gender) errors.push('Gender is required');
+    if (!seeking.length) errors.push('Please select at least one option for Seeking');
+    if (!city) errors.push('City is required');
+    if (!state) errors.push('State is required');
+    if (errors.length) {
+      showAlert('profile-alert', errors.join(' · '), 'error');
+      // Scroll to top of form so they see the error
+      document.getElementById('profile-alert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+
+  if (!silent) setLoading('btn-save', true, 'Saving...');
 
   // Build params — matches every argument intake_create_profile and intake_update_profile expect
   const params = {
