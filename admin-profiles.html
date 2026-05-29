@@ -475,6 +475,36 @@
       <div class="filter-sidebar">
         <h3>Filters</h3>
 
+        <!-- BASIC — always open -->
+        <div class="filter-section">
+          <div class="filter-section-header open" onclick="toggleFilter(this)">
+            Basic <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body open">
+            <div class="filter-group">
+              <label>Age Range</label>
+              <div class="age-range">
+                <input type="number" id="f-age-min" placeholder="Min" min="18" max="99">
+                <input type="number" id="f-age-max" placeholder="Max" min="18" max="99">
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Gender</label>
+              <select id="f-gender">
+                <option value="">Any</option>
+                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Seeking</label>
+              <select id="f-seeking">
+                <option value="">Any</option>
+                <option value="Date Men">Men</option><option value="Date Women">Women</option><option value="Date Any/Other Gender">Any/Other</option><option value="Friendship">Friendship</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <!-- PRIORITY FILTERS — always open -->
         <div class="filter-section">
           <div class="filter-section-header open" onclick="toggleFilter(this)">
@@ -532,36 +562,6 @@
                 <option>High School</option><option>Some College</option><option>Associate's Degree</option>
                 <option>Bachelor's Degree</option><option>Master's Degree</option>
                 <option>Doctoral Degree</option><option>Trade / Vocational</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- BASIC — always open -->
-        <div class="filter-section">
-          <div class="filter-section-header open" onclick="toggleFilter(this)">
-            Basic <span class="filter-section-toggle">▾</span>
-          </div>
-          <div class="filter-section-body open">
-            <div class="filter-group">
-              <label>Age Range</label>
-              <div class="age-range">
-                <input type="number" id="f-age-min" placeholder="Min" min="18" max="99">
-                <input type="number" id="f-age-max" placeholder="Max" min="18" max="99">
-              </div>
-            </div>
-            <div class="filter-group">
-              <label>Gender</label>
-              <select id="f-gender">
-                <option value="">Any</option>
-                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Seeking</label>
-              <select id="f-seeking">
-                <option value="">Any</option>
-                <option value="Date Men">Men</option><option value="Date Women">Women</option><option value="Date Any/Other Gender">Any/Other</option><option value="Friendship">Friendship</option>
               </select>
             </div>
           </div>
