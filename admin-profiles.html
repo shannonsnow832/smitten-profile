@@ -835,8 +835,36 @@
           <select id="m-pool-gender"><option value="">Any</option></select>
         </div>
         <div class="filter-group">
+          <label>Income</label>
+          <select id="m-pool-income"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Has Kids</label>
+          <select id="m-pool-kids"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Wants Kids</label>
+          <select id="m-pool-want-kids"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Religion</label>
+          <select id="m-pool-religion"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Education</label>
+          <select id="m-pool-education"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
           <label>Seeking</label>
           <select id="m-pool-seeking"><option value="">Any</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Has Photo</label>
+          <select id="m-pool-photo">
+            <option value="">Any</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
         </div>
         <div class="filter-group">
           <label>State</label>
@@ -847,30 +875,13 @@
           <input type="text" id="m-pool-city" placeholder="e.g. Omaha">
         </div>
         <div class="filter-group">
-          <label>Religion</label>
-          <select id="m-pool-religion"><option value="">Any</option></select>
+          <label>Relationship Status</label>
+          <select id="m-pool-rel-status"><option value="">Any</option></select>
         </div>
         <div class="filter-group">
           <label>Politics</label>
           <select id="m-pool-politics"><option value="">Any</option></select>
         </div>
-        <div class="filter-group">
-          <label>Education</label>
-          <select id="m-pool-education"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Income</label>
-          <select id="m-pool-income"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Has Photo</label>
-          <select id="m-pool-photo">
-            <option value="">Any</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-
         <div class="filter-group">
           <label>Body Type</label>
           <select id="m-pool-body-type"><option value="">Any</option></select>
@@ -882,18 +893,6 @@
         <div class="filter-group">
           <label>Drinking</label>
           <select id="m-pool-drinking"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Has Kids</label>
-          <select id="m-pool-kids"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Wants Kids</label>
-          <select id="m-pool-want-kids"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Relationship Status</label>
-          <select id="m-pool-rel-status"><option value="">Any</option></select>
         </div>
         <div class="filter-group">
           <label>Share w/ Matchmakers</label>
@@ -2112,10 +2111,9 @@ async function applyFilters() {
     drinking: document.getElementById('f-drinking').value,
     kids: document.getElementById('f-kids').value,
     wantKids: document.getElementById('f-want-kids').value,
-    incomeMin: document.getElementById('f-income-min').value,
-    incomeMax: document.getElementById('f-income-max').value,
-    // quick filter overrides sidebar if set
-    ...(document.getElementById('qf-income') && document.getElementById('qf-income').value ? { incomeExact: document.getElementById('qf-income').value } : {}),
+    incomeMin: document.getElementById('qf-income').value ? '' : document.getElementById('f-income-min').value,
+    incomeMax: document.getElementById('qf-income').value ? '' : document.getElementById('f-income-max').value,
+    incomeExact: document.getElementById('qf-income') ? document.getElementById('qf-income').value : '',
     relStatus: document.getElementById('f-rel-status').value,
     prefAgeMin: document.getElementById('f-pref-age-min').value,
     prefAgeMax: document.getElementById('f-pref-age-max').value,
