@@ -477,10 +477,10 @@
 
         <!-- BASIC — always open -->
         <div class="filter-section">
-          <div class="filter-section-header open" onclick="toggleFilter(this)">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
             Basic <span class="filter-section-toggle">▾</span>
           </div>
-          <div class="filter-section-body open">
+          <div class="filter-section-body">
             <div class="filter-group">
               <label>Age Range</label>
               <div class="age-range">
@@ -488,13 +488,7 @@
                 <input type="number" id="f-age-max" placeholder="Max" min="18" max="99">
               </div>
             </div>
-            <div class="filter-group">
-              <label>Gender</label>
-              <select id="f-gender">
-                <option value="">Any</option>
-                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
-              </select>
-            </div>
+
             <div class="filter-group">
               <label>Seeking</label>
               <select id="f-seeking">
@@ -507,13 +501,13 @@
 
         <!-- PRIORITY FILTERS — always open -->
         <div class="filter-section">
-          <div class="filter-section-header open" onclick="toggleFilter(this)">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
             Priority Filters <span class="filter-section-toggle">▾</span>
           </div>
-          <div class="filter-section-body open">
+          <div class="filter-section-body">
             <div class="filter-group">
               <label>Gender</label>
-              <select id="f-priority-gender" onchange="applyFilters()">
+              <select id="f-gender" onchange="applyFilters()">
                 <option value="">Any</option>
                 <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
               </select>
@@ -532,7 +526,7 @@
             </div>
             <div class="filter-group">
               <label>Has Kids</label>
-              <select id="f-priority-kids" onchange="applyFilters()">
+              <select id="f-kids" onchange="applyFilters()">
                 <option value="">Any</option>
                 <option>No</option>
                 <option value="Yes, at home">Yes, at home</option>
@@ -541,14 +535,14 @@
             </div>
             <div class="filter-group">
               <label>Wants Kids</label>
-              <select id="f-priority-want-kids" onchange="applyFilters()">
+              <select id="f-want-kids" onchange="applyFilters()">
                 <option value="">Any</option>
                 <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
               </select>
             </div>
             <div class="filter-group">
               <label>Religion</label>
-              <select id="f-priority-religion" onchange="applyFilters()">
+              <select id="f-religion" onchange="applyFilters()">
                 <option value="">Any</option>
                 <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
                 <option>Hindu</option><option>Buddhist</option><option>Spiritual</option>
@@ -557,7 +551,7 @@
             </div>
             <div class="filter-group">
               <label>Education</label>
-              <select id="f-priority-education" onchange="applyFilters()">
+              <select id="f-education" onchange="applyFilters()">
                 <option value="">Any</option>
                 <option>High School</option><option>Some College</option><option>Associate's Degree</option>
                 <option>Bachelor's Degree</option><option>Master's Degree</option>
@@ -567,12 +561,12 @@
           </div>
         </div>
 
-        <!-- LOCATION — always open -->
+        <!-- LOCATION -->
         <div class="filter-section">
-          <div class="filter-section-header open" onclick="toggleFilter(this)">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
             Location <span class="filter-section-toggle">▾</span>
           </div>
-          <div class="filter-section-body open">
+          <div class="filter-section-body">
             <div class="filter-group">
               <label>State</label>
               <input type="text" id="f-state" placeholder="e.g. Nebraska">
@@ -603,90 +597,7 @@
             Lifestyle <span class="filter-section-toggle">▾</span>
           </div>
           <div class="filter-section-body">
-            <div class="filter-group">
-              <label>Education</label>
-              <select id="f-education">
-                <option value="">Any</option>
-                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
-                <option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option><option>Trade / Vocational</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Religion</label>
-              <select id="f-religion">
-                <option value="">Any</option>
-                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
-                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Politics</label>
-              <select id="f-politics">
-                <option value="">Any</option>
-                <option>Very Liberal</option><option>Liberal</option><option>Moderate</option><option>Conservative</option><option>Very Conservative</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Body Type</label>
-              <select id="f-body-type">
-                <option value="">Any</option>
-                <option>Slim</option><option>Athletic</option><option>Average</option><option>Curvy</option><option>Full-figured</option><option>Heavyset</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Smoking</label>
-              <select id="f-smoking">
-                <option value="">Any</option>
-                <option>Non-smoker</option><option>Occasional</option><option>Smoker</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Drinking</label>
-              <select id="f-drinking">
-                <option value="">Any</option>
-                <option>Non-drinker</option><option>Occasional</option><option>Social drinker</option><option>Regular</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Has Kids</label>
-              <select id="f-kids">
-                <option value="">Any</option>
-                <option>No</option><option>Yes, at home</option><option>Yes, not at home</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Wants Kids</label>
-              <select id="f-want-kids">
-                <option value="">Any</option>
-                <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
-              </select>
-            </div>
-            <!-- income min/max hidden, replaced by f-income in priority filters -->
-            <select id="f-income-min" style="display:none"></select>
-            <select id="f-income-max" style="display:none"></select>
-            <div class="filter-group">
-              <label>Relationship Status</label>
-              <select id="f-rel-status">
-                <option value="">Any</option>
-                <option>Single</option><option>Divorced</option><option>Widowed</option><option>Separated</option>
-              </select>
-            </div>
-          </div>
-        </div>
 
-        <!-- PREFERENCES (what they want) -->
-        <div class="filter-section">
-          <div class="filter-section-header" onclick="toggleFilter(this)">
-            Their Preferences <span class="filter-section-toggle">▾</span>
-          </div>
-          <div class="filter-section-body">
-            <div class="filter-group">
-              <label>Pref. Age Range</label>
-              <div class="age-range">
-                <input type="number" id="f-pref-age-min" placeholder="Min" min="18" max="99">
-                <input type="number" id="f-pref-age-max" placeholder="Max" min="18" max="99">
-              </div>
-            </div>
             <div class="filter-group">
               <label>Pref. Religion</label>
               <select id="f-pref-religion">
