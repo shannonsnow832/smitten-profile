@@ -268,6 +268,37 @@
 
 
   /* ── COLLAPSIBLE FILTERS ── */
+
+  /* ── MULTI-SELECT WIDGET ─────────────────────────────────────── */
+  .ms-wrap { position: relative; }
+  .ms-display {
+    border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    padding: 7px 28px 7px 10px; font-size: 12px; font-family: Montserrat, sans-serif;
+    background: white; cursor: pointer; min-height: 34px; color: var(--black);
+    display: flex; align-items: center; user-select: none; position: relative;
+  }
+  .ms-display:hover { border-color: var(--red); }
+  .ms-display::after { content: "▾"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--gray-mid); }
+  .ms-display.open::after { transform: translateY(-50%) rotate(180deg); }
+  .ms-placeholder { color: var(--gray-mid); }
+  .ms-dropdown {
+    position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 1000;
+    background: white; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-height: 220px; overflow-y: auto; display: none;
+  }
+  .ms-dropdown.open { display: block; }
+  .ms-option {
+    padding: 7px 10px; font-size: 12px; font-family: Montserrat, sans-serif;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+  }
+  .ms-option:hover { background: #FFF5F5; }
+  .ms-option input[type=checkbox] { accent-color: var(--red); flex-shrink: 0; }
+  .ms-clear {
+    position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; color: var(--gray-mid); cursor: pointer; display: none; line-height: 1;
+  }
+  .ms-clear:hover { color: var(--red); }
+
   .filter-section { margin-bottom: 4px; }
   .filter-section-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -515,24 +546,11 @@
 
             <div class="filter-group">
               <label>Income</label>
-              <select id="f-income" onchange="applyFilters()">
-                <option value="">Any</option>
-                <option>Under $50k</option>
-                <option>$50k - $100k</option>
-                <option>$100k - $150k</option>
-                <option>$150k - $250k</option>
-                <option>$250k - $500k</option>
-                <option>$500k+</option>
-              </select>
+              <div id="f-income" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Has Kids</label>
-              <select id="f-kids" onchange="applyFilters()">
-                <option value="">Any</option>
-                <option>No</option>
-                <option value="Yes, at home">Yes, at home</option>
-                <option value="Yes, not at home">Yes, not at home</option>
-              </select>
+              <div id="f-kids" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Wants Kids</label>
@@ -543,21 +561,11 @@
             </div>
             <div class="filter-group">
               <label>Religion</label>
-              <select id="f-religion" onchange="applyFilters()">
-                <option value="">Any</option>
-                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
-                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option>
-                <option>Agnostic</option><option>Atheist</option><option>Other</option>
-              </select>
+              <div id="f-religion" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Education</label>
-              <select id="f-education" onchange="applyFilters()">
-                <option value="">Any</option>
-                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
-                <option>Bachelor's Degree</option><option>Master's Degree</option>
-                <option>Doctoral Degree</option><option>Trade / Vocational</option>
-              </select>
+              <div id="f-education" class="ms-wrap" data-placeholder="Any"></div>
             </div>
           </div>
         </div>
@@ -598,57 +606,53 @@
             Lifestyle <span class="filter-section-toggle">▾</span>
           </div>
           <div class="filter-section-body">
-
+            <div class="filter-group">
+              <label>Politics</label>
+              <div id="f-politics" class="ms-wrap" data-placeholder="Any"></div>
+            </div>
+            <div class="filter-group">
+              <label>Body Type</label>
+              <div id="f-body-type" class="ms-wrap" data-placeholder="Any"></div>
+            </div>
+            <div class="filter-group">
+              <label>Smoking</label>
+              <div id="f-smoking" class="ms-wrap" data-placeholder="Any"></div>
+            </div>
+            <div class="filter-group">
+              <label>Drinking</label>
+              <div id="f-drinking" class="ms-wrap" data-placeholder="Any"></div>
+            </div>
+            <div class="filter-group">
+              <label>Relationship Status</label>
+              <div id="f-rel-status" class="ms-wrap" data-placeholder="Any"></div>
+            </div>
             <div class="filter-group">
               <label>Pref. Religion</label>
-              <select id="f-pref-religion">
-                <option value="">Any</option>
-                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
-                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
-              </select>
+              <div id="f-pref-religion" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Politics</label>
-              <select id="f-pref-politics">
-                <option value="">Any</option>
-                <option>Very Liberal</option><option>Liberal</option><option>Moderate</option><option>Conservative</option><option>Very Conservative</option>
-              </select>
+              <div id="f-pref-politics" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Body Type</label>
-              <select id="f-pref-body-type">
-                <option value="">Any</option>
-                <option>Slim</option><option>Athletic</option><option>Average</option><option>Curvy</option><option>Full-figured</option><option>Heavyset</option>
-              </select>
+              <div id="f-pref-body-type" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Education</label>
-              <select id="f-pref-education">
-                <option value="">Any</option>
-                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
-                <option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option>
-              </select>
+              <div id="f-pref-pref-education" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Smoking</label>
-              <select id="f-pref-smoking">
-                <option value="">Any</option>
-                <option>Non-smoker</option><option>Occasional</option><option>Smoker</option>
-              </select>
+              <div id="f-pref-smoking" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Drinking</label>
-              <select id="f-pref-drinking">
-                <option value="">Any</option>
-                <option>Non-drinker</option><option>Occasional</option><option>Social drinker</option><option>Regular</option>
-              </select>
+              <div id="f-pref-drinking" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Relationship Status</label>
-              <select id="f-pref-rel-status">
-                <option value="">Any</option>
-                <option>Single</option><option>Divorced</option><option>Widowed</option><option>Separated</option>
-              </select>
+              <div id="f-pref-rel-status" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Open to Dating w/ Kids</label>
@@ -1503,6 +1507,9 @@ function debounceSearch() {
 function clearFilters() {
   ['f-age-min','f-age-max','f-state','f-city','f-zip','f-distance-zip','f-distance-miles',
    'f-income'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['f-income','f-kids','f-religion','f-education','f-politics','f-body-type','f-smoking',
+   'f-drinking','f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type',
+   'f-pref-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
   ['f-priority-gender','f-priority-kids','f-priority-want-kids','f-priority-religion','f-priority-education',
    'f-pref-age-min','f-pref-age-max'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   ['f-gender','f-seeking','f-education','f-religion','f-has-photo','f-matchmakers','f-active',
@@ -1543,21 +1550,21 @@ function buildProfilesUrl(forCount = false) {
   if (f.gender) params.push(`gender=ilike.${encodeURIComponent(f.gender)}`);
   if (f.state) params.push(`state=ilike.${encodeURIComponent('*' + f.state + '*')}`);
   if (f.city) params.push(`city=ilike.${encodeURIComponent('*' + f.city + '*')}`);
-  if (f.education) params.push(`education=eq.${encodeURIComponent(f.education)}`);
-  if (f.religion) params.push(`religion=eq.${encodeURIComponent(f.religion)}`);
+  if (f.education && f.education.length) params.push(f.education.length === 1 ? `education=eq.${encodeURIComponent(f.education[0])}` : `education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
+  if (f.religion && f.religion.length) params.push(f.religion.length === 1 ? `religion=eq.${encodeURIComponent(f.religion[0])}` : `religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
   if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
   if (f.active) params.push(`is_active=eq.${f.active}`);
   if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
   if (f.hasPhoto === 'no') params.push('image_url=is.null');
   if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
   if (f.zip) params.push(`postal_code=eq.${encodeURIComponent(f.zip)}`);
-  if (f.politics) params.push(`politics=eq.${encodeURIComponent(f.politics)}`);
-  if (f.bodyType) params.push(`body_type=eq.${encodeURIComponent(f.bodyType)}`);
-  if (f.smoking) params.push(`smoking=eq.${encodeURIComponent(f.smoking)}`);
-  if (f.drinking) params.push(`drinking=eq.${encodeURIComponent(f.drinking)}`);
-  if (f.kids) params.push(`kids=eq.${encodeURIComponent(f.kids)}`);
+  if (f.politics && f.politics.length) params.push(f.politics.length === 1 ? `politics=eq.${encodeURIComponent(f.politics[0])}` : `politics=in.(${f.politics.map(v => `"${v}"`).join(',')})`);
+  if (f.bodyType && f.bodyType.length) params.push(f.bodyType.length === 1 ? `body_type=eq.${encodeURIComponent(f.bodyType[0])}` : `body_type=in.(${f.bodyType.map(v => `"${v}"`).join(',')})`);
+  if (f.smoking && f.smoking.length) params.push(f.smoking.length === 1 ? `smoking=eq.${encodeURIComponent(f.smoking[0])}` : `smoking=in.(${f.smoking.map(v => `"${v}"`).join(',')})`);
+  if (f.drinking && f.drinking.length) params.push(f.drinking.length === 1 ? `drinking=eq.${encodeURIComponent(f.drinking[0])}` : `drinking=in.(${f.drinking.map(v => `"${v}"`).join(',')})`);
+  if (f.kids && f.kids.length) params.push(f.kids.length === 1 ? `kids=eq.${encodeURIComponent(f.kids[0])}` : `kids=in.(${f.kids.map(v => `"${v}"`).join(',')})`);
   if (f.wantKids) params.push(`want_kids=eq.${encodeURIComponent(f.wantKids)}`);
-  if (f.relStatus) params.push(`relationship_status=eq.${encodeURIComponent(f.relStatus)}`);
+  if (f.relStatus && f.relStatus.length) params.push(f.relStatus.length === 1 ? `relationship_status=eq.${encodeURIComponent(f.relStatus[0])}` : `relationship_status=in.(${f.relStatus.map(v => `"${v}"`).join(',')})`);
   if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
   if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
   // Server-side income range filter
@@ -1576,15 +1583,15 @@ function buildProfilesUrl(forCount = false) {
     const tiers = incomeOrder.slice(minIdx, maxIdx + 1);
     if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
   }
-  if (f.incomeExact) params.push(`income_level=eq.${encodeURIComponent(f.incomeExact)}`);
+  if (f.incomeExact && f.incomeExact.length) params.push(f.incomeExact.length === 1 ? `income_level=eq.${encodeURIComponent(f.incomeExact[0])}` : `income_level=in.(${f.incomeExact.map(v => `"${v}"`).join(',')})`);
   if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
-  if (f.prefReligion) params.push(`preferred_religion=cs.${encodeURIComponent('{"' + f.prefReligion + '"}')}`) ;
-  if (f.prefPolitics) params.push(`preferred_politics=cs.${encodeURIComponent('{"' + f.prefPolitics + '"}')}`) ;
-  if (f.prefBodyType) params.push(`preferred_body_type=cs.${encodeURIComponent('{"' + f.prefBodyType + '"}')}`) ;
-  if (f.prefEducation) params.push(`preferred_education=cs.${encodeURIComponent('{"' + f.prefEducation + '"}')}`) ;
-  if (f.prefSmoking) params.push(`preferred_smoking=cs.${encodeURIComponent('{"' + f.prefSmoking + '"}')}`) ;
-  if (f.prefDrinking) params.push(`preferred_alcohol=cs.${encodeURIComponent('{"' + f.prefDrinking + '"}')}`) ;
-  if (f.prefRelStatus) params.push(`preferred_relationship_status=cs.${encodeURIComponent('{"' + f.prefRelStatus + '"}')}`) ;
+  if (f.prefReligion && f.prefReligion.length) params.push(`preferred_religion=ov.{${f.prefReligion.map(v => `"${v}"`).join(',')}}`)
+  if (f.prefPolitics && f.prefPolitics.length) params.push(`preferred_politics=ov.{${f.prefPolitics.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefBodyType && f.prefBodyType.length) params.push(`preferred_body_type=ov.{${f.prefBodyType.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefEducation && f.prefEducation.length) params.push(`preferred_education=ov.{${f.prefEducation.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefSmoking && f.prefSmoking.length) params.push(`preferred_smoking=ov.{${f.prefSmoking.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefDrinking && f.prefDrinking.length) params.push(`preferred_alcohol=ov.{${f.prefDrinking.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefRelStatus && f.prefRelStatus.length) params.push(`preferred_relationship_status=ov.{${f.prefRelStatus.map(v => `"${v}"`).join(',')}}`);
   if (f.prefAgeMin) params.push(`min_age=gte.${f.prefAgeMin}`);
   if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
 
@@ -2046,25 +2053,25 @@ async function applyFilters() {
     zip: document.getElementById('f-zip').value.trim(),
     distanceZip: document.getElementById('f-distance-zip').value.trim(),
     distanceMiles: document.getElementById('f-distance-miles').value,
-    politics: document.getElementById('f-politics').value,
-    bodyType: document.getElementById('f-body-type').value,
-    smoking: document.getElementById('f-smoking').value,
-    drinking: document.getElementById('f-drinking').value,
-    kids: document.getElementById('f-kids').value,
-    wantKids: document.getElementById('f-want-kids').value,
+    politics: msGetValues('f-politics'),
+    bodyType: msGetValues('f-body-type'),
+    smoking: msGetValues('f-smoking'),
+    drinking: msGetValues('f-drinking'),
+    kids: msGetValues('f-kids'),
+    wantKids: document.getElementById('f-want-kids') ? document.getElementById('f-want-kids').value : '',
     incomeMin: '',
     incomeMax: '',
-    incomeExact: document.getElementById('f-income') ? document.getElementById('f-income').value : '',
-    relStatus: document.getElementById('f-rel-status').value,
+    incomeExact: msGetValues('f-income'),
+    relStatus: msGetValues('f-rel-status'),
     prefAgeMin: document.getElementById('f-pref-age-min').value,
     prefAgeMax: document.getElementById('f-pref-age-max').value,
-    prefReligion: document.getElementById('f-pref-religion').value,
-    prefPolitics: document.getElementById('f-pref-politics').value,
-    prefBodyType: document.getElementById('f-pref-body-type').value,
-    prefEducation: document.getElementById('f-pref-education').value,
-    prefSmoking: document.getElementById('f-pref-smoking').value,
-    prefDrinking: document.getElementById('f-pref-drinking').value,
-    prefRelStatus: document.getElementById('f-pref-rel-status').value,
+    prefReligion: msGetValues('f-pref-religion'),
+    prefPolitics: msGetValues('f-pref-politics'),
+    prefBodyType: msGetValues('f-pref-body-type'),
+    prefEducation: msGetValues('f-pref-pref-education'),
+    prefSmoking: msGetValues('f-pref-smoking'),
+    prefDrinking: msGetValues('f-pref-drinking'),
+    prefRelStatus: msGetValues('f-pref-rel-status'),
     dateWithKids: document.getElementById('f-date-with-kids').value,
     relocationIn: document.getElementById('f-relocation-in').value,
     relocationOut: document.getElementById('f-relocation-out').value,
@@ -2197,39 +2204,44 @@ function optionsHtml(category, anyLabel = 'Any') {
 }
 
 function populateSidebarFilters() {
-  const maps = [
+  // Single-select dropdowns (standard)
+  const singleMaps = [
     ['f-gender', 'gender'],
     ['f-seeking', 'seeking'],
-    ['f-education', 'education'],
-    ['f-religion', 'religion'],
-    ['f-politics', 'politics'],
-    ['f-body-type', 'body_type'],
-    ['f-smoking', 'smoking'],
-    ['f-drinking', 'drinking'],
-    ['f-kids', 'kids'],
     ['f-want-kids', 'want_kids'],
-    ['f-rel-status', 'relationship_status'],
-    ['f-pref-religion', 'preferred_religion'],
-    ['f-pref-politics', 'preferred_politics'],
-    ['f-pref-body-type', 'preferred_body_type'],
-    ['f-pref-education', 'preferred_education'],
-    ['f-pref-smoking', 'preferred_smoking'],
-    ['f-pref-drinking', 'preferred_alcohol'],
-    ['f-pref-rel-status', 'preferred_relationship_status'],
     ['f-date-with-kids', 'date_with_kids'],
     ['f-relocation-in', 'relocation'],
     ['f-relocation-out', 'relocation'],
   ];
-  maps.forEach(([id, cat]) => {
+  singleMaps.forEach(([id, cat]) => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = optionsHtml(cat);
+    if (el && el.tagName === 'SELECT') el.innerHTML = optionsHtml(cat);
   });
 
-  // Income dropdowns - use income_level options
-  const incomeOpts = (profileOptions['income_level'] || []).filter(o => o.value !== 'Prefer not to say');
-  ['f-income-min','f-income-max'].forEach(id => {
+  // Multi-select dropdowns
+  const msFromOptions = [
+    ['f-income', 'income_level', 'Any Income', (o) => o.value !== 'Prefer not to say'],
+    ['f-kids', 'kids', 'Any', null],
+    ['f-religion', 'religion', 'Any', null],
+    ['f-education', 'education', 'Any', null],
+    ['f-politics', 'politics', 'Any', null],
+    ['f-body-type', 'body_type', 'Any', null],
+    ['f-smoking', 'smoking', 'Any', null],
+    ['f-drinking', 'drinking', 'Any', null],
+    ['f-rel-status', 'relationship_status', 'Any', null],
+    ['f-pref-religion', 'preferred_religion', 'Any', null],
+    ['f-pref-politics', 'preferred_politics', 'Any', null],
+    ['f-pref-body-type', 'preferred_body_type', 'Any', null],
+    ['f-pref-pref-education', 'preferred_education', 'Any', null],
+    ['f-pref-smoking', 'preferred_smoking', 'Any', null],
+    ['f-pref-drinking', 'preferred_alcohol', 'Any', null],
+    ['f-pref-rel-status', 'preferred_relationship_status', 'Any', null],
+  ];
+  msFromOptions.forEach(([id, cat, placeholder, filterFn]) => {
+    let opts = (profileOptions[cat] || []).filter(o => o.value !== 'Any');
+    if (filterFn) opts = opts.filter(filterFn);
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<option value="">Any</option>` + incomeOpts.map((o,i) => `<option value="${i+1}">${o.label}</option>`).join('');
+    if (el) { el.dataset.placeholder = placeholder; buildMultiSelect(id, opts, placeholder); }
   });
 }
 
@@ -2296,6 +2308,88 @@ function setMatchMode(mode) {
   document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
   document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
 }
+
+
+// ── MULTI-SELECT WIDGET ───────────────────────────────────────────────────
+function buildMultiSelect(id, options, placeholder) {
+  const wrap = document.getElementById(id);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  wrap.className = 'ms-wrap filter-group-inner';
+
+  const display = document.createElement('div');
+  display.className = 'ms-display';
+  display.innerHTML = `<span class="ms-placeholder">${placeholder || 'Any'}</span>`;
+
+  const clear = document.createElement('span');
+  clear.className = 'ms-clear';
+  clear.innerHTML = '×';
+  clear.onclick = (e) => { e.stopPropagation(); msSetValues(id, []); applyFilters(); };
+  display.appendChild(clear);
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'ms-dropdown';
+  dropdown.id = id + '-dropdown';
+
+  options.forEach(opt => {
+    const label = document.createElement('label');
+    label.className = 'ms-option';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = opt.value || opt;
+    cb.onchange = () => { msUpdateDisplay(id, placeholder); applyFilters(); };
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(opt.label || opt));
+    dropdown.appendChild(label);
+  });
+
+  display.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.ms-dropdown.open').forEach(d => { if (d !== dropdown) d.classList.remove('open'); document.querySelectorAll('.ms-display.open').forEach(d2 => d2.classList.remove('open')); });
+    dropdown.classList.toggle('open');
+    display.classList.toggle('open');
+  };
+
+  wrap.appendChild(display);
+  wrap.appendChild(dropdown);
+}
+
+function msUpdateDisplay(id, placeholder) {
+  const wrap = document.getElementById(id);
+  if (!wrap) return;
+  const checked = [...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+  const display = wrap.querySelector('.ms-display');
+  const clearBtn = wrap.querySelector('.ms-clear');
+  const span = display.querySelector('.ms-placeholder') || display;
+  if (checked.length === 0) {
+    display.querySelector('.ms-placeholder') ? display.querySelector('.ms-placeholder').textContent = placeholder || 'Any' : null;
+    if (clearBtn) clearBtn.style.display = 'none';
+  } else {
+    const text = checked.length <= 2 ? checked.join(', ') : checked[0] + ' +' + (checked.length - 1) + ' more';
+    if (display.querySelector('.ms-placeholder')) display.querySelector('.ms-placeholder').textContent = text;
+    if (clearBtn) clearBtn.style.display = 'block';
+  }
+}
+
+function msGetValues(id) {
+  const wrap = document.getElementById(id);
+  if (!wrap) return [];
+  return [...wrap.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+}
+
+function msSetValues(id, values) {
+  const wrap = document.getElementById(id);
+  if (!wrap) return;
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = values.includes(cb.value); });
+  const placeholder = wrap.dataset.placeholder || 'Any';
+  msUpdateDisplay(id, placeholder);
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', () => {
+  document.querySelectorAll('.ms-dropdown.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.ms-display.open').forEach(d => d.classList.remove('open'));
+});
 
 async function autoBuildPoolForSubject(subject) {
   const token = supabaseSession || SUPABASE_ANON;
