@@ -603,18 +603,24 @@
               <label>Income (Min)</label>
               <select id="f-income-min">
                 <option value="">Any</option>
-                <option value="1">Under $50,000</option><option value="2">$50,000 - $74,999</option>
-                <option value="3">$75,000 - $99,999</option><option value="4">$100,000 - $149,999</option>
-                <option value="5">$150,000 - $199,999</option><option value="6">$200,000+</option>
+                <option value="Under $50k">Under $50k</option>
+                <option value="$50k - $100k">$50k - $100k</option>
+                <option value="$100k - $150k">$100k - $150k</option>
+                <option value="$150k - $250k">$150k - $250k</option>
+                <option value="$250k - $500k">$250k - $500k</option>
+                <option value="$500k+">$500k+</option>
               </select>
             </div>
             <div class="filter-group">
               <label>Income (Max)</label>
               <select id="f-income-max">
                 <option value="">Any</option>
-                <option value="1">Under $50,000</option><option value="2">$50,000 - $74,999</option>
-                <option value="3">$75,000 - $99,999</option><option value="4">$100,000 - $149,999</option>
-                <option value="5">$150,000 - $199,999</option><option value="6">$200,000+</option>
+                <option value="Under $50k">Under $50k</option>
+                <option value="$50k - $100k">$50k - $100k</option>
+                <option value="$100k - $150k">$100k - $150k</option>
+                <option value="$150k - $250k">$150k - $250k</option>
+                <option value="$250k - $500k">$250k - $500k</option>
+                <option value="$500k+">$500k+</option>
               </select>
             </div>
             <div class="filter-group">
@@ -758,6 +764,48 @@
         </div>
         <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
+        </div>
+        <div id="quick-filters" style="display:flex;flex-wrap:wrap;gap:8px;padding:0 0 12px 0">
+          <select id="qf-gender" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Any Gender</option>
+            <option>Male</option><option>Female</option><option>Non-binary</option>
+          </select>
+          <select id="qf-income" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Any Income</option>
+            <option>Under $50k</option>
+            <option>$50k - $100k</option>
+            <option>$100k - $150k</option>
+            <option>$150k - $250k</option>
+            <option>$250k - $500k</option>
+            <option>$500k+</option>
+          </select>
+          <select id="qf-kids" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Has Kids?</option>
+            <option value="No">No</option>
+            <option value="Yes, at home">Yes, at home</option>
+            <option value="Yes, not at home">Yes, not at home</option>
+          </select>
+          <select id="qf-want-kids" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Wants Kids?</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Open to it">Open to it</option>
+            <option value="Undecided">Undecided</option>
+          </select>
+          <select id="qf-religion" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Any Religion</option>
+            <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option><option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
+          </select>
+          <select id="qf-education" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Any Education</option>
+            <option>High School</option><option>Some College</option><option>Associate's</option><option>Bachelor's</option><option>Master's</option><option>Doctorate</option><option>Trade School</option>
+          </select>
+          <select id="qf-active" onchange="applyQuickFilters()" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;background:white">
+            <option value="">Any Status</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+          <button onclick="clearQuickFilters()" style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:#5A5353;cursor:pointer">Clear</button>
         </div>
         <div id="profiles-list" class="profiles-grid">
           <div class="loading-state">Loading profiles…</div>
@@ -1481,6 +1529,36 @@ function toggleFilter(header) {
 }
 
 // ── PROFILES ──────────────────────────────────────────────────────────────────
+function applyQuickFilters() {
+  // Sync quick filter values into sidebar filters where they overlap
+  const gender = document.getElementById('qf-gender').value;
+  const income = document.getElementById('qf-income').value;
+  const kids = document.getElementById('qf-kids').value;
+  const wantKids = document.getElementById('qf-want-kids').value;
+  const religion = document.getElementById('qf-religion').value;
+  const education = document.getElementById('qf-education').value;
+  const active = document.getElementById('qf-active').value;
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  setEl('f-gender', gender);
+  setEl('f-income-min', income);
+  setEl('f-income-max', '');
+  setEl('f-kids', kids);
+  setEl('f-want-kids', wantKids);
+  setEl('f-religion', religion);
+  setEl('f-education', education);
+  setEl('f-active', active);
+  currentPage = 0;
+  applyFilters();
+}
+
+function clearQuickFilters() {
+  ['qf-gender','qf-income','qf-kids','qf-want-kids','qf-religion','qf-education','qf-active'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  clearFilters();
+}
+
 function debounceSearch() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
@@ -1550,6 +1628,22 @@ function buildProfilesUrl(forCount = false) {
   if (f.relStatus) params.push(`relationship_status=eq.${encodeURIComponent(f.relStatus)}`);
   if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
   if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
+  // Server-side income range filter
+  const incomeOrder = ['Under $50k','$50k - $100k','$100k - $150k','$150k - $250k','$250k - $500k','$500k+'];
+  if (f.incomeMin && !f.incomeMax) {
+    const minIdx = incomeOrder.indexOf(f.incomeMin);
+    const tiers = incomeOrder.slice(minIdx);
+    if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
+  } else if (!f.incomeMin && f.incomeMax) {
+    const maxIdx = incomeOrder.indexOf(f.incomeMax);
+    const tiers = incomeOrder.slice(0, maxIdx + 1);
+    if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
+  } else if (f.incomeMin && f.incomeMax) {
+    const minIdx = incomeOrder.indexOf(f.incomeMin);
+    const maxIdx = incomeOrder.indexOf(f.incomeMax);
+    const tiers = incomeOrder.slice(minIdx, maxIdx + 1);
+    if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
+  }
   if (f.incomeExact) params.push(`income_level=eq.${encodeURIComponent(f.incomeExact)}`);
   if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
   if (f.prefReligion) params.push(`preferred_religion=cs.${encodeURIComponent('{"' + f.prefReligion + '"}')}`) ;
@@ -1623,18 +1717,7 @@ async function loadProfiles() {
       });
     }
 
-    // Client-side income range filter using standardized values
-    const incomeOrder = ['Under $50k','$50k - $100k','$100k - $150k','$150k - $250k','$250k - $500k','$500k+'];
-    if (f.incomeMin || f.incomeMax) {
-      data = data.filter(p => {
-        if (!p.income_level) return false;
-        const rank = incomeOrder.indexOf(p.income_level);
-        if (rank === -1) return false;
-        if (f.incomeMin && rank < parseInt(f.incomeMin) - 1) return false;
-        if (f.incomeMax && rank > parseInt(f.incomeMax) - 1) return false;
-        return true;
-      });
-    }
+    // Income filter is now server-side (see buildProfilesUrl)
 
     // Client-side distance filter
     if (distanceCenter && f.distanceMiles) {
@@ -2031,6 +2114,8 @@ async function applyFilters() {
     wantKids: document.getElementById('f-want-kids').value,
     incomeMin: document.getElementById('f-income-min').value,
     incomeMax: document.getElementById('f-income-max').value,
+    // quick filter overrides sidebar if set
+    ...(document.getElementById('qf-income') && document.getElementById('qf-income').value ? { incomeExact: document.getElementById('qf-income').value } : {}),
     relStatus: document.getElementById('f-rel-status').value,
     prefAgeMin: document.getElementById('f-pref-age-min').value,
     prefAgeMax: document.getElementById('f-pref-age-max').value,
