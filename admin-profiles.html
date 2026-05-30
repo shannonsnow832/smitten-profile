@@ -976,8 +976,23 @@
                 <input type="text" id="mg-name" value="Match Group" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
               </div>
               <div class="modal-field">
-                <label>Number of Groups</label>
+                <label>People per Group</label>
                 <input type="number" id="mg-count" value="4" min="2" max="20" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+              </div>
+            </div>
+            <!-- Anchor person -->
+            <div style="margin-bottom:16px">
+              <label style="font-size:11px;font-weight:600;color:var(--gray-mid);display:block;margin-bottom:6px">Anchor to Person <span style="font-weight:400">(optional — builds pool from their preferences, no gender filter)</span></label>
+              <div style="position:relative">
+                <input type="text" id="mg-anchor-search" placeholder="Search by name…" oninput="searchGroupAnchor()" autocomplete="off"
+                  style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;box-sizing:border-box">
+                <div id="mg-anchor-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #E8E8E8;border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);max-height:180px;overflow-y:auto;z-index:100;box-shadow:var(--shadow)"></div>
+              </div>
+              <div id="mg-anchor-selected" style="display:none;margin-top:8px;font-size:12px;background:#FFF5F5;border:1px solid var(--pink);border-radius:6px;padding:8px 12px;align-items:center;gap:8px">
+                <span id="mg-anchor-name" style="font-weight:600;flex:1"></span>
+                <span style="font-size:11px;color:var(--gray-mid)">Age range ±</span>
+                <input type="number" id="mg-anchor-age-buffer" value="5" min="0" max="20" style="width:44px;border:1px solid #E8E8E8;border-radius:4px;padding:2px 6px;font-family:Montserrat,sans-serif;font-size:12px;text-align:center"> yrs
+                <button onclick="clearGroupAnchor()" style="background:none;border:none;color:var(--gray-mid);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">×</button>
               </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -993,7 +1008,13 @@
               <div style="display:flex;gap:8px">
                 <button id="btn-pool-view-grid" onclick="setPoolView('grid')" style="font-size:11px;padding:4px 10px;border:1px solid var(--red);border-radius:6px;background:var(--red);color:white;cursor:pointer">Grid</button>
                 <button id="btn-pool-view-list" onclick="setPoolView('list')" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">List</button>
-                <button onclick="exportPoolCSV()" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export CSV</button>
+                <div style="position:relative;display:inline-block">
+                  <button onclick="document.getElementById('export-pool-menu').style.display=document.getElementById('export-pool-menu').style.display==='none'?'block':'none'" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export CSV ▾</button>
+                  <div id="export-pool-menu" style="display:none;position:absolute;right:0;top:100%;background:white;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);box-shadow:var(--shadow);z-index:100;min-width:160px">
+                    <div onclick="exportPoolCSV('abbreviated');document.getElementById('export-pool-menu').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0f0" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Abbreviated</div>
+                    <div onclick="exportPoolCSV('expanded');document.getElementById('export-pool-menu').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Expanded (all fields)</div>
+                  </div>
+                </div>
               </div>
             </div>
             <div id="pool-preview-list" style="display:flex;flex-wrap:wrap;gap:8px;max-height:220px;overflow-y:auto"></div>
@@ -1354,6 +1375,7 @@
         <div id="modal-save-bar" class="modal-save-bar">
           <button class="btn" id="btn-modal-delete" onclick="softDeleteProfile()" style="background:transparent;color:#C6302C;border:1.5px solid #C6302C;font-size:12px;padding:6px 14px">Archive</button>
           <button class="btn" id="btn-modal-hard-delete" onclick="hardDeleteProfile()" style="background:#C6302C;color:white;font-size:12px;padding:6px 14px">Delete</button>
+          <button class="btn" id="btn-modal-save-profile" onclick="toggleSaveProfile()" style="background:transparent;color:#0369a1;border:1.5px solid #0369a1;font-size:12px;padding:6px 14px">⭐ Save</button>
           <button class="btn" id="btn-modal-ban" onclick="toggleBanProfile()" style="background:transparent;color:#7c3aed;border:1.5px solid #7c3aed;font-size:12px;padding:6px 14px">Ban</button>
           <button class="btn" id="btn-modal-invite-paused" onclick="toggleInvitePaused()" style="background:transparent;color:#92400e;border:1.5px solid #92400e;font-size:12px;padding:6px 14px">Invite Paused</button>
           <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;flex:1;text-align:center;"></span>
@@ -1959,8 +1981,19 @@ function openProfile(p) {
       ipBtn.style.border = '1.5px solid #92400e';
     }
   }
-  // Ban button state
-  const banBtn = document.getElementById('btn-modal-ban');
+  // Save profile button state
+  if (adminUser) {
+    const saveBtn = document.getElementById('btn-modal-save-profile');
+    if (saveBtn) {
+      const token = supabaseSession || SUPABASE_ANON;
+      fetch(`${SUPABASE_URL}/rest/v1/saved_profiles?staff_id=eq.${adminUser.id}&profile_id=eq.${p.id}&select=id`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      }).then(r => r.json()).then(rows => {
+        if (rows.length) { saveBtn.textContent = '★ Saved'; saveBtn.style.background = '#0369a1'; saveBtn.style.color = 'white'; }
+        else { saveBtn.textContent = '⭐ Save'; saveBtn.style.background = 'transparent'; saveBtn.style.color = '#0369a1'; }
+      });
+    }
+  }
   if (banBtn) {
     banBtn.textContent = p.banned_at ? 'Unban' : 'Ban';
     banBtn.style.background = p.banned_at ? '#7c3aed' : 'transparent';
@@ -3153,28 +3186,41 @@ document.addEventListener('click', () => {
 
 async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
   const token = supabaseSession || SUPABASE_ANON;
-  // Build basic opposite-seeking pool based on subject profile
   let params = ['deleted_at=is.null', 'is_active=eq.true', 'invite_paused=eq.false'];
 
   // Exclude self
   params.push(`id=neq.${subject.id}`);
 
-  // Use subject's seeking to filter gender, fall back to opposite gender
-  let seekingFiltered = false;
-  if (subject.seeking) {
-    try {
-      const s = Array.isArray(subject.seeking) ? subject.seeking : JSON.parse(subject.seeking || '[]');
-      if (s.includes('Date Men') && !s.includes('Date Women')) { params.push('gender=eq.Male'); seekingFiltered = true; }
-      else if (s.includes('Date Women') && !s.includes('Date Men')) { params.push('gender=eq.Female'); seekingFiltered = true; }
-    } catch(e) {}
+  // Determine genders subject wants to meet
+  const subjectSeeking = Array.isArray(subject.seeking) ? subject.seeking
+    : (subject.seeking ? JSON.parse(subject.seeking || '[]') : []);
+  const wantsAny = subjectSeeking.includes('Date Any/Other Gender');
+
+  if (!wantsAny && subjectSeeking.length) {
+    // Build gender filter from seeking values
+    const wantedGenders = [];
+    if (subjectSeeking.includes('Date Men')) wantedGenders.push('Male');
+    if (subjectSeeking.includes('Date Women')) wantedGenders.push('Female');
+    if (wantedGenders.length === 1) {
+      params.push(`gender=eq.${wantedGenders[0]}`);
+    } else if (wantedGenders.length > 1) {
+      params.push(`gender=in.(${wantedGenders.join(',')})`);
+    }
   }
-  if (!seekingFiltered && subject.gender) {
-    // Default: show opposite gender
-    if (subject.gender.toLowerCase() === 'female') params.push('gender=eq.Male');
-    else if (subject.gender.toLowerCase() === 'male') params.push('gender=eq.Female');
+  // No gender filter if wantsAny or no seeking set
+
+  // Pool must also want to meet the subject's gender
+  if (subject.gender) {
+    const genderLower = subject.gender.toLowerCase();
+    if (genderLower === 'male') {
+      params.push(`seeking=cs.{"Date Men"}`);
+    } else if (genderLower === 'female') {
+      params.push(`seeking=cs.{"Date Women"}`);
+    }
+    // Non-binary/other: no filter (they may be sought via Date Any/Other Gender)
   }
 
-  // Use subject's age preferences
+  // Age preferences — use subject's range but no auto-filter (leave to scoring)
   if (subject.min_age) params.push(`date_of_birth=lte.${new Date(new Date().setFullYear(new Date().getFullYear() - subject.min_age)).toISOString().split('T')[0]}`);
   if (subject.max_age) params.push(`date_of_birth=gte.${new Date(new Date().setFullYear(new Date().getFullYear() - subject.max_age)).toISOString().split('T')[0]}`);
 
@@ -3223,19 +3269,161 @@ function clearPoolFilters() {
   if (preview) preview.style.display = 'none';
 }
 
-function exportPoolCSV() {
+function exportPoolCSV(mode) {
   if (!matchPool.length) { alert('Build a pool first.'); return; }
-  const headers = ['First Name','Last Name','Gender','Age','City','State','Income','Religion','Education','Kids','Wants Kids'];
-  const rows = matchPool.map(p => {
-    const age = p.date_of_birth ? Math.floor((new Date() - new Date(p.date_of_birth)) / 31557600000) : '';
-    return [p.first_name,p.last_name,p.gender,age,p.city,p.state,p.income_level,p.religion,p.education,p.kids,p.want_kids]
-      .map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
-  });
+  const isMatchmaker = adminUser && adminUser.role === 'matchmaker';
+  const userOrgId = adminUser && adminUser.organization_id;
+
+  let profiles = matchPool;
+  // Matchmakers: only export profiles from their org
+  if (isMatchmaker && userOrgId) {
+    profiles = profiles.filter(p => p.organization_id === userOrgId);
+  }
+
+  let headers, rows;
+  if (mode === 'abbreviated') {
+    headers = ['First Name','Last Name','Email','Phone','Age','Gender','City','State'];
+    rows = profiles.map(p => {
+      const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+      return [p.first_name,p.last_name,p.email||'',p.phone||'',age,p.gender||'',p.city||'',p.state||'']
+        .map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+    });
+  } else {
+    headers = ['First Name','Last Name','Email','Phone','Age','Gender','City','State','Income','Religion','Politics','Education','Body Type','Kids','Wants Kids','Smoking','Drinking','Seeking','Relationship Status','Activities','Bio'];
+    rows = profiles.map(p => {
+      const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+      return [p.first_name,p.last_name,
+        isMatchmaker ? '' : (p.email||''),
+        isMatchmaker ? '' : (p.phone||''),
+        age,p.gender||'',p.city||'',p.state||'',
+        p.income_level||'',p.religion||'',p.politics||'',p.education||'',
+        p.body_type||'',p.kids||'',p.want_kids||'',p.smoking||'',p.drinking||'',
+        Array.isArray(p.seeking)?p.seeking.join(';'):(p.seeking||''),
+        p.relationship_status||'',
+        Array.isArray(p.activities_hobbies)?p.activities_hobbies.join(';'):(p.activities_hobbies||''),
+        (p.bio||'').replace(/\n/g,' ')
+      ].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+    });
+  }
+
   const csv = [headers.join(','), ...rows].join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'match-pool.csv';
+  a.download = `match-pool-${mode}-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
+}
+
+// ── GROUP ANCHOR — person-anchored group matching ─────────────────────────────
+let groupAnchor = null;
+let anchorSearchTimer = null;
+
+function searchGroupAnchor() {
+  clearTimeout(anchorSearchTimer);
+  anchorSearchTimer = setTimeout(async () => {
+    const q = document.getElementById('mg-anchor-search').value.trim();
+    if (!q || q.length < 2) { document.getElementById('mg-anchor-results').style.display = 'none'; return; }
+    const token = supabaseSession || SUPABASE_ANON;
+    const words = q.split(/\s+/);
+    let orClause = words.length === 1
+      ? `or=(first_name.ilike.*${encodeURIComponent(words[0])}*,last_name.ilike.*${encodeURIComponent(words[0])}*)`
+      : `or=(and(first_name.ilike.*${encodeURIComponent(words[0])}*,last_name.ilike.*${encodeURIComponent(words.slice(1).join(' '))}*),and(first_name.ilike.*${encodeURIComponent(words.slice(1).join(' '))}*,last_name.ilike.*${encodeURIComponent(words[0])}*))`;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&${orClause}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,religion,politics,education,income_level,body_type,kids,want_kids,smoking,drinking,min_age,max_age&limit=8`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const results = await r.json();
+    const el = document.getElementById('mg-anchor-results');
+    if (!results.length) { el.innerHTML = '<div style="padding:10px;font-size:13px;color:var(--gray-mid)">No profiles found</div>'; el.style.display='block'; return; }
+    el.innerHTML = results.map(p => {
+      const age = p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/31557600000) : '';
+      return `<div onclick="selectGroupAnchor(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">
+        <strong>${p.first_name} ${p.last_name}</strong> <span style="color:var(--gray-mid)">${age ? age+' · ' : ''}${p.gender||''} · ${p.city||''}${p.state?', '+p.state:''}</span>
+      </div>`;
+    }).join('');
+    el.style.display = 'block';
+  }, 300);
+}
+
+function selectGroupAnchor(p) {
+  groupAnchor = p;
+  document.getElementById('mg-anchor-results').style.display = 'none';
+  document.getElementById('mg-anchor-search').value = `${p.first_name} ${p.last_name}`;
+  const selectedEl = document.getElementById('mg-anchor-selected');
+  document.getElementById('mg-anchor-name').textContent = `${p.first_name} ${p.last_name} · ${p.gender||''} · ${p.city||''}`;
+  selectedEl.style.display = 'flex';
+}
+
+function clearGroupAnchor() {
+  groupAnchor = null;
+  document.getElementById('mg-anchor-search').value = '';
+  document.getElementById('mg-anchor-selected').style.display = 'none';
+}
+
+async function buildPoolFromAnchor(anchor) {
+  // Build pool from anchor's preferences — no gender filter, loosened age
+  const token = supabaseSession || SUPABASE_ANON;
+  const ageBuffer = parseInt(document.getElementById('mg-anchor-age-buffer').value) || 5;
+  let params = ['deleted_at=is.null','is_active=eq.true','invite_paused=eq.false',`id=neq.${anchor.id}`];
+
+  // Apply anchor's lifestyle preferences loosely
+  if (anchor.religion) params.push(`religion=eq.${encodeURIComponent(anchor.religion)}`);
+  if (anchor.politics) params.push(`politics=eq.${encodeURIComponent(anchor.politics)}`);
+  if (anchor.education) params.push(`education=eq.${encodeURIComponent(anchor.education)}`);
+  if (anchor.income_level) params.push(`income_level=eq.${encodeURIComponent(anchor.income_level)}`);
+
+  // Loosened age — use anchor's min/max ± buffer
+  if (anchor.min_age) {
+    const buffered = Math.max(18, anchor.min_age - ageBuffer);
+    params.push(`date_of_birth=lte.${new Date(new Date().setFullYear(new Date().getFullYear() - buffered)).toISOString().split('T')[0]}`);
+  }
+  if (anchor.max_age) {
+    const buffered = anchor.max_age + ageBuffer;
+    params.push(`date_of_birth=gte.${new Date(new Date().setFullYear(new Date().getFullYear() - buffered)).toISOString().split('T')[0]}`);
+  }
+
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&limit=500`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+  });
+  const data = await r.json();
+  // Ensure anchor is in the pool
+  let pool = Array.isArray(data) ? data : [];
+  if (!pool.find(p => p.id === anchor.id)) pool.unshift(anchor);
+  return pool;
+}
+
+// ── SAVE PROFILE (matchmaker) ─────────────────────────────────────────────────
+async function toggleSaveProfile() {
+  const p = currentModalProfile;
+  if (!p || !adminUser) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-modal-save-profile');
+
+  // Check if already saved
+  const checkR = await fetch(`${SUPABASE_URL}/rest/v1/saved_profiles?staff_id=eq.${adminUser.id}&profile_id=eq.${p.id}&select=id`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+  });
+  const existing = await checkR.json();
+
+  if (existing.length) {
+    // Unsave
+    if (!confirm(`Remove ${p.first_name} ${p.last_name} from saved profiles?`)) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/saved_profiles?staff_id=eq.${adminUser.id}&profile_id=eq.${p.id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    btn.textContent = '⭐ Save';
+    btn.style.background = 'transparent';
+    btn.style.color = '#0369a1';
+  } else {
+    // Save
+    await fetch(`${SUPABASE_URL}/rest/v1/saved_profiles`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ staff_id: adminUser.id, profile_id: p.id })
+    });
+    btn.textContent = '★ Saved';
+    btn.style.background = '#0369a1';
+    btn.style.color = 'white';
+  }
 }
 
 let poolExcluded = new Set();
@@ -3667,15 +3855,32 @@ async function excludeMatch(profileId, name, btn) {
 }
 
 async function generateGroups() {
-  if (!matchPool.length) { alert('Build a pool first.'); return; }
-  const name = document.getElementById('mg-name').value.trim() || 'Match Group';
-  const count = parseInt(document.getElementById('mg-count').value) || 4;
-  const balanced = true; // Always attempt gender balance
-  const eventId = document.getElementById('m-pool-event') && document.getElementById('m-pool-event').value ? document.getElementById('m-pool-event').value : null;
   const statusEl = document.getElementById('mg-status');
   const btn = document.getElementById('btn-generate-groups');
   btn.disabled = true; btn.textContent = 'Generating...';
   statusEl.textContent = '';
+
+  // If anchor set, build pool from anchor's preferences
+  if (groupAnchor) {
+    statusEl.textContent = 'Building anchor pool...';
+    const anchorPool = await buildPoolFromAnchor(groupAnchor);
+    if (!anchorPool.length) {
+      statusEl.textContent = 'No profiles found for anchor criteria.';
+      btn.disabled = false; btn.textContent = 'Generate Groups';
+      return;
+    }
+    matchPool = anchorPool;
+    document.getElementById('pool-count-badge').textContent = `${matchPool.length} in pool`;
+  } else if (!matchPool.length) {
+    alert('Build a pool first, or select an anchor person.');
+    btn.disabled = false; btn.textContent = 'Generate Groups';
+    return;
+  }
+
+  const name = document.getElementById('mg-name').value.trim() || 'Match Group';
+  const count = parseInt(document.getElementById('mg-count').value) || 4;
+  const balanced = true;
+  const eventId = document.getElementById('m-pool-event') && document.getElementById('m-pool-event').value ? document.getElementById('m-pool-event').value : null;
 
   const token = supabaseSession || SUPABASE_ANON;
   try {
