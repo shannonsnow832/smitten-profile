@@ -741,21 +741,13 @@
               </select>
             </div>
             <div class="filter-group">
-              <label>Active</label>
-              <select id="f-active">
-                <option value="">Any</option><option value="true">Active</option><option value="false">Inactive</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Invite Paused</label>
-              <select id="f-removed-matching">
-                <option value="">Any</option><option value="true">Yes</option><option value="false">No</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Banned</label>
-              <select id="f-banned">
-                <option value="">Any</option><option value="true">Banned</option><option value="false">Not Banned</option>
+              <label>Status</label>
+              <select id="f-status">
+                <option value="">Any</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="invite_paused">Invite Paused</option>
+                <option value="banned">Banned</option>
               </select>
             </div>
           </div>
@@ -997,20 +989,21 @@
           <div id="match-group-results">
             <div class="empty-state"><div class="icon">👥</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Set group settings above<br>3. Click <strong>Generate Groups</strong></p></div>
           </div>
-          <!-- SAVED GROUPS -->
-          <div style="margin-top:32px">
-            <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
-            <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
+        </div>
+
+        <!-- SAVED GROUPS — always visible -->
+        <div style="margin-top:32px">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
+          <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
+        </div>
+        <!-- SAVED POOLS — always visible -->
+        <div style="margin-top:32px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <h3 style="font-size:14px;font-weight:700">Saved Pools</h3>
+            <button onclick="saveCurrentPool()" class="btn btn-outline" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)">Save Current Pool</button>
           </div>
-          <!-- SAVED POOLS -->
-          <div style="margin-top:32px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-              <h3 style="font-size:14px;font-weight:700">Saved Pools</h3>
-              <button onclick="saveCurrentPool()" class="btn btn-outline" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)">Save Current Pool</button>
-            </div>
-            <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
-              <div style="font-size:13px;color:var(--gray-mid)">No saved pools yet.</div>
-            </div>
+          <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:13px;color:var(--gray-mid)">No saved pools yet.</div>
           </div>
         </div>
       </div>
@@ -1031,6 +1024,7 @@
         </select>
         <button onclick="bulkUpdateRole()" class="btn btn-outline" style="font-size:12px;padding:6px 14px">Update Role</button>
         <button onclick="bulkDeactivate()" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1.5px solid #C6302C;background:white;color:#C6302C;cursor:pointer;font-family:Montserrat,sans-serif">Deactivate</button>
+        <button onclick="bulkActivate()" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1.5px solid #166534;background:white;color:#166534;cursor:pointer;font-family:Montserrat,sans-serif">Activate</button>
         <button onclick="clearStaffSelection()" style="font-size:12px;color:var(--gray-mid);background:none;border:none;cursor:pointer;font-family:Montserrat,sans-serif;margin-left:auto">Clear selection</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
@@ -1606,7 +1600,7 @@ function clearFilters() {
   ['f-income','f-kids','f-want-kids','f-religion','f-education','f-politics','f-body-type','f-smoking',
    'f-drinking','f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type',
    'f-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
-  ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-active',
+  ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-status',
    'f-date-with-kids','f-relocation-in','f-relocation-out','f-state','f-city'
   ].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('f-distance-status').textContent = '';
@@ -1645,8 +1639,10 @@ function buildProfilesUrl(forCount = false) {
   if (f.education && f.education.length) params.push(`education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
   if (f.religion && f.religion.length) params.push(`religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
   if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
-  if (f.active) params.push(`is_active=eq.${f.active}`);
-  if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
+  if (f.status === 'active') params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned_at=is.null');
+  if (f.status === 'inactive') params.push('is_active=eq.false');
+  if (f.status === 'invite_paused') params.push('invite_paused=eq.true');
+  if (f.status === 'banned') params.push('banned_at=not.is.null');  if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
   if (f.hasPhoto === 'no') params.push('image_url=is.null');
   if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
   if (f.zip) params.push(`postal_code=eq.${encodeURIComponent(f.zip)}`);
@@ -1693,9 +1689,6 @@ function buildProfilesUrl(forCount = false) {
   }
   if (f.incomeExact && f.incomeExact.length) params.push(f.incomeExact.length === 1 ? `income_level=eq.${encodeURIComponent(f.incomeExact[0])}` : `income_level=in.(${f.incomeExact.map(v => `"${v}"`).join(',')})`);
   if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
-  if (f.removedFromMatching) params.push(`invite_paused=eq.${f.removedFromMatching}`);
-  if (f.banned === 'true') params.push('banned_at=not.is.null');
-  if (f.banned === 'false') params.push('banned_at=is.null');
   if (f.prefReligion && f.prefReligion.length) params.push(`preferred_religion=ov.{${f.prefReligion.map(v => `"${v}"`).join(',')}}`)
   if (f.prefPolitics && f.prefPolitics.length) params.push(`preferred_politics=ov.{${f.prefPolitics.map(v => `"${v}"`).join(',')}}`);
   if (f.prefBodyType && f.prefBodyType.length) params.push(`preferred_body_type=ov.{${f.prefBodyType.map(v => `"${v}"`).join(',')}}`);
@@ -2401,6 +2394,22 @@ async function bulkDeactivate() {
   } catch(e) { alert('Bulk deactivate failed.'); }
 }
 
+async function bulkActivate() {
+  if (!selectedStaffIds.size) return;
+  if (!confirm(`Activate ${selectedStaffIds.size} user(s)?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const ids = [...selectedStaffIds];
+  try {
+    await Promise.all(ids.map(id => fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ is_active: true, updated_at: new Date().toISOString() })
+    })));
+    clearStaffSelection();
+    loadStaff();
+  } catch(e) { alert('Bulk activate failed.'); }
+}
+
 function enlargePhoto(url) {
   // Legacy single-photo call -- open lightbox with just this photo
   const allPhotos = currentModalProfile && currentModalProfile.photos && currentModalProfile.photos.length
@@ -2726,7 +2735,7 @@ async function applyFilters() {
     religion: msGetValues('f-religion'),
     hasPhoto: getVal('f-has-photo'),
     matchmakers: getVal('f-matchmakers'),
-    active: getVal('f-active'),
+    status: getVal('f-status'),
     zip: getVal('f-zip'),
     distanceZip: getVal('f-distance-zip'),
     distanceMiles: getVal('f-distance-miles'),
@@ -2752,8 +2761,6 @@ async function applyFilters() {
     dateWithKids: getVal('f-date-with-kids'),
     relocationIn: getVal('f-relocation-in'),
     relocationOut: getVal('f-relocation-out'),
-    removedFromMatching: getVal('f-removed-matching'),
-    banned: getVal('f-banned'),
   };
 
   // Geocode distance zip if provided
