@@ -327,7 +327,7 @@
     user-select: none; line-height: 1.4;
   }
   .ms-option:hover { background: #FFF5F5; }
-  .ms-option input[type=checkbox] { accent-color: var(--red); flex-shrink: 0; width: 14px; height: 14px; cursor: pointer; margin: 0; }
+  .ms-option input[type=checkbox] { accent-color: var(--red); flex-shrink: 0; width: 14px; height: 14px; cursor: pointer; margin: 0; margin-right: 4px; }
   .ms-clear {
     position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
     font-size: 14px; color: var(--gray-mid); cursor: pointer; display: none; line-height: 1;
@@ -590,7 +590,7 @@
             </div>
             <div class="filter-group">
               <label>Wants Kids</label>
-              <select id="f-want-kids" onchange="applyFilters()"><option value="">Any</option></select>
+              <div id="f-want-kids" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Religion</label>
@@ -599,6 +599,10 @@
             <div class="filter-group">
               <label>Education</label>
               <div id="f-education" class="ms-wrap" data-placeholder="Any"></div>
+            </div>
+            <div class="filter-group">
+              <label>Politics</label>
+              <div id="f-politics" class="ms-wrap" data-placeholder="Any"></div>
             </div>
           </div>
         </div>
@@ -611,11 +615,11 @@
           <div class="filter-section-body">
             <div class="filter-group">
               <label>State</label>
-              <input type="text" id="f-state" placeholder="e.g. Nebraska">
+              <select id="f-state" onchange="loadCitiesForState()"><option value="">Any</option></select>
             </div>
             <div class="filter-group">
               <label>City</label>
-              <input type="text" id="f-city" placeholder="e.g. Omaha">
+              <select id="f-city"><option value="">Any</option></select>
             </div>
             <div class="filter-group">
               <label>Zip Code</label>
@@ -639,10 +643,6 @@
             Lifestyle <span class="filter-section-toggle">▾</span>
           </div>
           <div class="filter-section-body">
-            <div class="filter-group">
-              <label>Politics</label>
-              <div id="f-politics" class="ms-wrap" data-placeholder="Any"></div>
-            </div>
             <div class="filter-group">
               <label>Body Type</label>
               <div id="f-body-type" class="ms-wrap" data-placeholder="Any"></div>
@@ -673,7 +673,7 @@
             </div>
             <div class="filter-group">
               <label>Pref. Education</label>
-              <div id="f-pref-pref-education" class="ms-wrap" data-placeholder="Any"></div>
+              <div id="f-pref-education" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
               <label>Pref. Smoking</label>
@@ -1552,17 +1552,12 @@ function debounceSearch() {
 
 
 function clearFilters() {
-  ['f-age-min','f-age-max','f-state','f-city','f-zip','f-distance-zip','f-distance-miles',
-   'f-income'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-  ['f-income','f-kids','f-religion','f-education','f-politics','f-body-type','f-smoking',
+  ['f-age-min','f-age-max','f-zip','f-distance-zip','f-distance-miles'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['f-income','f-kids','f-want-kids','f-religion','f-education','f-politics','f-body-type','f-smoking',
    'f-drinking','f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type',
-   'f-pref-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
-  ['f-priority-gender','f-priority-kids','f-priority-want-kids','f-priority-religion','f-priority-education',
-   'f-pref-age-min','f-pref-age-max'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-  ['f-gender','f-seeking','f-education','f-religion','f-has-photo','f-matchmakers','f-active',
-   'f-politics','f-body-type','f-smoking','f-drinking','f-kids','f-want-kids','f-income-min','f-income-max',
-   'f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type','f-pref-education',
-   'f-pref-smoking','f-pref-drinking','f-pref-rel-status','f-date-with-kids','f-relocation-in','f-relocation-out'
+   'f-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
+  ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-active',
+   'f-date-with-kids','f-relocation-in','f-relocation-out','f-state','f-city'
   ].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('f-distance-status').textContent = '';
   distanceCenter = null;
@@ -1595,8 +1590,8 @@ function buildProfilesUrl(forCount = false) {
   }
 
   if (f.gender) params.push(`gender=ilike.${encodeURIComponent(f.gender)}`);
-  if (f.state) params.push(`state=ilike.${encodeURIComponent('*' + f.state + '*')}`);
-  if (f.city) params.push(`city=ilike.${encodeURIComponent('*' + f.city + '*')}`);
+  if (f.state) params.push(`state=eq.${encodeURIComponent(f.state)}`);
+  if (f.city) params.push(`city=eq.${encodeURIComponent(f.city)}`);
   if (f.education && f.education.length) params.push(`education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
   if (f.religion && f.religion.length) params.push(`religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
   if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
@@ -1610,7 +1605,7 @@ function buildProfilesUrl(forCount = false) {
   if (f.smoking && f.smoking.length) params.push(`smoking=in.(${f.smoking.map(v => `"${v}"`).join(',')})`);
   if (f.drinking && f.drinking.length) params.push(`drinking=in.(${f.drinking.map(v => `"${v}"`).join(',')})`);
   if (f.kids && f.kids.length) params.push(`kids=in.(${f.kids.map(v => `"${v}"`).join(',')})`);
-  if (f.wantKids) params.push(`want_kids=eq.${encodeURIComponent(f.wantKids)}`);
+  if (f.wantKids && f.wantKids.length) params.push(`want_kids=in.(${f.wantKids.map(v => `"${v}"`).join(',')})`);
   if (f.relStatus && f.relStatus.length) params.push(`relationship_status=in.(${f.relStatus.map(v => `"${v}"`).join(',')})`);
   if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
   if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
@@ -1709,13 +1704,26 @@ async function loadProfiles() {
 
     // Age filter is now server-side (see buildProfilesUrl)
 
-    // Client-side distance filter
+    // Distance filter — fetch ALL matching profiles then filter by distance
     if (distanceCenter && f.distanceMiles) {
       const miles = parseFloat(f.distanceMiles);
-      data = data.filter(p => {
+      // Fetch all profiles (not just current page) to apply distance filter
+      const allUrl = buildProfilesUrl() + '&limit=5000';
+      const allR = await fetch(allUrl, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const allData = await allR.json();
+      const filtered = allData.filter(p => {
         if (!p.latitude || !p.longitude) return false;
         return haversineDistance(distanceCenter.lat, distanceCenter.lng, p.latitude, p.longitude) <= miles;
       });
+      // Paginate filtered results client-side
+      const pageStart = currentPage * PAGE_SIZE;
+      totalCount = filtered.length;
+      renderProfiles(filtered.slice(pageStart, pageStart + PAGE_SIZE));
+      renderPagination(Math.ceil(filtered.length / PAGE_SIZE));
+      document.getElementById('profile-count').textContent = `${totalCount.toLocaleString()} profile${totalCount !== 1 ? 's' : ''}`;
+      return;
     }
 
     totalCount = total;
@@ -2280,12 +2288,44 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// ── STATE / CITY DROPDOWNS ────────────────────────────────────────────────────
+async function loadStateOptions() {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&state=not.is.null&select=state&order=state`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await r.json();
+    const states = [...new Set(data.map(p => p.state).filter(Boolean).map(s => s.trim()))].sort();
+    const el = document.getElementById('f-state');
+    if (el) el.innerHTML = '<option value="">Any</option>' + states.map(s => `<option value="${s}">${s}</option>`).join('');
+  } catch(e) { console.warn('loadStateOptions failed', e); }
+}
+
+async function loadCitiesForState() {
+  const state = document.getElementById('f-state').value;
+  const cityEl = document.getElementById('f-city');
+  cityEl.innerHTML = '<option value="">Any</option>';
+  if (!state) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&state=eq.${encodeURIComponent(state)}&city=not.is.null&select=city&order=city`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await r.json();
+    const cities = [...new Set(data.map(p => p.city).filter(Boolean).map(c => c.trim()))].sort();
+    cityEl.innerHTML = '<option value="">Any</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  } catch(e) { console.warn('loadCitiesForState failed', e); }
+}
+
 async function geocodeZip(zip) {
-  const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&country=US&format=json&limit=1`;
-  const r = await fetch(url, { headers: { 'User-Agent': 'SmittenSinglesAdmin/1.0' } });
-  const data = await r.json();
-  if (!data.length) return null;
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  try {
+    const r = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(zip)}`);
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data.places || !data.places.length) return null;
+    return { lat: parseFloat(data.places[0].latitude), lng: parseFloat(data.places[0].longitude) };
+  } catch(e) { return null; }
 }
 
 async function applyFilters() {
@@ -2310,7 +2350,7 @@ async function applyFilters() {
     smoking: msGetValues('f-smoking'),
     drinking: msGetValues('f-drinking'),
     kids: msGetValues('f-kids'),
-    wantKids: getVal('f-want-kids'),
+    wantKids: msGetValues('f-want-kids'),
     incomeMin: '',
     incomeMax: '',
     incomeExact: msGetValues('f-income'),
@@ -2320,7 +2360,7 @@ async function applyFilters() {
     prefReligion: msGetValues('f-pref-religion'),
     prefPolitics: msGetValues('f-pref-politics'),
     prefBodyType: msGetValues('f-pref-body-type'),
-    prefEducation: msGetValues('f-pref-pref-education'),
+    prefEducation: msGetValues('f-pref-education'),
     prefSmoking: msGetValues('f-pref-smoking'),
     prefDrinking: msGetValues('f-pref-drinking'),
     prefRelStatus: msGetValues('f-pref-rel-status'),
@@ -2456,11 +2496,8 @@ function optionsHtml(category, anyLabel = 'Any') {
 }
 
 function populateSidebarFilters() {
-  // Single-select dropdowns (standard)
+  // Single-select dropdowns
   const singleMaps = [
-    ['f-gender', 'gender'],
-    ['f-seeking', 'seeking'],
-    ['f-want-kids', 'want_kids'],
     ['f-date-with-kids', 'date_with_kids'],
     ['f-relocation-in', 'relocation'],
     ['f-relocation-out', 'relocation'],
@@ -2470,10 +2507,14 @@ function populateSidebarFilters() {
     if (el && el.tagName === 'SELECT') el.innerHTML = optionsHtml(cat);
   });
 
+  // State dropdown from DB
+  loadStateOptions();
+
   // Multi-select dropdowns
   const msFromOptions = [
     ['f-income', 'income_level', 'Any Income', (o) => o.value !== 'Prefer not to say'],
     ['f-kids', 'kids', 'Any', null],
+    ['f-want-kids', 'want_kids', 'Any', null],
     ['f-religion', 'religion', 'Any', null],
     ['f-education', 'education', 'Any', null],
     ['f-politics', 'politics', 'Any', null],
@@ -2484,7 +2525,7 @@ function populateSidebarFilters() {
     ['f-pref-religion', 'preferred_religion', 'Any', null],
     ['f-pref-politics', 'preferred_politics', 'Any', null],
     ['f-pref-body-type', 'preferred_body_type', 'Any', null],
-    ['f-pref-pref-education', 'preferred_education', 'Any', null],
+    ['f-pref-education', 'preferred_education', 'Any', null],
     ['f-pref-smoking', 'preferred_smoking', 'Any', null],
     ['f-pref-drinking', 'preferred_alcohol', 'Any', null],
     ['f-pref-rel-status', 'preferred_relationship_status', 'Any', null],
