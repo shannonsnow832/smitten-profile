@@ -1612,6 +1612,20 @@ function buildProfilesUrl(forCount = false) {
   if (f.relStatus && f.relStatus.length) params.push(f.relStatus.length === 1 ? `relationship_status=eq.${encodeURIComponent(f.relStatus[0])}` : `relationship_status=in.(${f.relStatus.map(v => `"${v}"`).join(',')})`);
   if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
   if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
+  // Server-side age filter — convert age to DOB range
+  if (f.ageMin || f.ageMax) {
+    const today = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    if (f.ageMax) {
+      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMax));
+      params.push(`date_of_birth=lte.${fmt(d)}`);
+    }
+    if (f.ageMin) {
+      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMin));
+      params.push(`date_of_birth=gte.${fmt(d)}`);
+    }
+  }
   // Server-side income range filter
   const incomeOrder = ['Under $50k','$50k - $100k','$100k - $150k','$150k - $250k','$250k - $500k','$500k+'];
   if (f.incomeMin && !f.incomeMax) {
@@ -1640,21 +1654,6 @@ function buildProfilesUrl(forCount = false) {
   if (f.prefAgeMin) params.push(`min_age=gte.${f.prefAgeMin}`);
   if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
 
-  // Convert age range to DOB range for server-side filtering
-  if (f.ageMin || f.ageMax) {
-    const today = new Date();
-    if (f.ageMax) {
-      // Oldest allowed DOB: must be at least ageMax years old → born on or before today minus ageMax years
-      const dobMin = new Date(today.getFullYear() - parseInt(f.ageMax), today.getMonth(), today.getDate());
-      params.push(`date_of_birth=lte.${dobMin.toISOString().slice(0,10)}`);
-    }
-    if (f.ageMin) {
-      // Youngest allowed DOB: must be at most ageMin years old → born on or after today minus ageMin years
-      const dobMax = new Date(today.getFullYear() - parseInt(f.ageMin), today.getMonth(), today.getDate());
-      params.push(`date_of_birth=gte.${dobMax.toISOString().slice(0,10)}`);
-    }
-  }
-
   if (searchQuery) {
     const words = searchQuery.trim().split(/\s+/);
     if (words.length === 1) {
@@ -1669,7 +1668,7 @@ function buildProfilesUrl(forCount = false) {
 
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
-  if (forCount) return base + '&select=id';
+  if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
   return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,relocation_in,relocation_out&order=created_at.desc`;
 }
 
@@ -1703,6 +1702,8 @@ async function loadProfiles() {
       const match = contentRange.match(/\/(\d+)/);
       if (match) total = parseInt(match[1]);
     }
+
+    // Age filter is now server-side (see buildProfilesUrl)
 
     // Client-side distance filter
     if (distanceCenter && f.distanceMiles) {
