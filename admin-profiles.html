@@ -2958,8 +2958,17 @@ function searchMatchSubject() {
     const q = document.getElementById('match-subject-search').value.trim();
     if (!q || q.length < 2) { document.getElementById('match-subject-results').style.display = 'none'; return; }
     const token = supabaseSession || SUPABASE_ANON;
-    const sq = encodeURIComponent(q);
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&is_active=eq.true&or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,seeking,min_age,max_age,body_type,kids,want_kids,religion,politics,income_level,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&limit=10`, {
+    const words = q.split(/\s+/);
+    let orClause;
+    if (words.length === 1) {
+      const sq = encodeURIComponent(words[0]);
+      orClause = `or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)`;
+    } else {
+      const first = encodeURIComponent(words[0]);
+      const last = encodeURIComponent(words.slice(1).join(' '));
+      orClause = `or=(and(first_name.ilike.*${first}*,last_name.ilike.*${last}*),and(first_name.ilike.*${last}*,last_name.ilike.*${first}*),email.ilike.*${encodeURIComponent(q)}*)`;
+    }
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&${orClause}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,seeking,min_age,max_age,body_type,kids,want_kids,religion,politics,income_level,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&limit=10`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
     const results = await r.json();
