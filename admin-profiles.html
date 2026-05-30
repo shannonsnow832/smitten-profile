@@ -1036,7 +1036,8 @@
         <button onclick="clearStaffSelection()" style="font-size:12px;color:var(--gray-mid);background:none;border:none;cursor:pointer;font-family:Montserrat,sans-serif;margin-left:auto">Clear selection</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <label style="font-size:12px;font-weight:600;color:var(--gray-dark);display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="text" id="staff-search" placeholder="Search by name or email…" oninput="filterStaffList()" style="flex:1;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#E8E8E8'">
+        <label style="font-size:12px;font-weight:600;color:var(--gray-dark);display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
           <input type="checkbox" id="staff-select-all" onchange="toggleSelectAllStaff(this)" style="accent-color:var(--red);width:14px;height:14px"> Select all
         </label>
       </div>
@@ -1550,7 +1551,7 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'staff') { loadStaff(); loadStaffRoles(); }
+  if (name === 'staff') { const s = document.getElementById('staff-search'); if(s) s.value=''; loadStaff(); loadStaffRoles(); }
   if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); }
   if (name === 'archived') loadArchivedProfiles();
 }
@@ -2322,7 +2323,23 @@ async function loadStaffRoles() {
 // ── STAFF BULK ACTIONS ────────────────────────────────────────────────────────
 let selectedStaffIds = new Set();
 
+let _allStaff = [];
+
+function filterStaffList() {
+  const q = (document.getElementById('staff-search')?.value || '').toLowerCase().trim();
+  const filtered = q ? _allStaff.filter(s =>
+    `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
+    (s.email || '').toLowerCase().includes(q)
+  ) : _allStaff;
+  renderStaffRows(filtered);
+}
+
 function renderStaff(staff) {
+  _allStaff = staff;
+  filterStaffList();
+}
+
+function renderStaffRows(staff) {
   const el = document.getElementById('staff-list');
   if (!staff.length) { el.innerHTML = '<div class="empty-state"><p>No staff found.</p></div>'; return; }
   const roleColors = { super_admin: '#C6302C', matchmaker: '#7c3aed', org_admin: '#0369a1', host: '#166534', viewer: '#555' };
