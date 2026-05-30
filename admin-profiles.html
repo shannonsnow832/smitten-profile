@@ -373,17 +373,28 @@
   .modal-layout { display: grid; grid-template-columns: 300px 1fr; flex: 1; overflow: hidden; min-height: 0; }
   .modal-photos { padding: 20px; border-right: 1px solid var(--gray-light); overflow-y: auto; background: #fafafa; border-radius: 0 0 0 var(--radius); height: 100%; }
   .modal-photos h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-mid); margin-bottom: 12px; }
-  .modal-main-photo { width: 100%; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--gray-light); margin-bottom: 10px; position: relative; cursor: pointer; }
-  .modal-main-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .modal-main-photo .no-photo { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 40px; font-weight: 700; color: var(--red); }
-  .modal-extra-photos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .modal-extra-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--gray-light); cursor: pointer; position: relative; border: 2px dashed var(--gray-mid); display: flex; align-items: center; justify-content: center; }
-  .modal-extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
-  .modal-extra-photo .cam { font-size: 18px; color: var(--gray-mid); }
-  .modal-photo-delete-btn { position:absolute; top:6px; right:6px; width:26px; height:26px; background:rgba(0,0,0,0.55); border:none; border-radius:50%; color:white; font-size:16px; display:none; align-items:center; justify-content:center; cursor:pointer; z-index:10; font-weight:400; line-height:1; padding:0; opacity:0; transition:opacity 0.2s,background 0.2s; }
+  /* ── PHOTO GRID (drag-to-reorder, 6 max) ── */
+  .modal-photo-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px; }
+  .modal-photo-slot {
+    aspect-ratio:1; border-radius:6px; overflow:hidden; background:var(--gray-light);
+    cursor:grab; position:relative; border:2px dashed var(--gray-mid);
+    display:flex; align-items:center; justify-content:center; transition:border-color 0.15s, opacity 0.15s;
+  }
+  .modal-photo-slot:active { cursor:grabbing; }
+  .modal-photo-slot.has-photo { border-style:solid; border-color:transparent; }
+  .modal-photo-slot.is-main { border-color:var(--red); border-style:solid; }
+  .modal-photo-slot.drag-over { border-color:var(--red); opacity:0.7; }
+  .modal-photo-slot.dragging { opacity:0.4; }
+  .modal-photo-slot img { width:100%; height:100%; object-fit:cover; position:absolute; pointer-events:none; }
+  .modal-photo-slot .cam { font-size:18px; color:var(--gray-mid); pointer-events:none; }
+  .modal-photo-slot .main-badge {
+    position:absolute; bottom:4px; left:50%; transform:translateX(-50%);
+    background:var(--red); color:white; font-size:9px; font-weight:700;
+    padding:2px 6px; border-radius:10px; white-space:nowrap; pointer-events:none; z-index:5;
+  }
+  .modal-photo-delete-btn { position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(0,0,0,0.55); border:none; border-radius:50%; color:white; font-size:14px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; opacity:0; transition:opacity 0.2s,background 0.2s; padding:0; line-height:1; }
   .modal-photo-delete-btn:hover { background:rgba(198,48,44,0.9); }
-  .modal-main-photo:hover .modal-photo-delete-btn,
-  .modal-extra-photo:hover .modal-photo-delete-btn { opacity:1; }
+  .modal-photo-slot:hover .modal-photo-delete-btn { opacity:1; }
   .modal-upload-note { font-size:11px; color:var(--gray-mid); text-align:center; line-height:1.4; }
   .modal-content { overflow-y: auto; display: flex; flex-direction: column; border-radius: 0 0 var(--radius) 0; min-height: 0; height: 100%; }
   .modal-tabs { display: flex; border-bottom: 2px solid var(--gray-light); background: var(--white); flex-shrink: 0; }
@@ -417,7 +428,7 @@
   .modal-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .modal-check-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray-dark); cursor: pointer; }
   .modal-check-item input { width: 15px; height: 15px; accent-color: var(--red); flex-shrink: 0; }
-  .modal-save-bar { padding: 14px 20px; border-top: 1px solid var(--gray-light); display: flex; justify-content: flex-end; gap: 10px; background: var(--white); flex-shrink: 0; border-radius: 0 0 var(--radius) 0; margin-top: auto; }
+  .modal-save-bar { padding: 12px 20px; border-top: 1px solid var(--gray-light); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--white); flex-shrink: 0; border-radius: 0 0 var(--radius) 0; margin-top: auto; }
   .modal-alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; margin: 0 20px 12px; display: none; }
   .modal-alert.error { background: #FFF0F0; border: 1px solid var(--pink); color: var(--red); display: block; }
   .modal-alert.success { background: #F0FFF4; border: 1px solid #86efac; color: #166534; display: block; }
@@ -711,12 +722,12 @@
           </div>
         </div>
 
-        <!-- PROFILE STATUS -->
+        <!-- STATUS -->
         <div class="filter-section">
-          <div class="filter-section-header" onclick="toggleFilter(this)">
-            Profile Status <span class="filter-section-toggle">▾</span>
+          <div class="filter-section-header open" onclick="toggleFilter(this)">
+            Status <span class="filter-section-toggle">▾</span>
           </div>
-          <div class="filter-section-body">
+          <div class="filter-section-body open">
             <div class="filter-group">
               <label>Has Photo</label>
               <select id="f-has-photo">
@@ -735,6 +746,18 @@
                 <option value="">Any</option><option value="true">Active</option><option value="false">Inactive</option>
               </select>
             </div>
+            <div class="filter-group">
+              <label>Removed from Matching</label>
+              <select id="f-removed-matching">
+                <option value="">Any</option><option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Banned</label>
+              <select id="f-banned">
+                <option value="">Any</option><option value="true">Banned</option><option value="false">Not Banned</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -751,22 +774,10 @@
           <h2>All Profiles</h2>
           <div style="display:flex;align-items:center;gap:12px">
             <span class="profile-count" id="profile-count"></span>
-            <button class="btn btn-outline" onclick="showSavedPools()" id="btn-saved-pools" style="font-size:12px;padding:6px 14px">Saved Pools</button>
-            <button class="btn btn-outline" onclick="saveCurrentPool()" id="btn-save-pool" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)">Save Pool</button>
             <button class="btn btn-outline" onclick="exportCSV()" id="btn-export" style="font-size:12px;padding:6px 14px">Export CSV</button>
           </div>
         </div>
 
-        <!-- SAVED POOLS PANEL -->
-        <div id="saved-pools-panel" style="display:none;background:white;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h4 style="font-size:13px;font-weight:700;color:var(--black)">Saved Pools</h4>
-            <button onclick="document.getElementById('saved-pools-panel').style.display='none'" style="background:none;border:none;font-size:18px;color:var(--gray-mid);cursor:pointer">×</button>
-          </div>
-          <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
-            <div style="font-size:13px;color:var(--gray-mid)">Loading...</div>
-          </div>
-        </div>
         <div class="search-bar">
           <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
         </div>
@@ -991,17 +1002,41 @@
             <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
             <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
           </div>
+          <!-- SAVED POOLS -->
+          <div style="margin-top:32px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h3 style="font-size:14px;font-weight:700">Saved Pools</h3>
+              <button onclick="saveCurrentPool()" class="btn btn-outline" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)">Save Current Pool</button>
+            </div>
+            <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:13px;color:var(--gray-mid)">No saved pools yet.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- STAFF TAB -->
   <div id="tab-staff" class="tab-panel">
     <div style="max-width:800px;margin:32px auto;padding:0 24px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <h2 style="font-size:20px;font-weight:700;color:var(--black)">User Management</h2>
         <button class="btn btn-primary" onclick="openAddStaff()">+ Add User</button>
+      </div>
+      <!-- Bulk action bar -->
+      <div id="staff-bulk-bar" style="display:none;background:#FFF5F5;border:1.5px solid var(--pink);border-radius:var(--radius-sm);padding:10px 16px;margin-bottom:14px;align-items:center;gap:12px;flex-wrap:wrap">
+        <span id="staff-bulk-count" style="font-size:13px;font-weight:600;color:var(--red)"></span>
+        <select id="staff-bulk-role" style="border:1.5px solid #E8E8E8;border-radius:6px;padding:6px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
+          <option value="">Change role to...</option>
+        </select>
+        <button onclick="bulkUpdateRole()" class="btn btn-outline" style="font-size:12px;padding:6px 14px">Update Role</button>
+        <button onclick="bulkDeactivate()" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1.5px solid #C6302C;background:white;color:#C6302C;cursor:pointer;font-family:Montserrat,sans-serif">Deactivate</button>
+        <button onclick="clearStaffSelection()" style="font-size:12px;color:var(--gray-mid);background:none;border:none;cursor:pointer;font-family:Montserrat,sans-serif;margin-left:auto">Clear selection</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;color:var(--gray-dark);display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="staff-select-all" onchange="toggleSelectAllStaff(this)" style="accent-color:var(--red);width:14px;height:14px"> Select all
+        </label>
       </div>
       <div id="staff-list" style="display:flex;flex-direction:column;gap:10px">
         <div class="loading-state">Loading staff...</div>
@@ -1059,10 +1094,6 @@
         <div class="modal-field"><label>Role *</label>
           <select id="sf-role">
             <option value="">Select...</option>
-            <option value="super_admin">Super Admin</option>
-            <option value="matchmaker">Matchmaker</option>
-            <option value="org_admin">Org Admin</option>
-            <option value="host">Host</option>
           </select>
         </div>
       </div>
@@ -1099,14 +1130,9 @@
       <!-- PHOTOS -->
       <div class="modal-photos">
         <h4>Photos</h4>
-        <div class="modal-main-photo" id="modal-main-photo" onclick="modalMainPhotoClick(event)"></div>
-        <input type="file" id="modal-main-input" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,'main')">
-        <div class="modal-extra-photos" id="modal-extra-photos">
-          <div class="modal-extra-photo" id="modal-extra-slot-0" onclick="modalExtraPhotoClick(event,0)"><span class="cam">+</span><input type="file" id="modal-extra-input-0" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,0)"></div>
-          <div class="modal-extra-photo" id="modal-extra-slot-1" onclick="modalExtraPhotoClick(event,1)"><span class="cam">+</span><input type="file" id="modal-extra-input-1" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,1)"></div>
-          <div class="modal-extra-photo" id="modal-extra-slot-2" onclick="modalExtraPhotoClick(event,2)"><span class="cam">+</span><input type="file" id="modal-extra-input-2" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,2)"></div>
-        </div>
-        <p class="modal-upload-note">Click a photo to replace it.<br>Hover to reveal delete button.</p>
+        <div class="modal-photo-grid" id="modal-photo-grid"></div>
+        <input type="file" id="modal-photo-file-input" accept="image/*" style="display:none" onchange="modalHandleFileInput(this)">
+        <p class="modal-upload-note">Drag to reorder · First photo is profile picture<br>Click empty slot to add · Hover to delete</p>
       </div>
       <!-- CONTENT -->
       <div class="modal-content">
@@ -1320,6 +1346,8 @@
         <div id="modal-save-bar" class="modal-save-bar">
           <button class="btn" id="btn-modal-delete" onclick="softDeleteProfile()" style="background:transparent;color:#C6302C;border:1.5px solid #C6302C;font-size:12px;padding:6px 14px">Archive</button>
           <button class="btn" id="btn-modal-hard-delete" onclick="hardDeleteProfile()" style="background:#C6302C;color:white;font-size:12px;padding:6px 14px">Delete</button>
+          <button class="btn" id="btn-modal-ban" onclick="toggleBanProfile()" style="background:transparent;color:#7c3aed;border:1.5px solid #7c3aed;font-size:12px;padding:6px 14px">Ban</button>
+          <button class="btn" id="btn-modal-remove-matching" onclick="toggleRemovedFromMatching()" style="background:transparent;color:#92400e;border:1.5px solid #92400e;font-size:12px;padding:6px 14px">Remove from Matching</button>
           <button class="btn" id="btn-modal-invite-paused" onclick="toggleInvitePaused()" style="background:transparent;color:#92400e;border:1.5px solid #92400e;font-size:12px;padding:6px 14px">Invite Paused</button>
           <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;flex:1;text-align:center;"></span>
           <button class="btn btn-primary" id="btn-modal-save" onclick="saveModalProfile()">Save Changes</button>
@@ -1511,6 +1539,7 @@ function launchApp() {
   activeFilters = {};
   searchQuery = '';
   loadAllOptions();
+  loadStaffRoles();
   loadProfiles();
 }
 
@@ -1520,8 +1549,8 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'staff') loadStaff();
-  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); }
+  if (name === 'staff') { loadStaff(); loadStaffRoles(); }
+  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); }
   if (name === 'archived') loadArchivedProfiles();
 }
 
@@ -1665,6 +1694,9 @@ function buildProfilesUrl(forCount = false) {
   }
   if (f.incomeExact && f.incomeExact.length) params.push(f.incomeExact.length === 1 ? `income_level=eq.${encodeURIComponent(f.incomeExact[0])}` : `income_level=in.(${f.incomeExact.map(v => `"${v}"`).join(',')})`);
   if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
+  if (f.removedFromMatching) params.push(`removed_from_matching=eq.${f.removedFromMatching}`);
+  if (f.banned === 'true') params.push('banned_at=not.is.null');
+  if (f.banned === 'false') params.push('banned_at=is.null');
   if (f.prefReligion && f.prefReligion.length) params.push(`preferred_religion=ov.{${f.prefReligion.map(v => `"${v}"`).join(',')}}`)
   if (f.prefPolitics && f.prefPolitics.length) params.push(`preferred_politics=ov.{${f.prefPolitics.map(v => `"${v}"`).join(',')}}`);
   if (f.prefBodyType && f.prefBodyType.length) params.push(`preferred_body_type=ov.{${f.prefBodyType.map(v => `"${v}"`).join(',')}}`);
@@ -1690,7 +1722,7 @@ function buildProfilesUrl(forCount = false) {
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
   if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
-  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,relocation_in,relocation_out&order=created_at.desc`;
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,banned_at,ban_reason,removed_from_matching,removed_from_matching_reason&order=created_at.desc`;
 }
 
 async function loadProfiles() {
@@ -1789,6 +1821,8 @@ function renderProfiles(profiles) {
           ${p.share_with_matchmakers ? '<span class="tag green">Matchmaker</span>' : ''}
           ${!p.is_active ? '<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>' : ''}
           ${p.invite_paused ? '<span class="tag" style="background:#fffbeb;color:#92400e;border:1px solid #f59e0b">Invite Paused</span>' : ''}
+          ${p.banned_at ? '<span class="tag" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe">Banned</span>' : ''}
+          ${p.removed_from_matching ? '<span class="tag" style="background:#fff7ed;color:#92400e;border:1px solid #fed7aa">No Matching</span>' : ''}
           ${(p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe') ? '<span class="tag" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">Open to Travel</span>' : ''}
         </div>
       </div>
@@ -1905,6 +1939,18 @@ function openProfile(p) {
       ipBtn.style.border = '1.5px solid #92400e';
     }
   }
+  // Ban button state
+  const banBtn = document.getElementById('btn-modal-ban');
+  if (banBtn) {
+    banBtn.textContent = p.banned_at ? 'Unban' : 'Ban';
+    banBtn.style.background = p.banned_at ? '#7c3aed' : 'transparent';
+    banBtn.style.color = p.banned_at ? 'white' : '#7c3aed';
+  }
+  // Remove from matching button state
+  const rmBtn = document.getElementById('btn-modal-remove-matching');
+  if (rmBtn) {
+    rmBtn.textContent = p.removed_from_matching ? 'Restore to Matching' : 'Remove from Matching';
+  }
   setChk('m-interested-matchmaking', p.interested_in_matchmaking);
   setChk('m-email-opt', p.email_opt_in);
   setChk('m-services-text', p.services_text_opt_in);
@@ -2001,70 +2047,150 @@ function lbKeydown(e) {
   else if (e.key === 'Escape') lbClose();
 }
 
-// ── MODAL PHOTO RENDERING ─────────────────────────────────────────────────────
+// ── MODAL PHOTO SYSTEM (drag-to-reorder, 6 max) ──────────────────────────────
+const MAX_PHOTOS = 6;
+let _modalUploadTargetSlot = null;
+
 function renderModalPhotos(allPhotos) {
-  const p = currentModalProfile;
-  const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
-  const mainEl = document.getElementById('modal-main-photo');
+  const grid = document.getElementById('modal-photo-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    const url = allPhotos[i] || null;
+    const slot = document.createElement('div');
+    const slotIndex = i;
 
-  // Main photo
-  if (allPhotos.length) {
-    mainEl.innerHTML =
-      `<img src="${allPhotos[0]}" alt="main photo" onclick="lbOpen(${JSON.stringify(allPhotos)},0)">` +
-      `<button class="modal-photo-delete-btn" onclick="event.stopPropagation();modalConfirmDelete('main')" title="Remove photo" style="display:flex;">×</button>`;
-  } else {
-    mainEl.innerHTML = `<div class="no-photo">${initials}</div>`;
-  }
-
-  // Extra slots — always show 3 fixed slots
-  [0,1,2].forEach(i => {
-    const slot = document.getElementById(`modal-extra-slot-${i}`);
-    const input = document.getElementById(`modal-extra-input-${i}`);
-    const url = allPhotos[i + 1] || null;
-    // Clear slot but keep the file input
-    slot.innerHTML = '';
-    slot.appendChild(input);
     if (url) {
+      slot.className = 'modal-photo-slot has-photo' + (slotIndex === 0 ? ' is-main' : '');
+      slot.draggable = true;
+      slot.dataset.index = slotIndex;
+
       const img = document.createElement('img');
       img.src = url;
-      img.alt = 'photo';
-      img.onclick = (e) => { e.stopPropagation(); lbOpen(allPhotos, i + 1); };
       slot.appendChild(img);
-      const delBtn = document.createElement('button');
-      delBtn.className = 'modal-photo-delete-btn';
-      delBtn.title = 'Remove photo';
-      delBtn.style.display = 'flex';
-      delBtn.innerHTML = '×';
-      delBtn.onclick = (e) => { e.stopPropagation(); modalConfirmDelete(i); };
-      slot.appendChild(delBtn);
+
+      if (slotIndex === 0) {
+        const badge = document.createElement('div');
+        badge.className = 'main-badge';
+        badge.textContent = 'MAIN';
+        slot.appendChild(badge);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'modal-photo-delete-btn';
+      del.innerHTML = '×';
+      slot.appendChild(del);
+
+      img.addEventListener('click', (e) => { e.stopPropagation(); lbOpen(allPhotos.filter(Boolean), slotIndex); });
+      del.addEventListener('click', (e) => { e.stopPropagation(); modalConfirmDelete(slotIndex); });
+      slot.addEventListener('click', (e) => {
+        if (e.target === img || e.target === del || e.target.classList.contains('main-badge')) return;
+        _modalUploadTargetSlot = slotIndex;
+        document.getElementById('modal-photo-file-input').click();
+      });
+
+      slot.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', String(slotIndex));
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => slot.classList.add('dragging'), 0);
+      });
+      slot.addEventListener('dragend', () => slot.classList.remove('dragging'));
+
     } else {
-      const cam = document.createElement('span');
-      cam.className = 'cam';
-      cam.textContent = '+';
-      slot.appendChild(cam);
+      slot.className = 'modal-photo-slot';
+      slot.innerHTML = '<span class="cam">+</span>';
+      slot.addEventListener('click', () => {
+        _modalUploadTargetSlot = slotIndex;
+        document.getElementById('modal-photo-file-input').click();
+      });
     }
+
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('drag-over');
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = slotIndex;
+      if (isNaN(fromIdx) || fromIdx === toIdx) return;
+      if (toIdx >= allPhotos.length) return;
+      modalReorderPhotos(fromIdx, toIdx);
+    });
+
+    grid.appendChild(slot);
+  }
+}
+
+// createPhotoSlot no longer needed - kept as no-op for safety
+function createPhotoSlot() {}
+
+async function modalReorderPhotos(fromIdx, toIdx) {
+  const p = currentModalProfile;
+  if (!p) return;
+  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const reordered = [...allPhotos];
+  const [moved] = reordered.splice(fromIdx, 1);
+  reordered.splice(toIdx, 0, moved);
+  await modalSavePhotos(reordered);
+}
+
+async function modalHandleFileInput(input) {
+  if (!input.files[0] || !currentModalProfile) return;
+  const p = currentModalProfile;
+  const token = supabaseSession || SUPABASE_ANON;
+  const file = input.files[0];
+  const ext = file.name.split('.').pop();
+  // Storage RLS requires path to start with auth.uid()
+  const authUid = JSON.parse(atob(token.split('.')[1])).sub;
+  const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': file.type },
+    body: file
   });
+  if (!uploadRes.ok) { alert('Upload failed.'); input.value = ''; return; }
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
+
+  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const newAll = [...allPhotos];
+  const slot = _modalUploadTargetSlot;
+  if (slot !== null && slot < newAll.length) {
+    newAll[slot] = publicUrl; // replace
+  } else {
+    if (newAll.length >= MAX_PHOTOS) { alert(`Maximum ${MAX_PHOTOS} photos allowed.`); input.value = ''; return; }
+    newAll.push(publicUrl);
+  }
+  _modalUploadTargetSlot = null;
+  input.value = '';
+  await modalSavePhotos(newAll);
 }
 
-function modalMainPhotoClick(event) {
-  if (event.target.closest('button')) return;
-  document.getElementById('modal-main-input').click();
-}
-
-function modalExtraPhotoClick(event, idx) {
-  if (event.target.closest('button') || event.target.tagName === 'IMG') return;
-  document.getElementById(`modal-extra-input-${idx}`).click();
+async function modalSavePhotos(newAll) {
+  const p = currentModalProfile;
+  const token = supabaseSession || SUPABASE_ANON;
+  const newImageUrl = newAll[0] || null;
+  const newPhotos = newAll.slice(1);
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ image_url: newImageUrl, photos: newPhotos.length ? newPhotos : null })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.image_url = newImageUrl;
+    currentModalProfile.photos = newPhotos;
+    // Update topbar avatar
+    const avatarEl = document.getElementById('modal-topbar-avatar');
+    if (avatarEl && newImageUrl) avatarEl.innerHTML = `<img src="${newImageUrl}" alt="">`;
+    renderModalPhotos(newAll);
+    loadProfiles();
+  } catch(e) { alert('Failed to save photos: ' + e.message); }
 }
 
 let _modalPendingDelete = null;
-
 function modalConfirmDelete(slot) {
   _modalPendingDelete = slot;
-  if (confirm('Remove this photo? This cannot be undone.')) {
-    modalExecuteDelete();
-  } else {
-    _modalPendingDelete = null;
-  }
+  if (confirm('Remove this photo?')) { modalExecuteDelete(); } else { _modalPendingDelete = null; }
 }
 
 async function modalExecuteDelete() {
@@ -2072,101 +2198,213 @@ async function modalExecuteDelete() {
   _modalPendingDelete = null;
   const p = currentModalProfile;
   if (!p || slot === null) return;
-  const token = supabaseSession || SUPABASE_ANON;
-
-  const allPhotos = p.image_url
-    ? [p.image_url, ...(p.photos || [])]
-    : (p.photos || []);
-
-  let newAll = [...allPhotos];
-  if (slot === 'main') {
-    newAll.splice(0, 1);
-  } else {
-    newAll.splice(slot + 1, 1);
-  }
-
-  const newImageUrl = newAll[0] || null;
-  const newPhotos = newAll.slice(1);
-
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ image_url: newImageUrl, photos: newPhotos.length ? newPhotos : null })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    currentModalProfile.image_url = newImageUrl;
-    currentModalProfile.photos = newPhotos;
-    renderModalPhotos(newAll);
-    loadProfiles();
-  } catch(e) {
-    alert('Failed to delete photo: ' + e.message);
-  }
+  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const newAll = allPhotos.filter((_, i) => i !== slot);
+  await modalSavePhotos(newAll);
 }
 
-async function modalUploadPhoto(input, slot) {
-  if (!input.files[0] || !currentModalProfile) return;
-  const p = currentModalProfile;
-  const token = supabaseSession || SUPABASE_ANON;
-  const file = input.files[0];
-
-  // Upload to Supabase Storage
-  const ext = file.name.split('.').pop();
-  const path = `profiles/${p.id}/${Date.now()}.${ext}`;
-  const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
-    method: 'POST',
-    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': file.type },
-    body: file
-  });
-  if (!uploadRes.ok) { alert('Upload failed.'); return; }
-  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
-
-  const allPhotos = p.image_url
-    ? [p.image_url, ...(p.photos || [])]
-    : (p.photos || []);
-  let newAll = [...allPhotos];
-
-  if (slot === 'main') {
-    newAll[0] = publicUrl;
-  } else {
-    if (newAll[slot + 1] !== undefined) {
-      newAll[slot + 1] = publicUrl;
-    } else {
-      newAll.push(publicUrl);
-    }
-  }
-
-  const newImageUrl = newAll[0] || null;
-  const newPhotos = newAll.slice(1);
-
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ image_url: newImageUrl, photos: newPhotos.length ? newPhotos : null })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    currentModalProfile.image_url = newImageUrl;
-    currentModalProfile.photos = newPhotos;
-    renderModalPhotos(newAll);
-    loadProfiles();
-  } catch(e) {
-    alert('Failed to save photo: ' + e.message);
-  }
-  input.value = '';
-}
-
+// Legacy shim
 async function deleteProfilePhoto(url) {
-  // Legacy shim — route through new system
   const p = currentModalProfile;
   if (!p) return;
-  const allPhotos = p.image_url
-    ? [p.image_url, ...(p.photos || [])]
-    : (p.photos || []);
+  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
   const idx = allPhotos.indexOf(url);
   if (idx === -1) return;
-  _modalPendingDelete = idx === 0 ? 'main' : idx - 1;
+  _modalPendingDelete = idx;
   modalExecuteDelete();
+}
+function modalMainPhotoClick() {}
+function modalExtraPhotoClick() {}
+async function modalUploadPhoto() {}
+
+// ── BAN PROFILE ───────────────────────────────────────────────────────────────
+async function toggleBanProfile() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const isBanned = !!p.banned_at;
+  let reason = null;
+  if (!isBanned) {
+    reason = prompt(`Ban ${fullName}?\n\nEnter a reason (required):`);
+    if (!reason || !reason.trim()) return;
+    reason = reason.trim();
+  } else {
+    if (!confirm(`Remove ban for ${fullName}?`)) return;
+  }
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-modal-ban');
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(isBanned
+        ? { banned_at: null, ban_reason: null, is_active: true }
+        : { banned_at: new Date().toISOString(), ban_reason: reason, is_active: false })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.banned_at = isBanned ? null : new Date().toISOString();
+    currentModalProfile.ban_reason = isBanned ? null : reason;
+    btn.textContent = isBanned ? 'Ban' : 'Unban';
+    btn.style.color = isBanned ? '#7c3aed' : 'white';
+    btn.style.background = isBanned ? 'transparent' : '#7c3aed';
+    document.getElementById('modal-save-status').textContent = isBanned ? 'Ban removed.' : 'Profile banned.';
+    setTimeout(() => { document.getElementById('modal-save-status').textContent = ''; }, 3000);
+    loadProfiles();
+  } catch(e) { alert('Failed: ' + e.message); }
+  btn.disabled = false;
+}
+
+// ── REMOVE FROM MATCHING ──────────────────────────────────────────────────────
+async function toggleRemovedFromMatching() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const isRemoved = !!p.removed_from_matching;
+  let reason = null;
+  if (!isRemoved) {
+    reason = prompt(`Remove ${fullName} from matching?\n\nOptional reason:`);
+    if (reason === null) return;
+    reason = reason.trim() || null;
+  } else {
+    if (!confirm(`Restore ${fullName} to matching?`)) return;
+  }
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-modal-remove-matching');
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(isRemoved
+        ? { removed_from_matching: false, removed_from_matching_reason: null, removed_from_matching_at: null }
+        : { removed_from_matching: true, removed_from_matching_reason: reason, removed_from_matching_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.removed_from_matching = !isRemoved;
+    btn.textContent = isRemoved ? 'Remove from Matching' : 'Restore to Matching';
+    document.getElementById('modal-save-status').textContent = isRemoved ? 'Restored to matching.' : 'Removed from matching.';
+    setTimeout(() => { document.getElementById('modal-save-status').textContent = ''; }, 3000);
+    loadProfiles();
+  } catch(e) { alert('Failed: ' + e.message); }
+  btn.disabled = false;
+}
+
+// ── STAFF ROLES FROM DB ───────────────────────────────────────────────────────
+let staffRoles = [];
+
+async function loadStaffRoles() {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff_roles?order=sort_order`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    staffRoles = await r.json();
+    const opts = '<option value="">Select...</option>' + staffRoles.map(r => `<option value="${r.value}">${r.label}</option>`).join('');
+    const sfRole = document.getElementById('sf-role');
+    if (sfRole) sfRole.innerHTML = opts;
+    const bulkRole = document.getElementById('staff-bulk-role');
+    if (bulkRole) bulkRole.innerHTML = '<option value="">Change role to...</option>' + staffRoles.map(r => `<option value="${r.value}">${r.label}</option>`).join('');
+  } catch(e) { console.warn('Could not load staff roles', e); }
+}
+
+// ── STAFF BULK ACTIONS ────────────────────────────────────────────────────────
+let selectedStaffIds = new Set();
+
+function renderStaff(staff) {
+  const el = document.getElementById('staff-list');
+  if (!staff.length) { el.innerHTML = '<div class="empty-state"><p>No staff found.</p></div>'; return; }
+  const roleColors = { super_admin: '#C6302C', matchmaker: '#7c3aed', org_admin: '#0369a1', host: '#166534', viewer: '#555' };
+  el.innerHTML = staff.map(s => {
+    const roleLabel = staffRoles.find(r => r.value === s.role)?.label || s.role;
+    const roleColor = roleColors[s.role] || '#666';
+    return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
+      <input type="checkbox" data-staff-id="${s.id}" onchange="onStaffCheckbox(this,'${s.id}')" style="accent-color:var(--red);width:16px;height:16px;flex-shrink:0;cursor:pointer">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);flex-shrink:0">
+        ${(s.first_name||'?')[0]}${(s.last_name||'')[0]}
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px;color:var(--black)">${s.first_name} ${s.last_name}</div>
+        <div style="font-size:12px;color:var(--gray-dark);margin-top:2px">${s.email}</div>
+        <div style="font-size:11px;color:var(--gray-mid);margin-top:2px">${s.organizations?.name || 'Platform-level'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${roleColor}22;color:${roleColor}">${roleLabel}</span>
+        <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:${s.is_active?'#F0FFF4':'#FFF0F0'};color:${s.is_active?'#166534':'#C6302C'}">${s.is_active?'Active':'Inactive'}</span>
+        <button onclick="editStaff(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:var(--gray-dark)">Edit</button>
+        <button onclick="toggleStaffActive('${s.id}', ${s.is_active})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:${s.is_active?'#C6302C':'#166534'}">${s.is_active?'Deactivate':'Activate'}</button>
+      </div>
+    </div>`;
+  }).join('');
+  selectedStaffIds.clear();
+  updateStaffBulkBar();
+}
+
+function onStaffCheckbox(cb, id) {
+  if (cb.checked) { selectedStaffIds.add(id); } else { selectedStaffIds.delete(id); }
+  updateStaffBulkBar();
+}
+
+function toggleSelectAllStaff(masterCb) {
+  document.querySelectorAll('[data-staff-id]').forEach(cb => {
+    cb.checked = masterCb.checked;
+    if (masterCb.checked) { selectedStaffIds.add(cb.dataset.staffId); } else { selectedStaffIds.delete(cb.dataset.staffId); }
+  });
+  updateStaffBulkBar();
+}
+
+function clearStaffSelection() {
+  selectedStaffIds.clear();
+  document.querySelectorAll('[data-staff-id]').forEach(cb => cb.checked = false);
+  const masterCb = document.getElementById('staff-select-all');
+  if (masterCb) masterCb.checked = false;
+  updateStaffBulkBar();
+}
+
+function updateStaffBulkBar() {
+  const bar = document.getElementById('staff-bulk-bar');
+  const countEl = document.getElementById('staff-bulk-count');
+  if (!bar) return;
+  if (selectedStaffIds.size > 0) {
+    bar.style.display = 'flex';
+    countEl.textContent = `${selectedStaffIds.size} selected`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+async function bulkUpdateRole() {
+  const role = document.getElementById('staff-bulk-role').value;
+  if (!role) { alert('Select a role first.'); return; }
+  if (!selectedStaffIds.size) return;
+  if (!confirm(`Update role to "${role}" for ${selectedStaffIds.size} user(s)?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const ids = [...selectedStaffIds];
+  try {
+    await Promise.all(ids.map(id => fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ role, updated_at: new Date().toISOString() })
+    })));
+    clearStaffSelection();
+    loadStaff();
+  } catch(e) { alert('Bulk update failed.'); }
+}
+
+async function bulkDeactivate() {
+  if (!selectedStaffIds.size) return;
+  if (!confirm(`Deactivate ${selectedStaffIds.size} user(s)?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const ids = [...selectedStaffIds];
+  try {
+    await Promise.all(ids.map(id => fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ is_active: false, updated_at: new Date().toISOString() })
+    })));
+    clearStaffSelection();
+    loadStaff();
+  } catch(e) { alert('Bulk deactivate failed.'); }
 }
 
 function enlargePhoto(url) {
@@ -2314,22 +2552,27 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
 let _currentPoolProfileIds = [];
 
 async function saveCurrentPool() {
-  // Fetch all profile IDs matching current filters
   const token = supabaseSession || SUPABASE_ANON;
-  const url = buildProfilesUrl() + '&select=id&limit=5000';
-  try {
-    const r = await fetch(url, { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } });
-    const data = await r.json();
-    _currentPoolProfileIds = data.map(p => p.id);
-    document.getElementById('save-pool-count').textContent = `${_currentPoolProfileIds.length} profile${_currentPoolProfileIds.length !== 1 ? 's' : ''} in current filtered view`;
-    document.getElementById('save-pool-name').value = '';
-    document.getElementById('save-pool-desc').value = '';
-    document.getElementById('save-pool-error').style.display = 'none';
-    document.getElementById('save-pool-overlay').style.display = 'flex';
-    setTimeout(() => document.getElementById('save-pool-name').focus(), 100);
-  } catch(e) {
-    alert('Could not fetch profiles. Please try again.');
+  // On matching tab use the already-built matchPool; on profiles tab fetch from filters
+  if (matchPool && matchPool.length) {
+    _currentPoolProfileIds = matchPool.map(p => p.id);
+  } else {
+    try {
+      const url = buildProfilesUrl() + '&select=id&limit=5000';
+      const r = await fetch(url, { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } });
+      const data = await r.json();
+      _currentPoolProfileIds = data.map(p => p.id);
+    } catch(e) {
+      alert('Could not fetch profiles. Please try again.');
+      return;
+    }
   }
+  document.getElementById('save-pool-count').textContent = `${_currentPoolProfileIds.length} profile${_currentPoolProfileIds.length !== 1 ? 's' : ''} in pool`;
+  document.getElementById('save-pool-name').value = '';
+  document.getElementById('save-pool-desc').value = '';
+  document.getElementById('save-pool-error').style.display = 'none';
+  document.getElementById('save-pool-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('save-pool-name').focus(), 100);
 }
 
 function closeSavePool() {
@@ -2360,7 +2603,7 @@ async function confirmSavePool() {
     });
     if (!r.ok) throw new Error(await r.text());
     closeSavePool();
-    alert(`Pool "${name}" saved with ${_currentPoolProfileIds.length} profiles.`);
+    loadSavedPoolsList();
   } catch(e) {
     document.getElementById('save-pool-error').textContent = 'Failed to save pool. Please try again.';
     document.getElementById('save-pool-error').style.display = 'block';
@@ -2369,15 +2612,13 @@ async function confirmSavePool() {
 }
 
 async function showSavedPools() {
-  const panel = document.getElementById('saved-pools-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  if (panel.style.display === 'none') return;
-  await loadSavedPoolsList();
+  // No longer used — pools now load automatically on matching tab
 }
 
 async function loadSavedPoolsList() {
   const token = supabaseSession || SUPABASE_ANON;
   const el = document.getElementById('saved-pools-list');
+  if (!el) return;
   el.innerHTML = '<div style="font-size:13px;color:var(--gray-mid)">Loading...</div>';
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/saved_pools?order=created_at.desc&limit=50`, {
@@ -2413,10 +2654,11 @@ async function loadSavedPool(poolId) {
     });
     const [pool] = await r.json();
     if (!pool) return;
-    // Apply saved filters
     activeFilters = pool.filters || {};
     currentPage = 0;
-    document.getElementById('saved-pools-panel').style.display = 'none';
+    // Switch to profiles tab and run the search
+    const profilesTab = document.querySelector('.nav-tab');
+    if (profilesTab) switchTab('profiles', profilesTab);
     loadProfiles();
     document.getElementById('profile-count').textContent = `${pool.profile_count} profiles (saved pool: ${pool.name})`;
   } catch(e) {
@@ -2433,7 +2675,7 @@ async function deleteSavedPool(poolId, poolName, btn) {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Prefer': 'return=minimal' }
     });
     if (!r.ok) throw new Error();
-    btn.closest('div[style]').remove();
+    loadSavedPoolsList();
   } catch(e) {
     alert('Failed to delete pool.');
   }
@@ -2516,6 +2758,8 @@ async function applyFilters() {
     dateWithKids: getVal('f-date-with-kids'),
     relocationIn: getVal('f-relocation-in'),
     relocationOut: getVal('f-relocation-out'),
+    removedFromMatching: getVal('f-removed-matching'),
+    banned: getVal('f-banned'),
   };
 
   // Geocode distance zip if provided
@@ -2677,8 +2921,7 @@ function populateSidebarFilters() {
     ['f-pref-education', 'preferred_education', 'Any', null],
     ['f-pref-smoking', 'preferred_smoking', 'Any', null],
     ['f-pref-drinking', 'preferred_alcohol', 'Any', null],
-    ['f-pref-rel-status', 'preferred_relationship_status', 'Any', null],
-  ];
+    ['f-pref-rel-status', 'preferred_relationship_status', 'Any', null],  ];
   msFromOptions.forEach(([id, cat, placeholder, filterFn]) => {
     let opts = (profileOptions[cat] || []).filter(o => o.value !== 'Any');
     if (filterFn) opts = opts.filter(filterFn);
@@ -2888,11 +3131,11 @@ async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
   // Location filter
   if (zip && miles) {
     try {
-      const geo = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${zip}&country=US&format=json&limit=1`);
+      const geo = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(zip)}`);
       const geoData = await geo.json();
-      if (geoData && geoData[0]) {
-        const lat = parseFloat(geoData[0].lat);
-        const lon = parseFloat(geoData[0].lon);
+      if (geoData && geoData.places && geoData.places[0]) {
+        const lat = parseFloat(geoData.places[0].latitude);
+        const lon = parseFloat(geoData.places[0].longitude);
         const latD = miles / 69.0;
         const lonD = miles / (69.0 * Math.cos(lat * Math.PI / 180));
         const travelFilter = includeTravel ? `,and(latitude.is.null,relocation_out.in.("Yes","Maybe"))` : '';
@@ -3070,11 +3313,11 @@ async function buildPool() {
     const statusEl2 = document.getElementById('m-pool-distance-status');
     statusEl2.textContent = 'Geocoding zip...';
     try {
-      const geo = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${distZip}&country=US&format=json&limit=1`);
+      const geo = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(distZip)}`);
       const geoData = await geo.json();
-      if (geoData && geoData[0]) {
-        const centerLat = parseFloat(geoData[0].lat);
-        const centerLon = parseFloat(geoData[0].lon);
+      if (geoData && geoData.places && geoData.places[0]) {
+        const centerLat = parseFloat(geoData.places[0].latitude);
+        const centerLon = parseFloat(geoData.places[0].longitude);
         const latDelta = distMiles / 69.0;
         const lonDelta = distMiles / (69.0 * Math.cos(centerLat * Math.PI / 180));
         params.push(`latitude=gte.${(centerLat - latDelta).toFixed(4)}`);
@@ -3642,33 +3885,6 @@ async function loadStaff() {
   } catch(e) {
     document.getElementById('staff-list').innerHTML = '<div class="empty-state"><p>Failed to load staff.</p></div>';
   }
-}
-
-function renderStaff(staff) {
-  const el = document.getElementById('staff-list');
-  if (!staff.length) { el.innerHTML = '<div class="empty-state"><p>No staff found.</p></div>'; return; }
-
-  const roleColors = { super_admin: '#C6302C', matchmaker: '#7c3aed', org_admin: '#0369a1', host: '#166534' };
-  const roleLabels = { super_admin: 'Super Admin', matchmaker: 'Matchmaker', org_admin: 'Org Admin', host: 'Host' };
-
-  el.innerHTML = staff.map(s => `
-    <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);flex-shrink:0">
-        ${(s.first_name||'?')[0]}${(s.last_name||'')[0]}
-      </div>
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:14px;color:var(--black)">${s.first_name} ${s.last_name}</div>
-        <div style="font-size:12px;color:var(--gray-dark);margin-top:2px">${s.email}</div>
-        <div style="font-size:11px;color:var(--gray-mid);margin-top:2px">${s.organizations?.name || 'Platform-level'}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${roleColors[s.role]||'#666'}22;color:${roleColors[s.role]||'#666'}">${roleLabels[s.role]||s.role}</span>
-        <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:${s.is_active?'#F0FFF4':'#FFF0F0'};color:${s.is_active?'#166534':'#C6302C'}">${s.is_active?'Active':'Inactive'}</span>
-        <button onclick="editStaff(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:var(--gray-dark)">Edit</button>
-        <button onclick="toggleStaffActive('${s.id}', ${s.is_active})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:${s.is_active?'#C6302C':'#166534'}">${s.is_active?'Deactivate':'Activate'}</button>
-      </div>
-    </div>
-  `).join('');
 }
 
 async function loadOrgsForStaff() {
