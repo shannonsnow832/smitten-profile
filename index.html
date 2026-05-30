@@ -566,6 +566,9 @@
     <button class="btn btn-primary" id="btn-check" onclick="checkDuplicate()" style="width:100%;margin-top:8px;">
       Continue
     </button>
+    <p style="margin-top:16px;font-size:12px;color:var(--gray-mid);text-align:center;">
+      Having trouble signing in? <a href="mailto:info@thesmittenproject.com" style="color:var(--red);font-weight:600;text-decoration:none;">Contact us</a>
+    </p>
   </div>
 </div>
 
@@ -616,24 +619,28 @@
         <div class="photo-card">
           <h3>Profile Photos</h3>
           <p class="photo-hint">Your first photo is your main profile picture.</p>
-          <div class="main-photo" id="main-photo-drop" onclick="document.getElementById('main-photo-input').click()">
+          <div class="main-photo" id="main-photo-drop" onclick="document.getElementById('main-photo-input').click()" style="position:relative;">
             <img id="main-photo-preview" src="" style="display:none;">
             <div class="upload-icon" id="main-photo-icon">+ Add Photo</div>
             <div class="upload-label" id="main-photo-label">Click to upload</div>
+            <button id="main-photo-delete" onclick="event.stopPropagation();deletePhoto('main')" style="display:none;position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:16px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
           </div>
           <input type="file" id="main-photo-input" accept="image/*" style="display:none" onchange="previewMainPhoto(this)">
           <div class="extra-photos">
-            <div class="extra-photo" onclick="document.getElementById('extra0').click()">
+            <div class="extra-photo" style="position:relative;" onclick="if(!event.target.closest('button'))document.getElementById('extra0').click()">
               <img id="extra-preview-0" src="" style="display:none;">
               <span class="cam" id="extra-icon-0">+</span>
+              <button id="extra-delete-0" onclick="event.stopPropagation();deletePhoto(0)" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:13px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
             </div>
-            <div class="extra-photo" onclick="document.getElementById('extra1').click()">
+            <div class="extra-photo" style="position:relative;" onclick="if(!event.target.closest('button'))document.getElementById('extra1').click()">
               <img id="extra-preview-1" src="" style="display:none;">
               <span class="cam" id="extra-icon-1">+</span>
+              <button id="extra-delete-1" onclick="event.stopPropagation();deletePhoto(1)" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:13px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
             </div>
-            <div class="extra-photo" onclick="document.getElementById('extra2').click()">
+            <div class="extra-photo" style="position:relative;" onclick="if(!event.target.closest('button'))document.getElementById('extra2').click()">
               <img id="extra-preview-2" src="" style="display:none;">
               <span class="cam" id="extra-icon-2">+</span>
+              <button id="extra-delete-2" onclick="event.stopPropagation();deletePhoto(2)" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:13px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
             </div>
           </div>
           <input type="file" id="extra0" accept="image/*" style="display:none" onchange="previewExtra(this,0)">
@@ -1542,6 +1549,7 @@ async function loadExistingProfile() {
       img.style.display = 'block';
       document.getElementById('main-photo-icon').style.display = 'none';
       document.getElementById('main-photo-label').style.display = 'none';
+      document.getElementById('main-photo-delete').style.display = 'flex';
     }
     // Populate extra photo slots
     allProfilePhotos.slice(1).forEach((url, i) => {
@@ -1553,6 +1561,8 @@ async function loadExistingProfile() {
       img2.style.display = 'block';
       slot.querySelector('.cam') && (slot.querySelector('.cam').style.display = 'none');
       slot.onclick = (e) => { e.stopPropagation(); lbOpen(allProfilePhotos, i + 1); };
+      const delBtn = document.getElementById(`extra-delete-${i}`);
+      if (delBtn) delBtn.style.display = 'flex';
     });
 
     updateProgress();
@@ -1731,6 +1741,7 @@ function previewMainPhoto(input) {
   img.src = url; img.style.display = 'block';
   document.getElementById('main-photo-icon').style.display = 'none';
   document.getElementById('main-photo-label').style.display = 'none';
+  document.getElementById('main-photo-delete').style.display = 'flex';
   autoUploadPhoto(input.files[0], true);
 }
 
@@ -1740,6 +1751,7 @@ function previewExtra(input, idx) {
   const img = document.getElementById(`extra-preview-${idx}`);
   img.src = url; img.style.display = 'block';
   document.getElementById(`extra-icon-${idx}`).style.display = 'none';
+  document.getElementById(`extra-delete-${idx}`).style.display = 'flex';
   autoUploadPhoto(input.files[0], false);
 }
 
@@ -1789,6 +1801,82 @@ async function autoUploadPhoto(file, isMain) {
 async function uploadPhotos(profileId) {
   // Photos are now uploaded immediately on selection via autoUploadPhoto.
   // Kept as no-op for compatibility with the Save button flow.
+}
+
+async function deletePhoto(slot) {
+  if (!currentProfileId || !supabaseSession) return;
+  try {
+    const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentProfileId}&select=photos,image_url`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
+    });
+    const [existing] = await profileRes.json();
+    let photos = existing?.photos ? [...existing.photos] : [];
+    let image_url = existing?.image_url || null;
+
+    if (slot === 'main') {
+      const newMain = photos.length ? photos[0] : null;
+      const newPhotos = photos.slice(1);
+      await rpc('intake_update_profile', {
+        p_email: currentEmail,
+        p_image_url: newMain,
+        p_photos: newPhotos.length ? newPhotos : null
+      });
+      const img = document.getElementById('main-photo-preview');
+      img.src = ''; img.style.display = 'none';
+      document.getElementById('main-photo-icon').style.display = '';
+      document.getElementById('main-photo-label').style.display = '';
+      document.getElementById('main-photo-delete').style.display = 'none';
+      document.getElementById('main-photo-input').value = '';
+      if (newMain) {
+        img.src = newMain; img.style.display = 'block';
+        document.getElementById('main-photo-icon').style.display = 'none';
+        document.getElementById('main-photo-label').style.display = 'none';
+        document.getElementById('main-photo-delete').style.display = 'flex';
+      }
+      [0,1,2].forEach(i => {
+        const src = newPhotos[i] || null;
+        const eImg = document.getElementById(`extra-preview-${i}`);
+        const eIcon = document.getElementById(`extra-icon-${i}`);
+        const eDel = document.getElementById(`extra-delete-${i}`);
+        if (src) {
+          eImg.src = src; eImg.style.display = 'block';
+          eIcon.style.display = 'none';
+          if (eDel) eDel.style.display = 'flex';
+        } else {
+          eImg.src = ''; eImg.style.display = 'none';
+          eIcon.style.display = '';
+          if (eDel) eDel.style.display = 'none';
+        }
+      });
+    } else {
+      photos.splice(slot, 1);
+      await rpc('intake_update_profile', {
+        p_email: currentEmail,
+        p_image_url: image_url,
+        p_photos: photos.length ? photos : null
+      });
+      [0,1,2].forEach(i => {
+        const src = photos[i] || null;
+        const eImg = document.getElementById(`extra-preview-${i}`);
+        const eIcon = document.getElementById(`extra-icon-${i}`);
+        const eDel = document.getElementById(`extra-delete-${i}`);
+        if (src) {
+          eImg.src = src; eImg.style.display = 'block';
+          eIcon.style.display = 'none';
+          if (eDel) eDel.style.display = 'flex';
+        } else {
+          eImg.src = ''; eImg.style.display = 'none';
+          eIcon.style.display = '';
+          if (eDel) eDel.style.display = 'none';
+          const fileInput = document.getElementById(`extra${i}`);
+          if (fileInput) fileInput.value = '';
+        }
+      });
+    }
+    showAutosaveIndicator();
+  } catch(e) {
+    console.warn('Photo delete failed:', e);
+  }
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
