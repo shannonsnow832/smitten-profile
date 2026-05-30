@@ -912,7 +912,7 @@
       </div>
 
       <!-- MATCHING MAIN -->
-      <div style="padding:24px 28px">
+      <div style="padding:24px 28px;overflow-y:auto;height:calc(100vh - 56px)">
         <!-- MODE TABS -->
         <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center">
           <button class="btn btn-primary" id="match-mode-1to1" onclick="setMatchMode('1to1')">1-to-1 Match</button>
@@ -1007,10 +1007,10 @@
           <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
         </div>
         <!-- SAVED POOLS — always visible -->
-        <div style="margin-top:32px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="margin-top:32px;padding-bottom:40px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
             <h3 style="font-size:14px;font-weight:700">Saved Pools</h3>
-            <button onclick="saveCurrentPool()" class="btn btn-outline" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)">Save Current Pool</button>
+            <button onclick="saveCurrentPool()" class="btn btn-outline" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)" id="btn-save-pool-matching">Save Current Pool</button>
           </div>
           <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
             <div style="font-size:13px;color:var(--gray-mid)">No saved pools yet.</div>
@@ -2598,7 +2598,6 @@ let _currentPoolProfileIds = [];
 
 async function saveCurrentPool() {
   const token = supabaseSession || SUPABASE_ANON;
-  // On matching tab use the already-built matchPool; on profiles tab fetch from filters
   if (matchPool && matchPool.length) {
     _currentPoolProfileIds = matchPool.map(p => p.id);
   } else {
@@ -2611,6 +2610,10 @@ async function saveCurrentPool() {
       alert('Could not fetch profiles. Please try again.');
       return;
     }
+  }
+  if (!_currentPoolProfileIds.length) {
+    alert('Build a pool first using the filters on the left, then click Save Current Pool.');
+    return;
   }
   document.getElementById('save-pool-count').textContent = `${_currentPoolProfileIds.length} profile${_currentPoolProfileIds.length !== 1 ? 's' : ''} in pool`;
   document.getElementById('save-pool-name').value = '';
