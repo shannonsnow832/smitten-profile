@@ -738,6 +738,8 @@
                 <option value="low">Incomplete (&lt;50%)</option>
               </select>
             </div>
+            <div class="filter-group">
+              <label>Has Photo</label>
               <select id="f-has-photo">
                 <option value="">Any</option><option value="yes">Yes</option><option value="no">No</option>
               </select>
@@ -1904,10 +1906,9 @@ function openProfile(p) {
   document.getElementById('modal-topbar-sub').textContent = [age ? `Age ${age}` : null, p.gender, location].filter(Boolean).join(' · ') || '—';
   document.getElementById('modal-role-badge').textContent = isMatchmaker ? '' : (p.import_batch || '');
 
-  // Photos
-  const allPhotos = p.image_url
-    ? [p.image_url, ...(p.photos || [])]
-    : (p.photos || []);
+  // Photos — deduplicate in case image_url is also present in photos[]
+  const _raw = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const allPhotos = [...new Set(_raw.filter(Boolean))];
   renderModalPhotos(allPhotos);
 
   // Hide contact row for matchmakers
@@ -2139,7 +2140,7 @@ function createPhotoSlot() {}
 async function modalReorderPhotos(fromIdx, toIdx) {
   const p = currentModalProfile;
   if (!p) return;
-  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
   const reordered = [...allPhotos];
   const [moved] = reordered.splice(fromIdx, 1);
   reordered.splice(toIdx, 0, moved);
@@ -2163,7 +2164,7 @@ async function modalHandleFileInput(input) {
   if (!uploadRes.ok) { alert('Upload failed.'); input.value = ''; return; }
   const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
 
-  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
   const newAll = [...allPhotos];
   const slot = _modalUploadTargetSlot;
   if (slot !== null && slot < newAll.length) {
@@ -2210,7 +2211,7 @@ async function modalExecuteDelete() {
   _modalPendingDelete = null;
   const p = currentModalProfile;
   if (!p || slot === null) return;
-  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
   const newAll = allPhotos.filter((_, i) => i !== slot);
   await modalSavePhotos(newAll);
 }
@@ -2219,7 +2220,7 @@ async function modalExecuteDelete() {
 async function deleteProfilePhoto(url) {
   const p = currentModalProfile;
   if (!p) return;
-  const allPhotos = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
   const idx = allPhotos.indexOf(url);
   if (idx === -1) return;
   _modalPendingDelete = idx;
