@@ -149,6 +149,8 @@
     box-shadow: var(--shadow);
     padding: 24px;
   }
+
+  /* ── PHOTO GRID (drag-to-reorder, 6 max) ── */
   .photo-card h3 {
     font-size: 15px;
     font-weight: 600;
@@ -160,64 +162,13 @@
     margin-bottom: 16px;
     line-height: 1.5;
   }
-  .main-photo {
-    width: 100%;
-    aspect-ratio: 1;
-    border-radius: var(--radius-sm);
-    background: var(--gray-light);
-    border: 2px dashed var(--gray-mid);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    position: relative;
-    margin-bottom: 12px;
-    transition: border-color 0.2s;
-  }
-  .main-photo:hover { border-color: var(--red); }
-  .main-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }
-  .main-photo .upload-icon {
-    font-size: 32px;
-    color: var(--gray-dark);
-    margin-bottom: 8px;
-  }
-  .main-photo .upload-label {
-    font-size: 12px;
-    color: var(--gray-dark);
-  }
-  .photo-delete-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
-    background: rgba(0,0,0,0.55);
-    border: none;
-    border-radius: 50%;
-    color: white;
-    font-size: 18px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    font-weight: 400;
-    line-height: 1;
-    padding: 0;
-    opacity: 0;
-    transition: opacity 0.2s, background 0.2s;
-  }
-  .photo-delete-btn:hover { background: rgba(198,48,44,0.9); }
-  .main-photo:hover .photo-delete-btn,
-  .extra-photo:hover .photo-delete-btn { opacity: 1; }
-  .extra-photos {
+  .photo-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+    margin-bottom: 10px;
   }
-  .extra-photo {
+  .photo-slot {
     aspect-ratio: 1;
     border-radius: var(--radius-sm);
     background: var(--gray-light);
@@ -228,16 +179,37 @@
     cursor: pointer;
     overflow: hidden;
     position: relative;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, opacity 0.15s;
   }
-  .extra-photo:hover { border-color: var(--red); }
-  .extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
-  .extra-photo .cam { font-size: 18px; color: var(--gray-dark); }
+  .photo-slot:hover { border-color: var(--red); }
+  .photo-slot.has-photo { border-style: solid; border-color: transparent; }
+  .photo-slot.is-main { border-color: var(--red); border-style: solid; }
+  .photo-slot.drag-over { border-color: var(--red); opacity: 0.7; }
+  .photo-slot.dragging { opacity: 0.4; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+  .photo-slot .cam { font-size: 22px; color: var(--gray-dark); pointer-events: none; }
+  .photo-slot .main-badge {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    background: var(--red); color: white; font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 10px; white-space: nowrap; pointer-events: none; z-index: 5;
+  }
+  .photo-delete-btn {
+    position: absolute; top: 6px; right: 6px;
+    width: 26px; height: 26px;
+    background: rgba(0,0,0,0.55); border: none; border-radius: 50%;
+    color: white; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 10; opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    padding: 0; line-height: 1;
+  }
+  .photo-delete-btn:hover { background: rgba(198,48,44,0.9); }
+  .photo-slot:hover .photo-delete-btn { opacity: 1; }
   .photo-upload-note {
     font-size: 11px;
     color: var(--gray-dark);
     text-align: center;
-    margin-top: 10px;
+    margin-top: 6px;
     line-height: 1.5;
   }
 
@@ -643,35 +615,10 @@
       <div class="left-col">
         <div class="photo-card">
           <h3>Profile Photos</h3>
-          <p class="photo-hint">Your first photo is your main profile picture.</p>
-          <div class="main-photo" id="main-photo-drop" onclick="mainPhotoClick(event)">
-            <img id="main-photo-preview" src="" style="display:none;">
-            <div class="upload-icon" id="main-photo-icon">+ Add Photo</div>
-            <div class="upload-label" id="main-photo-label">Click to upload</div>
-            <button id="main-photo-delete" class="photo-delete-btn" onclick="event.stopPropagation();confirmDeletePhoto('main')" title="Remove photo">×</button>
-          </div>
-          <input type="file" id="main-photo-input" accept="image/*" style="display:none" onchange="previewMainPhoto(this)">
-          <div class="extra-photos">
-            <div class="extra-photo" onclick="extraPhotoClick(event,0)">
-              <img id="extra-preview-0" src="" style="display:none;">
-              <span class="cam" id="extra-icon-0">+</span>
-              <button id="extra-delete-0" class="photo-delete-btn" onclick="event.stopPropagation();confirmDeletePhoto(0)" title="Remove photo">×</button>
-            </div>
-            <div class="extra-photo" onclick="extraPhotoClick(event,1)">
-              <img id="extra-preview-1" src="" style="display:none;">
-              <span class="cam" id="extra-icon-1">+</span>
-              <button id="extra-delete-1" class="photo-delete-btn" onclick="event.stopPropagation();confirmDeletePhoto(1)" title="Remove photo">×</button>
-            </div>
-            <div class="extra-photo" onclick="extraPhotoClick(event,2)">
-              <img id="extra-preview-2" src="" style="display:none;">
-              <span class="cam" id="extra-icon-2">+</span>
-              <button id="extra-delete-2" class="photo-delete-btn" onclick="event.stopPropagation();confirmDeletePhoto(2)" title="Remove photo">×</button>
-            </div>
-          </div>
-          <input type="file" id="extra0" accept="image/*" style="display:none" onchange="previewExtra(this,0)">
-          <input type="file" id="extra1" accept="image/*" style="display:none" onchange="previewExtra(this,1)">
-          <input type="file" id="extra2" accept="image/*" style="display:none" onchange="previewExtra(this,2)">
-          <p class="photo-upload-note">Upload clear, recent photos. No sunglasses or group shots for your main photo.</p>
+          <p class="photo-hint">Drag photos to reorder. First photo is your profile picture.</p>
+          <div class="photo-grid" id="photo-grid"></div>
+          <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="handlePhotoFileInput(this)">
+          <p class="photo-upload-note">Up to 6 photos · Clear, recent photos only<br>No sunglasses or group shots for your first photo</p>
         </div>
 
         <div class="privacy-card">
@@ -1560,35 +1507,13 @@ async function loadExistingProfile() {
       setChecked('dealbreakers-group', profile.dealbreakers);
     }
 
-    // Show existing photo if present
-    const allProfilePhotos = [];
+    // Load photos into grid
+    allProfilePhotos = [];
     if (profile.image_url) allProfilePhotos.push(profile.image_url);
     if (profile.photos && profile.photos.length) {
       profile.photos.forEach(u => { if (u && !allProfilePhotos.includes(u)) allProfilePhotos.push(u); });
     }
-    if (allProfilePhotos.length) {
-      const img = document.getElementById('main-photo-preview');
-      img.src = allProfilePhotos[0];
-      img.style.cursor = 'pointer';
-      img.onclick = () => lbOpen(allProfilePhotos, 0);
-      img.style.display = 'block';
-      document.getElementById('main-photo-icon').style.display = 'none';
-      document.getElementById('main-photo-label').style.display = 'none';
-      document.getElementById('main-photo-delete').style.display = 'flex';
-    }
-    // Populate extra photo slots
-    allProfilePhotos.slice(1).forEach((url, i) => {
-      const slot = document.querySelectorAll('.extra-photo')[i];
-      if (!slot) return;
-      let img2 = slot.querySelector('img');
-      if (!img2) { img2 = document.createElement('img'); slot.appendChild(img2); }
-      img2.src = url;
-      img2.style.display = 'block';
-      slot.querySelector('.cam') && (slot.querySelector('.cam').style.display = 'none');
-      slot.onclick = (e) => { e.stopPropagation(); lbOpen(allProfilePhotos, i + 1); };
-      const delBtn = document.getElementById(`extra-delete-${i}`);
-      if (delBtn) delBtn.style.display = 'flex';
-    });
+    renderPhotoGrid();
 
     updateProgress();
   } catch (e) {
@@ -1758,85 +1683,136 @@ function showAutosaveIndicator() {
   indicator._hideTimer = setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
 }
 
-// ── Photo upload ──────────────────────────────────────────────────────────────
-function previewMainPhoto(input) {
-  if (!input.files[0]) return;
-  const url = URL.createObjectURL(input.files[0]);
-  const img = document.getElementById('main-photo-preview');
-  img.src = url; img.style.display = 'block';
-  document.getElementById('main-photo-icon').style.display = 'none';
-  document.getElementById('main-photo-label').style.display = 'none';
-  document.getElementById('main-photo-delete').style.display = 'flex';
-  autoUploadPhoto(input.files[0], true);
-}
+// ── Photo system (drag-to-reorder, 6 max) ────────────────────────────────────
+const MAX_PHOTOS = 6;
+let allProfilePhotos = []; // [image_url, ...photos] flat array
+let _photoUploadTargetSlot = null;
 
-function previewExtra(input, idx) {
-  if (!input.files[0]) return;
-  const url = URL.createObjectURL(input.files[0]);
-  const img = document.getElementById(`extra-preview-${idx}`);
-  img.src = url; img.style.display = 'block';
-  document.getElementById(`extra-icon-${idx}`).style.display = 'none';
-  document.getElementById(`extra-delete-${idx}`).style.display = 'flex';
-  autoUploadPhoto(input.files[0], false);
-}
+function renderPhotoGrid() {
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
 
-async function autoUploadPhoto(file, isMain) {
-  const profileId = currentProfileId;
-  if (!supabaseSession) { console.warn('Photo upload skipped: no session'); return; }
-  if (!profileId) { console.warn('Photo upload skipped: no profile ID yet'); return; }
-  try {
-    // Storage policy requires path to start with auth.uid()
-    // Decode it from the JWT session token
-    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
-    const ext  = file.name.split('.').pop();
-    const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${supabaseSession}`,
-        'Content-Type': file.type
-      },
-      body: file
+  // Always render all MAX_PHOTOS slots so grid is always full
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    const url = allProfilePhotos[i] || null;
+    const slot = document.createElement('div');
+    const slotIndex = i; // capture for closures
+
+    if (url) {
+      // Filled slot
+      slot.className = 'photo-slot has-photo' + (slotIndex === 0 ? ' is-main' : '');
+      slot.draggable = true;
+      slot.dataset.index = slotIndex;
+
+      const img = document.createElement('img');
+      img.src = url;
+      slot.appendChild(img);
+
+      if (slotIndex === 0) {
+        const badge = document.createElement('div');
+        badge.className = 'main-badge';
+        badge.textContent = 'MAIN';
+        slot.appendChild(badge);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'photo-delete-btn';
+      del.innerHTML = '×';
+      slot.appendChild(del);
+
+      // Click img → lightbox; click delete → delete; click slot background → replace
+      img.addEventListener('click', (e) => { e.stopPropagation(); lbOpen(allProfilePhotos.filter(Boolean), slotIndex); });
+      del.addEventListener('click', (e) => { e.stopPropagation(); confirmDeletePhoto(slotIndex); });
+      slot.addEventListener('click', (e) => {
+        if (e.target === img || e.target === del || (e.target.classList && e.target.classList.contains('main-badge'))) return;
+        _photoUploadTargetSlot = slotIndex;
+        document.getElementById('photo-file-input').click();
+      });
+
+      // Drag events
+      slot.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', String(slotIndex));
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => slot.classList.add('dragging'), 0);
+      });
+      slot.addEventListener('dragend', () => slot.classList.remove('dragging'));
+
+    } else {
+      // Empty slot
+      slot.className = 'photo-slot';
+      slot.innerHTML = '<span class="cam">+</span>';
+      slot.addEventListener('click', () => {
+        _photoUploadTargetSlot = slotIndex;
+        document.getElementById('photo-file-input').click();
+      });
+    }
+
+    // Drop target on every slot
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('drag-over');
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = slotIndex;
+      if (isNaN(fromIdx) || fromIdx === toIdx) return;
+      if (toIdx >= allProfilePhotos.length) return; // can't drop onto empty
+      reorderPhotos(fromIdx, toIdx);
     });
-    if (!r.ok) { console.warn('Photo upload failed'); return; }
 
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
-
-    // Get current photos array and append
-    const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${profileId}&select=photos,image_url`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
-    });
-    const [existing] = await profileRes.json();
-    const currentPhotos = existing?.photos || [];
-    const updatedPhotos = [...currentPhotos, publicUrl];
-
-    // Use RPC to update photos — bypasses RLS for intake-created profiles
-    await rpc('intake_update_profile', {
-      p_email: currentEmail,
-      p_image_url: isMain ? publicUrl : null,
-      p_photos: updatedPhotos
-    });
-    showAutosaveIndicator();
-  } catch(e) {
-    console.warn('Photo autosave failed:', e);
+    grid.appendChild(slot);
   }
 }
 
-async function uploadPhotos(profileId) {
-  // Photos are now uploaded immediately on selection via autoUploadPhoto.
-  // Kept as no-op for compatibility with the Save button flow.
+async function reorderPhotos(fromIdx, toIdx) {
+  const reordered = [...allProfilePhotos];
+  const [moved] = reordered.splice(fromIdx, 1);
+  reordered.splice(toIdx, 0, moved);
+  await savePhotos(reordered);
 }
 
-// ── Photo click helpers ───────────────────────────────────────────────────────
-function mainPhotoClick(event) {
-  if (event.target.closest('button')) return;
-  document.getElementById('main-photo-input').click();
+async function handlePhotoFileInput(input) {
+  if (!input.files[0]) return;
+  if (!supabaseSession) { console.warn('No session'); return; }
+  if (!currentProfileId) { console.warn('No profile ID'); return; }
+  const file = input.files[0];
+  try {
+    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
+    const ext = file.name.split('.').pop();
+    const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}`, 'Content-Type': file.type },
+      body: file
+    });
+    if (!r.ok) { console.warn('Upload failed'); return; }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
+    const newAll = [...allProfilePhotos];
+    const slot = _photoUploadTargetSlot;
+    if (slot !== null && slot < newAll.length) {
+      newAll[slot] = publicUrl;
+    } else {
+      if (newAll.length >= MAX_PHOTOS) { alert(`Maximum ${MAX_PHOTOS} photos allowed.`); return; }
+      newAll.push(publicUrl);
+    }
+    _photoUploadTargetSlot = null;
+    await savePhotos(newAll);
+  } catch(e) { console.warn('Photo upload failed:', e); }
+  input.value = '';
 }
 
-function extraPhotoClick(event, idx) {
-  if (event.target.closest('button')) return;
-  document.getElementById(`extra${idx}`).click();
+async function savePhotos(newAll) {
+  const newImageUrl = newAll[0] || null;
+  const newPhotos = newAll.slice(1);
+  await rpc('intake_update_profile', {
+    p_email: currentEmail,
+    p_image_url: newImageUrl,
+    p_photos: newPhotos.length ? newPhotos : null
+  });
+  allProfilePhotos = newAll;
+  renderPhotoGrid();
+  showAutosaveIndicator();
 }
 
 // ── Photo delete confirmation ─────────────────────────────────────────────────
@@ -1845,96 +1821,31 @@ let _pendingDeleteSlot = null;
 function confirmDeletePhoto(slot) {
   _pendingDeleteSlot = slot;
   const overlay = document.getElementById('photo-confirm-overlay');
-  overlay.style.display = 'flex';
+  if (overlay) overlay.style.display = 'flex';
 }
 
 function closePhotoConfirm() {
   _pendingDeleteSlot = null;
-  document.getElementById('photo-confirm-overlay').style.display = 'none';
+  const overlay = document.getElementById('photo-confirm-overlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 async function executeDeletePhoto() {
   const slot = _pendingDeleteSlot;
   closePhotoConfirm();
-  if (slot === null) return;
-  await deletePhoto(slot);
+  if (slot === null || slot === undefined) return;
+  const newAll = allProfilePhotos.filter((_, i) => i !== slot);
+  await savePhotos(newAll);
 }
 
-async function deletePhoto(slot) {
-  if (!currentProfileId || !supabaseSession) return;
-  try {
-    const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentProfileId}&select=photos,image_url`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
-    });
-    const [existing] = await profileRes.json();
-    let photos = existing?.photos ? [...existing.photos] : [];
-    let image_url = existing?.image_url || null;
-
-    if (slot === 'main') {
-      const newMain = photos.length ? photos[0] : null;
-      const newPhotos = photos.slice(1);
-      await rpc('intake_update_profile', {
-        p_email: currentEmail,
-        p_image_url: newMain,
-        p_photos: newPhotos.length ? newPhotos : null
-      });
-      const img = document.getElementById('main-photo-preview');
-      img.src = ''; img.style.display = 'none';
-      document.getElementById('main-photo-icon').style.display = '';
-      document.getElementById('main-photo-label').style.display = '';
-      document.getElementById('main-photo-delete').style.display = 'none';
-      document.getElementById('main-photo-input').value = '';
-      if (newMain) {
-        img.src = newMain; img.style.display = 'block';
-        document.getElementById('main-photo-icon').style.display = 'none';
-        document.getElementById('main-photo-label').style.display = 'none';
-        document.getElementById('main-photo-delete').style.display = 'flex';
-      }
-      [0,1,2].forEach(i => {
-        const src = newPhotos[i] || null;
-        const eImg = document.getElementById(`extra-preview-${i}`);
-        const eIcon = document.getElementById(`extra-icon-${i}`);
-        const eDel = document.getElementById(`extra-delete-${i}`);
-        if (src) {
-          eImg.src = src; eImg.style.display = 'block';
-          eIcon.style.display = 'none';
-          if (eDel) eDel.style.display = 'flex';
-        } else {
-          eImg.src = ''; eImg.style.display = 'none';
-          eIcon.style.display = '';
-          if (eDel) eDel.style.display = 'none';
-        }
-      });
-    } else {
-      photos.splice(slot, 1);
-      await rpc('intake_update_profile', {
-        p_email: currentEmail,
-        p_image_url: image_url,
-        p_photos: photos.length ? photos : null
-      });
-      [0,1,2].forEach(i => {
-        const src = photos[i] || null;
-        const eImg = document.getElementById(`extra-preview-${i}`);
-        const eIcon = document.getElementById(`extra-icon-${i}`);
-        const eDel = document.getElementById(`extra-delete-${i}`);
-        if (src) {
-          eImg.src = src; eImg.style.display = 'block';
-          eIcon.style.display = 'none';
-          if (eDel) eDel.style.display = 'flex';
-        } else {
-          eImg.src = ''; eImg.style.display = 'none';
-          eIcon.style.display = '';
-          if (eDel) eDel.style.display = 'none';
-          const fileInput = document.getElementById(`extra${i}`);
-          if (fileInput) fileInput.value = '';
-        }
-      });
-    }
-    showAutosaveIndicator();
-  } catch(e) {
-    console.warn('Photo delete failed:', e);
-  }
-}
+// Legacy stubs — kept so any existing call sites don't break
+function previewMainPhoto() {}
+function previewExtra() {}
+function mainPhotoClick() {}
+function extraPhotoClick() {}
+async function autoUploadPhoto() {}
+async function uploadPhotos() {}
+async function deletePhoto() {}
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(name, btn) {

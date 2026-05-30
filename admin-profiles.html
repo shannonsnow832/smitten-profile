@@ -729,7 +729,15 @@
           </div>
           <div class="filter-section-body open">
             <div class="filter-group">
-              <label>Has Photo</label>
+              <label>Profile Completeness</label>
+              <select id="f-completeness">
+                <option value="">Any</option>
+                <option value="100">Complete (100%)</option>
+                <option value="75">Mostly complete (75%+)</option>
+                <option value="50">Partially complete (50%+)</option>
+                <option value="low">Incomplete (&lt;50%)</option>
+              </select>
+            </div>
               <select id="f-has-photo">
                 <option value="">Any</option><option value="yes">Yes</option><option value="no">No</option>
               </select>
@@ -1600,7 +1608,7 @@ function clearFilters() {
   ['f-income','f-kids','f-want-kids','f-religion','f-education','f-politics','f-body-type','f-smoking',
    'f-drinking','f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type',
    'f-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
-  ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-status',
+  ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-status','f-completeness',
    'f-date-with-kids','f-relocation-in','f-relocation-out','f-state','f-city'
   ].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('f-distance-status').textContent = '';
@@ -1642,7 +1650,23 @@ function buildProfilesUrl(forCount = false) {
   if (f.status === 'active') params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned_at=is.null');
   if (f.status === 'inactive') params.push('is_active=eq.false');
   if (f.status === 'invite_paused') params.push('invite_paused=eq.true');
-  if (f.status === 'banned') params.push('banned_at=not.is.null');  if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
+  if (f.status === 'banned') params.push('banned_at=not.is.null');
+  // Completeness filter — translate tiers to field null checks
+  const allFields = ['gender','kids','want_kids','religion','politics','body_type','income_level','min_age','max_age','preferred_body_type'];
+  const coreFields = ['gender','kids','want_kids','religion'];
+  const mostFields = ['gender','kids','want_kids','religion','politics','body_type','income_level'];
+  if (f.completeness === '100') {
+    allFields.forEach(col => params.push(`${col}=not.is.null`));
+    params.push('seeking=not.is.null', 'seeking=not.eq.{}');
+  } else if (f.completeness === '75') {
+    mostFields.forEach(col => params.push(`${col}=not.is.null`));
+    params.push('seeking=not.is.null', 'seeking=not.eq.{}');
+  } else if (f.completeness === '50') {
+    coreFields.forEach(col => params.push(`${col}=not.is.null`));
+    params.push('seeking=not.is.null', 'seeking=not.eq.{}');
+  } else if (f.completeness === 'low') {
+    params.push(`or=(${coreFields.map(col => `${col}.is.null`).join(',')},seeking.is.null)`);
+  }  if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
   if (f.hasPhoto === 'no') params.push('image_url=is.null');
   if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
   if (f.zip) params.push(`postal_code=eq.${encodeURIComponent(f.zip)}`);
@@ -2736,6 +2760,7 @@ async function applyFilters() {
     hasPhoto: getVal('f-has-photo'),
     matchmakers: getVal('f-matchmakers'),
     status: getVal('f-status'),
+    completeness: getVal('f-completeness'),
     zip: getVal('f-zip'),
     distanceZip: getVal('f-distance-zip'),
     distanceMiles: getVal('f-distance-miles'),
