@@ -660,6 +660,27 @@
               <div id="f-rel-status" class="ms-wrap" data-placeholder="Any"></div>
             </div>
             <div class="filter-group">
+              <label>Open to Dating w/ Kids</label>
+              <select id="f-date-with-kids"><option value="">Any</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Relocation (In State)</label>
+              <select id="f-relocation-in"><option value="">Any</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Relocation (Out of State)</label>
+              <select id="f-relocation-out"><option value="">Any</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- PREFERENCES -->
+        <div class="filter-section">
+          <div class="filter-section-header" onclick="toggleFilter(this)">
+            Preferences <span class="filter-section-toggle">▾</span>
+          </div>
+          <div class="filter-section-body">
+            <div class="filter-group">
               <label>Pref. Religion</label>
               <div id="f-pref-religion" class="ms-wrap" data-placeholder="Any"></div>
             </div>
@@ -686,18 +707,6 @@
             <div class="filter-group">
               <label>Pref. Relationship Status</label>
               <div id="f-pref-rel-status" class="ms-wrap" data-placeholder="Any"></div>
-            </div>
-            <div class="filter-group">
-              <label>Open to Dating w/ Kids</label>
-              <select id="f-date-with-kids"><option value="">Any</option></select>
-            </div>
-            <div class="filter-group">
-              <label>Relocation (In State)</label>
-              <select id="f-relocation-in"><option value="">Any</option></select>
-            </div>
-            <div class="filter-group">
-              <label>Relocation (Out of State)</label>
-              <select id="f-relocation-out"><option value="">Any</option></select>
             </div>
           </div>
         </div>
@@ -742,7 +751,20 @@
           <h2>All Profiles</h2>
           <div style="display:flex;align-items:center;gap:12px">
             <span class="profile-count" id="profile-count"></span>
+            <button class="btn btn-outline" onclick="showSavedPools()" id="btn-saved-pools" style="font-size:12px;padding:6px 14px">Saved Pools</button>
+            <button class="btn btn-outline" onclick="saveCurrentPool()" id="btn-save-pool" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)">Save Pool</button>
             <button class="btn btn-outline" onclick="exportCSV()" id="btn-export" style="font-size:12px;padding:6px 14px">Export CSV</button>
+          </div>
+        </div>
+
+        <!-- SAVED POOLS PANEL -->
+        <div id="saved-pools-panel" style="display:none;background:white;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h4 style="font-size:13px;font-weight:700;color:var(--black)">Saved Pools</h4>
+            <button onclick="document.getElementById('saved-pools-panel').style.display='none'" style="background:none;border:none;font-size:18px;color:var(--gray-mid);cursor:pointer">×</button>
+          </div>
+          <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:13px;color:var(--gray-mid)">Loading...</div>
           </div>
         </div>
         <div class="search-bar">
@@ -2288,7 +2310,134 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// ── STATE / CITY DROPDOWNS ────────────────────────────────────────────────────
+// ── SAVED POOLS ───────────────────────────────────────────────────────────────
+let _currentPoolProfileIds = [];
+
+async function saveCurrentPool() {
+  // Fetch all profile IDs matching current filters
+  const token = supabaseSession || SUPABASE_ANON;
+  const url = buildProfilesUrl() + '&select=id&limit=5000';
+  try {
+    const r = await fetch(url, { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } });
+    const data = await r.json();
+    _currentPoolProfileIds = data.map(p => p.id);
+    document.getElementById('save-pool-count').textContent = `${_currentPoolProfileIds.length} profile${_currentPoolProfileIds.length !== 1 ? 's' : ''} in current filtered view`;
+    document.getElementById('save-pool-name').value = '';
+    document.getElementById('save-pool-desc').value = '';
+    document.getElementById('save-pool-error').style.display = 'none';
+    document.getElementById('save-pool-overlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('save-pool-name').focus(), 100);
+  } catch(e) {
+    alert('Could not fetch profiles. Please try again.');
+  }
+}
+
+function closeSavePool() {
+  document.getElementById('save-pool-overlay').style.display = 'none';
+  _currentPoolProfileIds = [];
+}
+
+async function confirmSavePool() {
+  const name = document.getElementById('save-pool-name').value.trim();
+  if (!name) {
+    document.getElementById('save-pool-error').textContent = 'Please enter a pool name.';
+    document.getElementById('save-pool-error').style.display = 'block';
+    return;
+  }
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/saved_pools`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        name,
+        description: document.getElementById('save-pool-desc').value.trim() || null,
+        filters: activeFilters,
+        profile_ids: _currentPoolProfileIds,
+        profile_count: _currentPoolProfileIds.length,
+        created_by: adminUser ? `${adminUser.first_name} ${adminUser.last_name}` : null
+      })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    closeSavePool();
+    alert(`Pool "${name}" saved with ${_currentPoolProfileIds.length} profiles.`);
+  } catch(e) {
+    document.getElementById('save-pool-error').textContent = 'Failed to save pool. Please try again.';
+    document.getElementById('save-pool-error').style.display = 'block';
+    console.error(e);
+  }
+}
+
+async function showSavedPools() {
+  const panel = document.getElementById('saved-pools-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'none') return;
+  await loadSavedPoolsList();
+}
+
+async function loadSavedPoolsList() {
+  const token = supabaseSession || SUPABASE_ANON;
+  const el = document.getElementById('saved-pools-list');
+  el.innerHTML = '<div style="font-size:13px;color:var(--gray-mid)">Loading...</div>';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/saved_pools?order=created_at.desc&limit=50`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const pools = await r.json();
+    if (!pools.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--gray-mid)">No saved pools yet.</div>';
+      return;
+    }
+    el.innerHTML = pools.map(pool => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1.5px solid #E8E8E8;border-radius:8px;background:#fafafa;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--black)">${pool.name}</div>
+          <div style="font-size:11px;color:var(--gray-mid);margin-top:2px">${pool.profile_count} profiles · ${new Date(pool.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}${pool.description ? ' · ' + pool.description : ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button onclick="loadSavedPool('${pool.id}')" style="padding:5px 12px;border-radius:6px;border:1.5px solid var(--red);background:white;color:var(--red);font-family:Montserrat,sans-serif;font-size:12px;font-weight:600;cursor:pointer">Load</button>
+          <button onclick="deleteSavedPool('${pool.id}','${pool.name.replace(/'/g,"\\'")}',this)" style="padding:5px 10px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;color:var(--gray-mid);font-family:Montserrat,sans-serif;font-size:12px;cursor:pointer">×</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--red)">Failed to load pools.</div>';
+  }
+}
+
+async function loadSavedPool(poolId) {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/saved_pools?id=eq.${poolId}&select=*`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    const [pool] = await r.json();
+    if (!pool) return;
+    // Apply saved filters
+    activeFilters = pool.filters || {};
+    currentPage = 0;
+    document.getElementById('saved-pools-panel').style.display = 'none';
+    loadProfiles();
+    document.getElementById('profile-count').textContent = `${pool.profile_count} profiles (saved pool: ${pool.name})`;
+  } catch(e) {
+    alert('Failed to load pool.');
+  }
+}
+
+async function deleteSavedPool(poolId, poolName, btn) {
+  if (!confirm(`Delete pool "${poolName}"?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/saved_pools?id=eq.${poolId}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Prefer': 'return=minimal' }
+    });
+    if (!r.ok) throw new Error();
+    btn.closest('div[style]').remove();
+  } catch(e) {
+    alert('Failed to delete pool.');
+  }
+}
 async function loadStateOptions() {
   const token = supabaseSession || SUPABASE_ANON;
   try {
@@ -3652,5 +3801,26 @@ if (saved && savedSession) {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
+<!-- Save Pool Modal -->
+<div id="save-pool-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <h3 style="font-family:Montserrat,sans-serif;font-size:18px;color:#1A1414;margin-bottom:6px;">Save Pool</h3>
+    <p id="save-pool-count" style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;"></p>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:var(--gray-dark);display:block;margin-bottom:6px">Pool Name *</label>
+      <input id="save-pool-name" type="text" placeholder="e.g. Omaha Women 35-50" style="width:100%;border:1.5px solid #E8E8E8;border-radius:8px;padding:9px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none">
+    </div>
+    <div style="margin-bottom:24px">
+      <label style="font-size:12px;font-weight:600;color:var(--gray-dark);display:block;margin-bottom:6px">Notes (optional)</label>
+      <textarea id="save-pool-desc" placeholder="Any notes about this pool..." rows="2" style="width:100%;border:1.5px solid #E8E8E8;border-radius:8px;padding:9px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button onclick="closeSavePool()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E8E8E8;background:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#5A5353;">Cancel</button>
+      <button onclick="confirmSavePool()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#C6302C;color:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Pool</button>
+    </div>
+    <div id="save-pool-error" style="display:none;margin-top:12px;font-size:12px;color:var(--red);text-align:center"></div>
+  </div>
+</div>
+
 </body>
 </html>
