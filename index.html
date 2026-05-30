@@ -201,12 +201,12 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     transition: border-color 0.2s;
   }
   .extra-photo:hover { border-color: var(--red); }
-  .extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+  .extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; border-radius: calc(var(--radius-sm) - 2px); }
   .extra-photo .cam { font-size: 18px; color: var(--gray-dark); }
   .photo-upload-note {
     font-size: 11px;
@@ -619,28 +619,28 @@
         <div class="photo-card">
           <h3>Profile Photos</h3>
           <p class="photo-hint">Your first photo is your main profile picture.</p>
-          <div class="main-photo" id="main-photo-drop" onclick="document.getElementById('main-photo-input').click()" style="position:relative;">
+          <div class="main-photo" id="main-photo-drop" onclick="mainPhotoClick(event)" style="position:relative;">
             <img id="main-photo-preview" src="" style="display:none;">
             <div class="upload-icon" id="main-photo-icon">+ Add Photo</div>
             <div class="upload-label" id="main-photo-label">Click to upload</div>
-            <button id="main-photo-delete" onclick="event.stopPropagation();deletePhoto('main')" style="display:none;position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:16px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
+            <button id="main-photo-delete" onclick="event.stopPropagation();confirmDeletePhoto('main')" title="Remove photo" style="display:none;position:absolute;top:-8px;right:-8px;width:24px;height:24px;background:rgba(198,48,44,0.9);border:none;border-radius:50%;color:white;font-size:16px;line-height:24px;text-align:center;cursor:pointer;z-index:10;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,0.3);">×</button>
           </div>
           <input type="file" id="main-photo-input" accept="image/*" style="display:none" onchange="previewMainPhoto(this)">
           <div class="extra-photos">
-            <div class="extra-photo" style="position:relative;" onclick="if(!event.target.closest('button'))document.getElementById('extra0').click()">
+            <div class="extra-photo" style="position:relative;" onclick="extraPhotoClick(event,0)">
               <img id="extra-preview-0" src="" style="display:none;">
               <span class="cam" id="extra-icon-0">+</span>
-              <button id="extra-delete-0" onclick="event.stopPropagation();deletePhoto(0)" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:13px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
+              <button id="extra-delete-0" onclick="event.stopPropagation();confirmDeletePhoto(0)" title="Remove photo" style="display:none;position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:rgba(198,48,44,0.9);border:none;border-radius:50%;color:white;font-size:13px;line-height:20px;text-align:center;cursor:pointer;z-index:10;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,0.3);">×</button>
             </div>
-            <div class="extra-photo" style="position:relative;" onclick="if(!event.target.closest('button'))document.getElementById('extra1').click()">
+            <div class="extra-photo" style="position:relative;" onclick="extraPhotoClick(event,1)">
               <img id="extra-preview-1" src="" style="display:none;">
               <span class="cam" id="extra-icon-1">+</span>
-              <button id="extra-delete-1" onclick="event.stopPropagation();deletePhoto(1)" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:13px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
+              <button id="extra-delete-1" onclick="event.stopPropagation();confirmDeletePhoto(1)" title="Remove photo" style="display:none;position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:rgba(198,48,44,0.9);border:none;border-radius:50%;color:white;font-size:13px;line-height:20px;text-align:center;cursor:pointer;z-index:10;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,0.3);">×</button>
             </div>
-            <div class="extra-photo" style="position:relative;" onclick="if(!event.target.closest('button'))document.getElementById('extra2').click()">
+            <div class="extra-photo" style="position:relative;" onclick="extraPhotoClick(event,2)">
               <img id="extra-preview-2" src="" style="display:none;">
               <span class="cam" id="extra-icon-2">+</span>
-              <button id="extra-delete-2" onclick="event.stopPropagation();deletePhoto(2)" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(198,48,44,0.85);border:none;border-radius:50%;color:white;font-size:13px;line-height:1;cursor:pointer;z-index:2;font-weight:700;">×</button>
+              <button id="extra-delete-2" onclick="event.stopPropagation();confirmDeletePhoto(2)" title="Remove photo" style="display:none;position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:rgba(198,48,44,0.9);border:none;border-radius:50%;color:white;font-size:13px;line-height:20px;text-align:center;cursor:pointer;z-index:10;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,0.3);">×</button>
             </div>
           </div>
           <input type="file" id="extra0" accept="image/*" style="display:none" onchange="previewExtra(this,0)">
@@ -1803,6 +1803,38 @@ async function uploadPhotos(profileId) {
   // Kept as no-op for compatibility with the Save button flow.
 }
 
+// ── Photo click helpers ───────────────────────────────────────────────────────
+function mainPhotoClick(event) {
+  if (event.target.closest('button')) return;
+  document.getElementById('main-photo-input').click();
+}
+
+function extraPhotoClick(event, idx) {
+  if (event.target.closest('button')) return;
+  document.getElementById(`extra${idx}`).click();
+}
+
+// ── Photo delete confirmation ─────────────────────────────────────────────────
+let _pendingDeleteSlot = null;
+
+function confirmDeletePhoto(slot) {
+  _pendingDeleteSlot = slot;
+  const overlay = document.getElementById('photo-confirm-overlay');
+  overlay.style.display = 'flex';
+}
+
+function closePhotoConfirm() {
+  _pendingDeleteSlot = null;
+  document.getElementById('photo-confirm-overlay').style.display = 'none';
+}
+
+async function executeDeletePhoto() {
+  const slot = _pendingDeleteSlot;
+  closePhotoConfirm();
+  if (slot === null) return;
+  await deletePhoto(slot);
+}
+
 async function deletePhoto(slot) {
   if (!currentProfileId || !supabaseSession) return;
   try {
@@ -2050,5 +2082,18 @@ function autosave() {
   }, 800);
 }
 </script>
+<!-- Photo delete confirmation modal -->
+<div id="photo-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:32px 28px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;">
+    <div style="font-size:32px;margin-bottom:12px;">🗑️</div>
+    <h3 style="font-family:Montserrat,sans-serif;font-size:18px;color:#1A1414;margin-bottom:8px;">Remove Photo?</h3>
+    <p style="font-size:13px;color:#5A5353;margin-bottom:24px;line-height:1.5;">This will permanently remove the photo from your profile.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button onclick="closePhotoConfirm()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E8E8E8;background:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#5A5353;">Cancel</button>
+      <button id="photo-confirm-btn" onclick="executeDeletePhoto()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#C6302C;color:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Remove</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
