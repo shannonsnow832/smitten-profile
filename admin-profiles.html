@@ -1640,6 +1640,21 @@ function buildProfilesUrl(forCount = false) {
   if (f.prefAgeMin) params.push(`min_age=gte.${f.prefAgeMin}`);
   if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
 
+  // Convert age range to DOB range for server-side filtering
+  if (f.ageMin || f.ageMax) {
+    const today = new Date();
+    if (f.ageMax) {
+      // Oldest allowed DOB: must be at least ageMax years old → born on or before today minus ageMax years
+      const dobMin = new Date(today.getFullYear() - parseInt(f.ageMax), today.getMonth(), today.getDate());
+      params.push(`date_of_birth=lte.${dobMin.toISOString().slice(0,10)}`);
+    }
+    if (f.ageMin) {
+      // Youngest allowed DOB: must be at most ageMin years old → born on or after today minus ageMin years
+      const dobMax = new Date(today.getFullYear() - parseInt(f.ageMin), today.getMonth(), today.getDate());
+      params.push(`date_of_birth=gte.${dobMax.toISOString().slice(0,10)}`);
+    }
+  }
+
   if (searchQuery) {
     const words = searchQuery.trim().split(/\s+/);
     if (words.length === 1) {
@@ -1654,7 +1669,7 @@ function buildProfilesUrl(forCount = false) {
 
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
-  if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
+  if (forCount) return base + '&select=id';
   return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,relocation_in,relocation_out&order=created_at.desc`;
 }
 
@@ -1664,7 +1679,6 @@ async function loadProfiles() {
 
   try {
     const f = activeFilters;
-    const needAgeFilter = f.ageMin || f.ageMax;
 
     // Fetch with range
     const from = currentPage * PAGE_SIZE;
@@ -1690,19 +1704,6 @@ async function loadProfiles() {
       if (match) total = parseInt(match[1]);
     }
 
-    // Client-side age filter (DOB is stored as text)
-    if (needAgeFilter) {
-      data = data.filter(p => {
-        const age = calcAge(p.date_of_birth);
-        if (age === null) return false;
-        if (f.ageMin && age < parseInt(f.ageMin)) return false;
-        if (f.ageMax && age > parseInt(f.ageMax)) return false;
-        return true;
-      });
-    }
-
-    // Income filter is now server-side (see buildProfilesUrl)
-
     // Client-side distance filter
     if (distanceCenter && f.distanceMiles) {
       const miles = parseFloat(f.distanceMiles);
@@ -1712,9 +1713,9 @@ async function loadProfiles() {
       });
     }
 
-    totalCount = needAgeFilter ? data.length : total;
+    totalCount = total;
     renderProfiles(data);
-    renderPagination(needAgeFilter ? 1 : Math.ceil(total / PAGE_SIZE));
+    renderPagination(Math.ceil(total / PAGE_SIZE));
     document.getElementById('profile-count').textContent = `${totalCount.toLocaleString()} profile${totalCount !== 1 ? 's' : ''}`;
 
   } catch(e) {
