@@ -1617,12 +1617,14 @@ function buildProfilesUrl(forCount = false) {
     const today = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    if (f.ageMax) {
-      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMax));
+    if (f.ageMin) {
+      // Min age X → must be at least X years old → born on or before today minus X years
+      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMin));
       params.push(`date_of_birth=lte.${fmt(d)}`);
     }
-    if (f.ageMin) {
-      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMin));
+    if (f.ageMax) {
+      // Max age X → must be at most X years old → born on or after today minus X years
+      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMax));
       params.push(`date_of_birth=gte.${fmt(d)}`);
     }
   }
