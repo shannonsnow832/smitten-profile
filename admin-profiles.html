@@ -315,17 +315,19 @@
   .ms-display.open::after { transform: translateY(-50%) rotate(180deg); }
   .ms-placeholder { color: var(--gray-mid); }
   .ms-dropdown {
-    position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 1000;
+    position: fixed; z-index: 9999;
     background: white; border: 1.5px solid #E8E8E8; border-radius: var(--radius-sm);
     box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-height: 220px; overflow-y: auto; display: none;
+    min-width: 180px;
   }
   .ms-dropdown.open { display: block; }
   .ms-option {
-    padding: 7px 10px; font-size: 12px; font-family: Montserrat, sans-serif;
-    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; font-size: 12px; font-family: Montserrat, sans-serif;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    user-select: none; line-height: 1.4;
   }
   .ms-option:hover { background: #FFF5F5; }
-  .ms-option input[type=checkbox] { accent-color: var(--red); flex-shrink: 0; }
+  .ms-option input[type=checkbox] { accent-color: var(--red); flex-shrink: 0; width: 14px; height: 14px; cursor: pointer; margin: 0; }
   .ms-clear {
     position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
     font-size: 14px; color: var(--gray-mid); cursor: pointer; display: none; line-height: 1;
@@ -548,10 +550,10 @@
 
         <!-- BASIC — always open -->
         <div class="filter-section">
-          <div class="filter-section-header" onclick="toggleFilter(this)">
+          <div class="filter-section-header open" onclick="toggleFilter(this)">
             Basic <span class="filter-section-toggle">▾</span>
           </div>
-          <div class="filter-section-body">
+          <div class="filter-section-body open">
             <div class="filter-group">
               <label>Age Range</label>
               <div class="age-range">
@@ -1595,21 +1597,21 @@ function buildProfilesUrl(forCount = false) {
   if (f.gender) params.push(`gender=ilike.${encodeURIComponent(f.gender)}`);
   if (f.state) params.push(`state=ilike.${encodeURIComponent('*' + f.state + '*')}`);
   if (f.city) params.push(`city=ilike.${encodeURIComponent('*' + f.city + '*')}`);
-  if (f.education && f.education.length) params.push(f.education.length === 1 ? `education=eq.${encodeURIComponent(f.education[0])}` : `education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
-  if (f.religion && f.religion.length) params.push(f.religion.length === 1 ? `religion=eq.${encodeURIComponent(f.religion[0])}` : `religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
+  if (f.education && f.education.length) params.push(`education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
+  if (f.religion && f.religion.length) params.push(`religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
   if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
   if (f.active) params.push(`is_active=eq.${f.active}`);
   if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
   if (f.hasPhoto === 'no') params.push('image_url=is.null');
   if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
   if (f.zip) params.push(`postal_code=eq.${encodeURIComponent(f.zip)}`);
-  if (f.politics && f.politics.length) params.push(f.politics.length === 1 ? `politics=eq.${encodeURIComponent(f.politics[0])}` : `politics=in.(${f.politics.map(v => `"${v}"`).join(',')})`);
-  if (f.bodyType && f.bodyType.length) params.push(f.bodyType.length === 1 ? `body_type=eq.${encodeURIComponent(f.bodyType[0])}` : `body_type=in.(${f.bodyType.map(v => `"${v}"`).join(',')})`);
-  if (f.smoking && f.smoking.length) params.push(f.smoking.length === 1 ? `smoking=eq.${encodeURIComponent(f.smoking[0])}` : `smoking=in.(${f.smoking.map(v => `"${v}"`).join(',')})`);
-  if (f.drinking && f.drinking.length) params.push(f.drinking.length === 1 ? `drinking=eq.${encodeURIComponent(f.drinking[0])}` : `drinking=in.(${f.drinking.map(v => `"${v}"`).join(',')})`);
-  if (f.kids && f.kids.length) params.push(f.kids.length === 1 ? `kids=eq.${encodeURIComponent(f.kids[0])}` : `kids=in.(${f.kids.map(v => `"${v}"`).join(',')})`);
+  if (f.politics && f.politics.length) params.push(`politics=in.(${f.politics.map(v => `"${v}"`).join(',')})`);
+  if (f.bodyType && f.bodyType.length) params.push(`body_type=in.(${f.bodyType.map(v => `"${v}"`).join(',')})`);
+  if (f.smoking && f.smoking.length) params.push(`smoking=in.(${f.smoking.map(v => `"${v}"`).join(',')})`);
+  if (f.drinking && f.drinking.length) params.push(`drinking=in.(${f.drinking.map(v => `"${v}"`).join(',')})`);
+  if (f.kids && f.kids.length) params.push(`kids=in.(${f.kids.map(v => `"${v}"`).join(',')})`);
   if (f.wantKids) params.push(`want_kids=eq.${encodeURIComponent(f.wantKids)}`);
-  if (f.relStatus && f.relStatus.length) params.push(f.relStatus.length === 1 ? `relationship_status=eq.${encodeURIComponent(f.relStatus[0])}` : `relationship_status=in.(${f.relStatus.map(v => `"${v}"`).join(',')})`);
+  if (f.relStatus && f.relStatus.length) params.push(`relationship_status=in.(${f.relStatus.map(v => `"${v}"`).join(',')})`);
   if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
   if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
   // Server-side age filter — convert age to DOB range
@@ -2612,9 +2614,17 @@ function buildMultiSelect(id, options, placeholder) {
 
   display.onclick = (e) => {
     e.stopPropagation();
-    document.querySelectorAll('.ms-dropdown.open').forEach(d => { if (d !== dropdown) d.classList.remove('open'); document.querySelectorAll('.ms-display.open').forEach(d2 => d2.classList.remove('open')); });
-    dropdown.classList.toggle('open');
-    display.classList.toggle('open');
+    const isOpen = dropdown.classList.contains('open');
+    document.querySelectorAll('.ms-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.ms-display.open').forEach(d2 => d2.classList.remove('open'));
+    if (!isOpen) {
+      const rect = display.getBoundingClientRect();
+      dropdown.style.top = (rect.bottom + 2) + 'px';
+      dropdown.style.left = rect.left + 'px';
+      dropdown.style.width = rect.width + 'px';
+      dropdown.classList.add('open');
+      display.classList.add('open');
+    }
   };
 
   wrap.appendChild(display);
