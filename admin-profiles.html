@@ -958,6 +958,9 @@
             </div>
           </div>
 
+          <div id="match-results-search-wrap" style="display:none;margin-bottom:12px">
+            <input type="text" id="match-results-search" placeholder="Search results by name…" oninput="filterMatchResults()" style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none">
+          </div>
           <div id="match-1to1-results">
             <div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Toggle scoring fields above to customize results</span></p></div>
           </div>
@@ -3518,11 +3521,12 @@ function toggleMatchField(field) {
   }
 }
 
+let _lastMatchResults = []; // stored for filtering
+
 async function runMatching() {
   if (!matchSubject) { alert('Select a profile first.'); return; }
   const el = document.getElementById('match-1to1-results');
 
-  // Build pool with location filter if zip provided
   const zip = document.getElementById('mt-zip').value.trim();
   const miles = parseFloat(document.getElementById('mt-miles').value) || 0;
   const includeTravel = document.getElementById('mt-include-travel').checked;
@@ -3539,20 +3543,67 @@ async function runMatching() {
 
   const token = supabaseSession || SUPABASE_ANON;
   try {
-    const poolIds = matchPool.map(p => p.id).filter(id => id !== matchSubject.id);
+    // Load exclusions for this subject
+    const subjectId = matchSubject.id;
+    const exclRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/match_exclusions?or=(profile_id_a.eq.${subjectId},profile_id_b.eq.${subjectId})&select=profile_id_a,profile_id_b`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } }
+    );
+    const exclRows = await exclRes.json();
+    const excludedIds = new Set(exclRows.map(r => r.profile_id_a === subjectId ? r.profile_id_b : r.profile_id_a));
+
+    // Load event history — any event_selection rows involving subject
+    const metRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/matches?match_type=eq.event_selection&or=(user_id.eq.${subjectId},matched_user_id.eq.${subjectId})&select=user_id,matched_user_id,status,event_id`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } }
+    );
+    const metRows = await metRes.json();
+    // Build map: other_profile_id → {status, event_id}
+    const metMap = {};
+    (Array.isArray(metRows) ? metRows : []).forEach(r => {
+      const other = r.user_id === subjectId ? r.matched_user_id : r.user_id;
+      if (!metMap[other]) metMap[other] = [];
+      metMap[other].push({ status: r.status, event_id: r.event_id });
+    });
+
+    // Filter pool — exclude exclusion pairs
+    const poolIds = matchPool
+      .map(p => p.id)
+      .filter(id => id !== subjectId && !excludedIds.has(id));
+
+    if (!poolIds.length) {
+      el.innerHTML = '<div class="empty-state"><p>No eligible profiles after applying exclusions.</p></div>';
+      return;
+    }
+
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/score_profile_against_pool_custom`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_profile_id: matchSubject.id, p_pool_ids: poolIds, p_fields: activeMatchFields })
+      body: JSON.stringify({ p_profile_id: subjectId, p_pool_ids: poolIds, p_fields: activeMatchFields })
     });
     let results = await r.json();
     if (!Array.isArray(results)) { el.innerHTML = '<div class="empty-state"><p>Scoring failed.</p></div>'; return; }
     results = results.sort((a,b) => b.compatibility_score - a.compatibility_score);
+
+    // Annotate with met history
+    results = results.map(p => ({ ...p, _met: metMap[p.profile_id] || [] }));
+
+    _lastMatchResults = results;
+    document.getElementById('match-results-search-wrap').style.display = '';
+    document.getElementById('match-results-search').value = '';
     renderMatchResults(results, el);
   } catch(e) {
     el.innerHTML = '<div class="empty-state"><p>Error running match.</p></div>';
     console.error(e);
   }
+}
+
+function filterMatchResults() {
+  const q = document.getElementById('match-results-search').value.toLowerCase().trim();
+  const filtered = q
+    ? _lastMatchResults.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q))
+    : _lastMatchResults;
+  renderMatchResults(filtered, document.getElementById('match-1to1-results'));
 }
 
 function renderMatchResults(results, el) {
@@ -3563,23 +3614,56 @@ function renderMatchResults(results, el) {
       const scoreColor = score >= 70 ? '#166534' : score >= 40 ? '#92400e' : '#C6302C';
       const scoreBg = score >= 70 ? '#F0FFF4' : score >= 40 ? '#FFFBEB' : '#FFF0F0';
       const warnings = p.missing_fields && p.missing_fields.length ? p.missing_fields.join(', ') : null;
+      const met = p._met && p._met.length > 0;
+      const metBadge = met ? `<span style="font-size:10px;background:#F0F9FF;color:#0369a1;border:1px solid #BAE6FD;padding:2px 7px;border-radius:10px;margin-left:6px">Met at event</span>` : '';
       return `<div style="background:white;border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
         <div style="font-size:13px;font-weight:700;color:var(--gray-mid);width:24px;text-align:center">${i+1}</div>
         <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);cursor:pointer" onclick="openProfileById('${p.profile_id}')">
           ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
         </div>
         <div style="flex:1">
-          <div style="font-weight:700;font-size:14px;cursor:pointer;color:var(--red)" onclick="openProfileById('${p.profile_id}')">${p.first_name} ${p.last_name}</div>
+          <div style="font-weight:700;font-size:14px;cursor:pointer;color:var(--red);display:inline" onclick="openProfileById('${p.profile_id}')">${p.first_name} ${p.last_name}</div>${metBadge}
           <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${p.age ? p.age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', '+p.state : ''}</div>
           ${(p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe') ? '<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;padding:2px 6px;border-radius:10px;margin-top:3px;display:inline-block">Open to Travel</span>' : ''}
           ${warnings ? `<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Missing: ${warnings}</div>` : ''}
         </div>
-        <div style="text-align:center;background:${scoreBg};padding:8px 14px;border-radius:8px;min-width:60px">
-          <div style="font-size:20px;font-weight:800;color:${scoreColor}">${score}%</div>
-          <div style="font-size:10px;font-weight:600;color:${scoreColor}">match</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="text-align:center;background:${scoreBg};padding:8px 14px;border-radius:8px;min-width:60px">
+            <div style="font-size:20px;font-weight:800;color:${scoreColor}">${score}%</div>
+            <div style="font-size:10px;font-weight:600;color:${scoreColor}">match</div>
+          </div>
+          <button onclick="excludeMatch('${p.profile_id}','${p.first_name} ${p.last_name}',this)" style="font-size:11px;padding:3px 10px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;white-space:nowrap">Exclude</button>
         </div>
       </div>`;
     }).join('');
+}
+
+async function excludeMatch(profileId, name, btn) {
+  if (!matchSubject) return;
+  if (!confirm(`Exclude ${name} from matching with ${matchSubject.first_name} ${matchSubject.last_name}? This applies in both directions.`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  btn.disabled = true; btn.textContent = 'Excluding...';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/upsert_match_exclusion`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        p_a: matchSubject.id,
+        p_b: profileId,
+        p_source: 'admin',
+        p_event_id: null,
+        p_created_by: adminUser ? adminUser.id : null,
+        p_notes: null
+      })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    // Remove from results
+    _lastMatchResults = _lastMatchResults.filter(p => p.profile_id !== profileId);
+    filterMatchResults();
+  } catch(e) {
+    alert('Failed to exclude: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Exclude';
+  }
 }
 
 async function generateGroups() {
