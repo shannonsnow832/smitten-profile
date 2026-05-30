@@ -120,11 +120,23 @@
   .filter-sidebar {
     background: var(--white);
     border-right: 1px solid #E8E8E8;
-    padding: 24px 20px;
-    overflow-y: auto;
+    padding: 24px 20px 0 20px;
     position: sticky;
     top: 56px;
     height: calc(100vh - 56px);
+    display: flex;
+    flex-direction: column;
+  }
+  .filter-sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+  .filter-sidebar-footer {
+    padding: 12px 0 16px;
+    border-top: 1px solid var(--gray-light);
+    background: var(--white);
+    flex-shrink: 0;
   }
   .filter-sidebar h3 {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -363,7 +375,9 @@
   .modal-main-photo img { width: 100%; height: 100%; object-fit: cover; }
   .modal-main-photo .no-photo { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 40px; font-weight: 700; color: var(--red); }
   .modal-extra-photos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .modal-extra-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--gray-light); cursor: pointer; }
+  .modal-extra-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--gray-light); cursor: pointer; position: relative; }
+  .modal-extra-photo .photo-delete { position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(198,48,44,0.85);border-radius:50%;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;line-height:1;font-weight:700; }
+  .modal-extra-photo .photo-delete:hover { background:rgba(198,48,44,1); }
   .modal-extra-photo img { width: 100%; height: 100%; object-fit: cover; }
   .modal-content { overflow-y: auto; display: flex; flex-direction: column; border-radius: 0 0 var(--radius) 0; min-height: 0; height: 100%; }
   .modal-tabs { display: flex; border-bottom: 2px solid var(--gray-light); background: var(--white); flex-shrink: 0; }
@@ -526,6 +540,7 @@
       <!-- SIDEBAR FILTERS -->
       <div class="filter-sidebar">
         <h3>Filters</h3>
+        <div class="filter-sidebar-scroll">
 
         <!-- BASIC — always open -->
         <div class="filter-section">
@@ -543,17 +558,11 @@
 
             <div class="filter-group">
               <label>Seeking</label>
-              <select id="f-seeking">
-                <option value="">Any</option>
-                <option value="Date Men">Men</option><option value="Date Women">Women</option><option value="Date Any/Other Gender">Any/Other</option><option value="Friendship">Friendship</option>
-              </select>
+              <select id="f-seeking"><option value="">Any</option></select>
             </div>
             <div class="filter-group">
               <label>Gender</label>
-              <select id="f-gender">
-                <option value="">Any</option>
-                <option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
-              </select>
+              <select id="f-gender"><option value="">Any</option></select>
             </div>
           </div>
         </div>
@@ -575,10 +584,7 @@
             </div>
             <div class="filter-group">
               <label>Wants Kids</label>
-              <select id="f-want-kids" onchange="applyFilters()">
-                <option value="">Any</option>
-                <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
-              </select>
+              <select id="f-want-kids" onchange="applyFilters()"><option value="">Any</option></select>
             </div>
             <div class="filter-group">
               <label>Religion</label>
@@ -677,24 +683,15 @@
             </div>
             <div class="filter-group">
               <label>Open to Dating w/ Kids</label>
-              <select id="f-date-with-kids">
-                <option value="">Any</option>
-                <option>Yes</option><option>No</option><option>Depends</option>
-              </select>
+              <select id="f-date-with-kids"><option value="">Any</option></select>
             </div>
             <div class="filter-group">
               <label>Relocation (In State)</label>
-              <select id="f-relocation-in">
-                <option value="">Any</option>
-                <option>Yes</option><option>No</option><option>Maybe</option>
-              </select>
+              <select id="f-relocation-in"><option value="">Any</option></select>
             </div>
             <div class="filter-group">
               <label>Relocation (Out of State)</label>
-              <select id="f-relocation-out">
-                <option value="">Any</option>
-                <option>Yes</option><option>No</option><option>Maybe</option>
-              </select>
+              <select id="f-relocation-out"><option value="">Any</option></select>
             </div>
           </div>
         </div>
@@ -726,9 +723,11 @@
           </div>
         </div>
 
-        <div class="divider"></div>
-        <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
-        <button class="btn-clear" onclick="clearFilters()">Clear All</button>
+        </div><!-- end filter-sidebar-scroll -->
+        <div class="filter-sidebar-footer">
+          <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
+          <button class="btn-clear" onclick="clearFilters()">Clear All</button>
+        </div>
       </div>
 
       <!-- MAIN CONTENT -->
@@ -1098,9 +1097,7 @@
           <div class="modal-form-row">
             <div class="modal-field"><label>Date of Birth</label><input type="date" id="m-dob"></div>
             <div class="modal-field"><label>Gender</label>
-              <select id="m-gender">
-                <option value="">Select...</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option>
-              </select>
+              <select id="m-gender"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row full">
@@ -1153,10 +1150,7 @@
               </div>
             </div>
             <div class="modal-field"><label>Education</label>
-              <select id="m-education"><option value="">Select...</option>
-                <option>High School</option><option>Some College</option><option>Associate's Degree</option>
-                <option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option><option>Trade / Vocational</option>
-              </select>
+              <select id="m-education"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
@@ -1165,77 +1159,50 @@
           </div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Has Kids</label>
-              <select id="m-kids"><option value="">Select...</option>
-                <option>No</option><option>Yes, at home</option><option>Yes, not at home</option>
-              </select>
+              <select id="m-kids"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Wants Kids</label>
-              <select id="m-want-kids"><option value="">Select...</option>
-                <option>Yes</option><option>No</option><option>Open to it</option><option>Undecided</option>
-              </select>
+              <select id="m-want-kids"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Smoking</label>
-              <select id="m-smoking"><option value="">Select...</option>
-                <option>Non-smoker</option><option>Occasional</option><option>Smoker</option>
-              </select>
+              <select id="m-smoking"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Drinking</label>
-              <select id="m-drinking"><option value="">Select...</option>
-                <option>Non-drinker</option><option>Occasional</option><option>Social drinker</option><option>Regular</option>
-              </select>
+              <select id="m-drinking"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Religion</label>
-              <select id="m-religion"><option value="">Select...</option>
-                <option>Christian</option><option>Catholic</option><option>Jewish</option><option>Muslim</option>
-                <option>Hindu</option><option>Buddhist</option><option>Spiritual</option><option>Agnostic</option><option>Atheist</option><option>Other</option>
-              </select>
+              <select id="m-religion"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Politics</label>
-              <select id="m-politics"><option value="">Select...</option>
-                <option>Very Liberal</option><option>Liberal</option><option>Moderate</option><option>Conservative</option><option>Very Conservative</option>
-              </select>
+              <select id="m-politics"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Income Level</label>
-              <select id="m-income"><option value="">Select...</option>
-                <option>Under $50,000</option><option>$50,000 - $74,999</option><option>$75,000 - $99,999</option>
-                <option>$100,000 - $149,999</option><option>$150,000 - $199,999</option><option>$200,000+</option>
-              </select>
+              <select id="m-income"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Body Type</label>
-              <select id="m-body-type"><option value="">Select...</option>
-                <option>Slim</option><option>Athletic</option><option>Average</option><option>Curvy</option><option>Full-figured</option><option>Heavyset</option>
-              </select>
+              <select id="m-body-type"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Hair Color</label>
-              <select id="m-hair"><option value="">Select...</option>
-                <option>Black</option><option>Brown</option><option>Blonde</option><option>Red</option><option>Gray</option><option>White</option><option>Other</option>
-              </select>
+              <select id="m-hair"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Eye Color</label>
-              <select id="m-eyes"><option value="">Select...</option>
-                <option>Brown</option><option>Blue</option><option>Green</option><option>Hazel</option><option>Gray</option><option>Other</option>
-              </select>
+              <select id="m-eyes"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Ethnicity</label>
-              <select id="m-ethnicity"><option value="">Select...</option>
-                <option>White / Caucasian</option><option>Black / African American</option><option>Hispanic / Latino</option>
-                <option>Asian</option><option>Middle Eastern</option><option>Native American</option><option>Pacific Islander</option><option>Mixed</option><option>Other</option>
-              </select>
+              <select id="m-ethnicity"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Relationship Status</label>
-              <select id="m-rel-status"><option value="">Select...</option>
-                <option>Single</option><option>Divorced</option><option>Widowed</option><option>Separated</option>
-              </select>
+              <select id="m-rel-status"><option value="">Select...</option></select>
             </div>
           </div>
           <div class="modal-form-row">
@@ -1260,10 +1227,7 @@
           <div class="modal-form-row">
             <div class="modal-field"><label>Max Distance (miles)</label><input type="number" id="m-max-distance"></div>
             <div class="modal-field"><label>Preferred Income</label>
-              <select id="m-pref-income"><option value="">Any</option>
-                <option>Under $50,000</option><option>$50,000 - $74,999</option><option>$75,000 - $99,999</option>
-                <option>$100,000 - $149,999</option><option>$150,000 - $199,999</option><option>$200,000+</option>
-              </select>
+              <select id="m-pref-income"><option value="">Any</option></select>
             </div>
           </div>
           <div class="modal-form-row">
@@ -1273,9 +1237,7 @@
           <div class="modal-section-title">Lifestyle Compatibility</div>
           <div class="modal-form-row">
             <div class="modal-field"><label>Date someone with kids?</label>
-              <select id="m-date-with-kids"><option value="">Select...</option>
-                <option>Yes</option><option>No</option><option>Depends</option>
-              </select>
+              <select id="m-date-with-kids"><option value="">Select...</option></select>
             </div>
             <div class="modal-field"><label>Relocate in-state?</label>
               <select id="m-relocation-in"><option value="">Select...</option>
@@ -1850,13 +1812,18 @@ function openProfile(p) {
   const allPhotos = p.photos && p.photos.length ? p.photos : (p.image_url ? [p.image_url] : []);
   const mainPhotoEl = document.getElementById('modal-main-photo');
   if (allPhotos.length) {
-    mainPhotoEl.innerHTML = '<img src="' + allPhotos[0] + '" alt="main photo" style="cursor:pointer" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', 0)">';
+    mainPhotoEl.style.position = 'relative';
+  mainPhotoEl.innerHTML = '<img src="' + allPhotos[0] + '" alt="main photo" style="cursor:pointer;width:100%;height:100%;object-fit:cover" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', 0)">' +
+    '<div class="photo-delete" style="position:absolute;top:6px;right:6px;width:22px;height:22px;background:rgba(198,48,44,0.85);border-radius:50%;color:white;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-weight:700" onclick="event.stopPropagation();deleteProfilePhoto('' + allPhotos[0] + '')" title="Delete photo">×</div>';
   } else {
     mainPhotoEl.innerHTML = `<div class="no-photo">${initials}</div>`;
   }
   const extraEl = document.getElementById('modal-extra-photos');
   extraEl.innerHTML = allPhotos.slice(1).map((url, i) =>
-    '<div class="modal-extra-photo" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', ' + (i+1) + ')"><img src="' + url + '" alt="photo"></div>'
+    '<div class="modal-extra-photo">' +
+    '<img src="' + url + '" alt="photo" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', ' + (i+1) + ')">' +
+    '<div class="photo-delete" onclick="event.stopPropagation();deleteProfilePhoto('' + url + '')" title="Delete photo">×</div>' +
+    '</div>'
   ).join('');
 
   // Hide contact row for matchmakers
@@ -1998,6 +1965,51 @@ function lbKeydown(e) {
   if (e.key === 'ArrowLeft') lbNav(-1);
   else if (e.key === 'ArrowRight') lbNav(1);
   else if (e.key === 'Escape') lbClose();
+}
+
+async function deleteProfilePhoto(url) {
+  const p = currentModalProfile;
+  if (!p) return;
+  if (!confirm('Delete this photo? This cannot be undone.')) return;
+  const token = supabaseSession || SUPABASE_ANON;
+
+  // Build updated photos arrays
+  let newPhotos = (p.photos || []).filter(u => u !== url);
+  let newImageUrl = p.image_url === url ? (newPhotos[0] || null) : p.image_url;
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ photos: newPhotos.length ? newPhotos : null, image_url: newImageUrl })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    // Update local profile object
+    currentModalProfile.photos = newPhotos;
+    currentModalProfile.image_url = newImageUrl;
+    // Re-render photos section
+    const allPhotos = newPhotos.length ? newPhotos : (newImageUrl ? [newImageUrl] : []);
+    const mainPhotoEl = document.getElementById('modal-main-photo');
+    const extraEl = document.getElementById('modal-extra-photos');
+    if (allPhotos.length) {
+      mainPhotoEl.style.position = 'relative';
+      mainPhotoEl.innerHTML = '<img src="' + allPhotos[0] + '" alt="main photo" style="cursor:pointer;width:100%;height:100%;object-fit:cover" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', 0)">' +
+        '<div class="photo-delete" style="position:absolute;top:6px;right:6px;width:22px;height:22px;background:rgba(198,48,44,0.85);border-radius:50%;color:white;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-weight:700" onclick="event.stopPropagation();deleteProfilePhoto('' + allPhotos[0] + '')" title="Delete photo">×</div>';
+      extraEl.innerHTML = allPhotos.slice(1).map((u, i) =>
+        '<div class="modal-extra-photo">' +
+        '<img src="' + u + '" alt="photo" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', ' + (i+1) + ')">' +
+        '<div class="photo-delete" onclick="event.stopPropagation();deleteProfilePhoto('' + u + '')" title="Delete photo">×</div>' +
+        '</div>'
+      ).join('');
+    } else {
+      const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
+      mainPhotoEl.innerHTML = '<div class="no-photo">' + initials + '</div>';
+      extraEl.innerHTML = '';
+    }
+    loadProfiles();
+  } catch(e) {
+    alert('Failed to delete photo: ' + e.message);
+  }
 }
 
 function enlargePhoto(url) {
@@ -2150,33 +2162,34 @@ async function geocodeZip(zip) {
 }
 
 async function applyFilters() {
+  const getVal = id => { const el = document.getElementById(id); return el && el.tagName === 'SELECT' ? el.value : (el && el.tagName === 'INPUT' ? el.value.trim() : ''); };
   const f = {
-    ageMin: document.getElementById('f-age-min').value,
-    ageMax: document.getElementById('f-age-max').value,
-    gender: document.getElementById('f-gender').value,
-    seeking: document.getElementById('f-seeking').value,
-    state: document.getElementById('f-state').value.trim(),
-    city: document.getElementById('f-city').value.trim(),
-    education: document.getElementById('f-education').value,
-    religion: document.getElementById('f-religion').value,
-    hasPhoto: document.getElementById('f-has-photo').value,
-    matchmakers: document.getElementById('f-matchmakers').value,
-    active: document.getElementById('f-active').value,
-    zip: document.getElementById('f-zip').value.trim(),
-    distanceZip: document.getElementById('f-distance-zip').value.trim(),
-    distanceMiles: document.getElementById('f-distance-miles').value,
+    ageMin: getVal('f-age-min'),
+    ageMax: getVal('f-age-max'),
+    gender: getVal('f-gender'),
+    seeking: getVal('f-seeking'),
+    state: getVal('f-state'),
+    city: getVal('f-city'),
+    education: msGetValues('f-education'),
+    religion: msGetValues('f-religion'),
+    hasPhoto: getVal('f-has-photo'),
+    matchmakers: getVal('f-matchmakers'),
+    active: getVal('f-active'),
+    zip: getVal('f-zip'),
+    distanceZip: getVal('f-distance-zip'),
+    distanceMiles: getVal('f-distance-miles'),
     politics: msGetValues('f-politics'),
     bodyType: msGetValues('f-body-type'),
     smoking: msGetValues('f-smoking'),
     drinking: msGetValues('f-drinking'),
     kids: msGetValues('f-kids'),
-    wantKids: document.getElementById('f-want-kids') ? document.getElementById('f-want-kids').value : '',
+    wantKids: getVal('f-want-kids'),
     incomeMin: '',
     incomeMax: '',
     incomeExact: msGetValues('f-income'),
     relStatus: msGetValues('f-rel-status'),
-    prefAgeMin: document.getElementById('f-pref-age-min').value,
-    prefAgeMax: document.getElementById('f-pref-age-max').value,
+    prefAgeMin: getVal('f-pref-age-min'),
+    prefAgeMax: getVal('f-pref-age-max'),
     prefReligion: msGetValues('f-pref-religion'),
     prefPolitics: msGetValues('f-pref-politics'),
     prefBodyType: msGetValues('f-pref-body-type'),
@@ -2184,9 +2197,9 @@ async function applyFilters() {
     prefSmoking: msGetValues('f-pref-smoking'),
     prefDrinking: msGetValues('f-pref-drinking'),
     prefRelStatus: msGetValues('f-pref-rel-status'),
-    dateWithKids: document.getElementById('f-date-with-kids').value,
-    relocationIn: document.getElementById('f-relocation-in').value,
-    relocationOut: document.getElementById('f-relocation-out').value,
+    dateWithKids: getVal('f-date-with-kids'),
+    relocationIn: getVal('f-relocation-in'),
+    relocationOut: getVal('f-relocation-out'),
   };
 
   // Geocode distance zip if provided
