@@ -368,17 +368,21 @@
   .modal-topbar-actions { display: flex; align-items: center; gap: 10px; }
   .modal-close { background: none; border: none; font-size: 22px; color: rgba(255,255,255,0.5); cursor: pointer; line-height: 1; transition: color 0.2s; padding: 0; }
   .modal-close:hover { color: white; }
-  .modal-layout { display: grid; grid-template-columns: 220px 1fr; flex: 1; overflow: hidden; min-height: 0; }
+  .modal-layout { display: grid; grid-template-columns: 300px 1fr; flex: 1; overflow: hidden; min-height: 0; }
   .modal-photos { padding: 20px; border-right: 1px solid var(--gray-light); overflow-y: auto; background: #fafafa; border-radius: 0 0 0 var(--radius); height: 100%; }
   .modal-photos h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-mid); margin-bottom: 12px; }
-  .modal-main-photo { width: 100%; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--gray-light); margin-bottom: 10px; }
-  .modal-main-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-main-photo { width: 100%; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--gray-light); margin-bottom: 10px; position: relative; cursor: pointer; }
+  .modal-main-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .modal-main-photo .no-photo { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 40px; font-weight: 700; color: var(--red); }
-  .modal-extra-photos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .modal-extra-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--gray-light); cursor: pointer; position: relative; }
-  .modal-extra-photo .photo-delete { position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(198,48,44,0.85);border-radius:50%;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;line-height:1;font-weight:700; }
-  .modal-extra-photo .photo-delete:hover { background:rgba(198,48,44,1); }
-  .modal-extra-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-extra-photos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .modal-extra-photo { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--gray-light); cursor: pointer; position: relative; border: 2px dashed var(--gray-mid); display: flex; align-items: center; justify-content: center; }
+  .modal-extra-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+  .modal-extra-photo .cam { font-size: 18px; color: var(--gray-mid); }
+  .modal-photo-delete-btn { position:absolute; top:6px; right:6px; width:26px; height:26px; background:rgba(0,0,0,0.55); border:none; border-radius:50%; color:white; font-size:16px; display:none; align-items:center; justify-content:center; cursor:pointer; z-index:10; font-weight:400; line-height:1; padding:0; opacity:0; transition:opacity 0.2s,background 0.2s; }
+  .modal-photo-delete-btn:hover { background:rgba(198,48,44,0.9); }
+  .modal-main-photo:hover .modal-photo-delete-btn,
+  .modal-extra-photo:hover .modal-photo-delete-btn { opacity:1; }
+  .modal-upload-note { font-size:11px; color:var(--gray-mid); text-align:center; line-height:1.4; }
   .modal-content { overflow-y: auto; display: flex; flex-direction: column; border-radius: 0 0 var(--radius) 0; min-height: 0; height: 100%; }
   .modal-tabs { display: flex; border-bottom: 2px solid var(--gray-light); background: var(--white); flex-shrink: 0; }
   .modal-tab-btn {
@@ -1071,8 +1075,14 @@
       <!-- PHOTOS -->
       <div class="modal-photos">
         <h4>Photos</h4>
-        <div class="modal-main-photo" id="modal-main-photo"></div>
-        <div class="modal-extra-photos" id="modal-extra-photos"></div>
+        <div class="modal-main-photo" id="modal-main-photo" onclick="modalMainPhotoClick(event)"></div>
+        <input type="file" id="modal-main-input" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,'main')">
+        <div class="modal-extra-photos" id="modal-extra-photos">
+          <div class="modal-extra-photo" id="modal-extra-slot-0" onclick="modalExtraPhotoClick(event,0)"><span class="cam">+</span><input type="file" id="modal-extra-input-0" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,0)"></div>
+          <div class="modal-extra-photo" id="modal-extra-slot-1" onclick="modalExtraPhotoClick(event,1)"><span class="cam">+</span><input type="file" id="modal-extra-input-1" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,1)"></div>
+          <div class="modal-extra-photo" id="modal-extra-slot-2" onclick="modalExtraPhotoClick(event,2)"><span class="cam">+</span><input type="file" id="modal-extra-input-2" accept="image/*" style="display:none" onchange="modalUploadPhoto(this,2)"></div>
+        </div>
+        <p class="modal-upload-note">Click a photo to replace it.<br>Hover to reveal delete button.</p>
       </div>
       <!-- CONTENT -->
       <div class="modal-content">
@@ -1809,22 +1819,10 @@ function openProfile(p) {
   document.getElementById('modal-role-badge').textContent = isMatchmaker ? '' : (p.import_batch || '');
 
   // Photos
-  const allPhotos = p.photos && p.photos.length ? p.photos : (p.image_url ? [p.image_url] : []);
-  const mainPhotoEl = document.getElementById('modal-main-photo');
-  if (allPhotos.length) {
-    mainPhotoEl.style.position = 'relative';
-  mainPhotoEl.innerHTML = '<img src="' + allPhotos[0] + '" alt="main photo" style="cursor:pointer;width:100%;height:100%;object-fit:cover" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', 0)">' +
-    '<div class="photo-delete" style="position:absolute;top:6px;right:6px;width:22px;height:22px;background:rgba(198,48,44,0.85);border-radius:50%;color:white;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-weight:700" onclick="event.stopPropagation();deleteProfilePhoto('' + allPhotos[0] + '')" title="Delete photo">×</div>';
-  } else {
-    mainPhotoEl.innerHTML = `<div class="no-photo">${initials}</div>`;
-  }
-  const extraEl = document.getElementById('modal-extra-photos');
-  extraEl.innerHTML = allPhotos.slice(1).map((url, i) =>
-    '<div class="modal-extra-photo">' +
-    '<img src="' + url + '" alt="photo" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', ' + (i+1) + ')">' +
-    '<div class="photo-delete" onclick="event.stopPropagation();deleteProfilePhoto('' + url + '')" title="Delete photo">×</div>' +
-    '</div>'
-  ).join('');
+  const allPhotos = p.image_url
+    ? [p.image_url, ...(p.photos || [])]
+    : (p.photos || []);
+  renderModalPhotos(allPhotos);
 
   // Hide contact row for matchmakers
   const contactRow = document.getElementById('m-contact-row');
@@ -1967,49 +1965,172 @@ function lbKeydown(e) {
   else if (e.key === 'Escape') lbClose();
 }
 
-async function deleteProfilePhoto(url) {
+// ── MODAL PHOTO RENDERING ─────────────────────────────────────────────────────
+function renderModalPhotos(allPhotos) {
   const p = currentModalProfile;
-  if (!p) return;
-  if (!confirm('Delete this photo? This cannot be undone.')) return;
+  const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
+  const mainEl = document.getElementById('modal-main-photo');
+
+  // Main photo
+  if (allPhotos.length) {
+    mainEl.innerHTML =
+      `<img src="${allPhotos[0]}" alt="main photo" onclick="lbOpen(${JSON.stringify(allPhotos)},0)">` +
+      `<button class="modal-photo-delete-btn" onclick="event.stopPropagation();modalConfirmDelete('main')" title="Remove photo" style="display:flex;">×</button>`;
+  } else {
+    mainEl.innerHTML = `<div class="no-photo">${initials}</div>`;
+  }
+
+  // Extra slots — always show 3 fixed slots
+  [0,1,2].forEach(i => {
+    const slot = document.getElementById(`modal-extra-slot-${i}`);
+    const input = document.getElementById(`modal-extra-input-${i}`);
+    const url = allPhotos[i + 1] || null;
+    // Clear slot but keep the file input
+    slot.innerHTML = '';
+    slot.appendChild(input);
+    if (url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'photo';
+      img.onclick = (e) => { e.stopPropagation(); lbOpen(allPhotos, i + 1); };
+      slot.appendChild(img);
+      const delBtn = document.createElement('button');
+      delBtn.className = 'modal-photo-delete-btn';
+      delBtn.title = 'Remove photo';
+      delBtn.style.display = 'flex';
+      delBtn.innerHTML = '×';
+      delBtn.onclick = (e) => { e.stopPropagation(); modalConfirmDelete(i); };
+      slot.appendChild(delBtn);
+    } else {
+      const cam = document.createElement('span');
+      cam.className = 'cam';
+      cam.textContent = '+';
+      slot.appendChild(cam);
+    }
+  });
+}
+
+function modalMainPhotoClick(event) {
+  if (event.target.closest('button')) return;
+  document.getElementById('modal-main-input').click();
+}
+
+function modalExtraPhotoClick(event, idx) {
+  if (event.target.closest('button') || event.target.tagName === 'IMG') return;
+  document.getElementById(`modal-extra-input-${idx}`).click();
+}
+
+let _modalPendingDelete = null;
+
+function modalConfirmDelete(slot) {
+  _modalPendingDelete = slot;
+  if (confirm('Remove this photo? This cannot be undone.')) {
+    modalExecuteDelete();
+  } else {
+    _modalPendingDelete = null;
+  }
+}
+
+async function modalExecuteDelete() {
+  const slot = _modalPendingDelete;
+  _modalPendingDelete = null;
+  const p = currentModalProfile;
+  if (!p || slot === null) return;
   const token = supabaseSession || SUPABASE_ANON;
 
-  // Build updated photos arrays
-  let newPhotos = (p.photos || []).filter(u => u !== url);
-  let newImageUrl = p.image_url === url ? (newPhotos[0] || null) : p.image_url;
+  const allPhotos = p.image_url
+    ? [p.image_url, ...(p.photos || [])]
+    : (p.photos || []);
+
+  let newAll = [...allPhotos];
+  if (slot === 'main') {
+    newAll.splice(0, 1);
+  } else {
+    newAll.splice(slot + 1, 1);
+  }
+
+  const newImageUrl = newAll[0] || null;
+  const newPhotos = newAll.slice(1);
 
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
       method: 'PATCH',
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ photos: newPhotos.length ? newPhotos : null, image_url: newImageUrl })
+      body: JSON.stringify({ image_url: newImageUrl, photos: newPhotos.length ? newPhotos : null })
     });
     if (!r.ok) throw new Error(await r.text());
-    // Update local profile object
-    currentModalProfile.photos = newPhotos;
     currentModalProfile.image_url = newImageUrl;
-    // Re-render photos section
-    const allPhotos = newPhotos.length ? newPhotos : (newImageUrl ? [newImageUrl] : []);
-    const mainPhotoEl = document.getElementById('modal-main-photo');
-    const extraEl = document.getElementById('modal-extra-photos');
-    if (allPhotos.length) {
-      mainPhotoEl.style.position = 'relative';
-      mainPhotoEl.innerHTML = '<img src="' + allPhotos[0] + '" alt="main photo" style="cursor:pointer;width:100%;height:100%;object-fit:cover" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', 0)">' +
-        '<div class="photo-delete" style="position:absolute;top:6px;right:6px;width:22px;height:22px;background:rgba(198,48,44,0.85);border-radius:50%;color:white;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;font-weight:700" onclick="event.stopPropagation();deleteProfilePhoto('' + allPhotos[0] + '')" title="Delete photo">×</div>';
-      extraEl.innerHTML = allPhotos.slice(1).map((u, i) =>
-        '<div class="modal-extra-photo">' +
-        '<img src="' + u + '" alt="photo" onclick="lbOpen(' + JSON.stringify(allPhotos) + ', ' + (i+1) + ')">' +
-        '<div class="photo-delete" onclick="event.stopPropagation();deleteProfilePhoto('' + u + '')" title="Delete photo">×</div>' +
-        '</div>'
-      ).join('');
-    } else {
-      const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
-      mainPhotoEl.innerHTML = '<div class="no-photo">' + initials + '</div>';
-      extraEl.innerHTML = '';
-    }
+    currentModalProfile.photos = newPhotos;
+    renderModalPhotos(newAll);
     loadProfiles();
   } catch(e) {
     alert('Failed to delete photo: ' + e.message);
   }
+}
+
+async function modalUploadPhoto(input, slot) {
+  if (!input.files[0] || !currentModalProfile) return;
+  const p = currentModalProfile;
+  const token = supabaseSession || SUPABASE_ANON;
+  const file = input.files[0];
+
+  // Upload to Supabase Storage
+  const ext = file.name.split('.').pop();
+  const path = `profiles/${p.id}/${Date.now()}.${ext}`;
+  const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': file.type },
+    body: file
+  });
+  if (!uploadRes.ok) { alert('Upload failed.'); return; }
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
+
+  const allPhotos = p.image_url
+    ? [p.image_url, ...(p.photos || [])]
+    : (p.photos || []);
+  let newAll = [...allPhotos];
+
+  if (slot === 'main') {
+    newAll[0] = publicUrl;
+  } else {
+    if (newAll[slot + 1] !== undefined) {
+      newAll[slot + 1] = publicUrl;
+    } else {
+      newAll.push(publicUrl);
+    }
+  }
+
+  const newImageUrl = newAll[0] || null;
+  const newPhotos = newAll.slice(1);
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ image_url: newImageUrl, photos: newPhotos.length ? newPhotos : null })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.image_url = newImageUrl;
+    currentModalProfile.photos = newPhotos;
+    renderModalPhotos(newAll);
+    loadProfiles();
+  } catch(e) {
+    alert('Failed to save photo: ' + e.message);
+  }
+  input.value = '';
+}
+
+async function deleteProfilePhoto(url) {
+  // Legacy shim — route through new system
+  const p = currentModalProfile;
+  if (!p) return;
+  const allPhotos = p.image_url
+    ? [p.image_url, ...(p.photos || [])]
+    : (p.photos || []);
+  const idx = allPhotos.indexOf(url);
+  if (idx === -1) return;
+  _modalPendingDelete = idx === 0 ? 'main' : idx - 1;
+  modalExecuteDelete();
 }
 
 function enlargePhoto(url) {
