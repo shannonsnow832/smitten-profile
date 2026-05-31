@@ -829,21 +829,6 @@
             <div id="match-subject-selected" style="margin-top:12px;display:none"></div>
           </div>
 
-          <!-- SCORING TOGGLES -->
-          <div style="background:white;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px">
-            <div style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Score Using</div>
-            <div class="match-toggles">
-              <div class="match-toggle on" id="mt-seeking" onclick="toggleMatchField('seeking')"><span class="dot"></span>Seeking</div>
-              <div class="match-toggle on" id="mt-age" onclick="toggleMatchField('age')"><span class="dot"></span>Age Range</div>
-              <div class="match-toggle on" id="mt-kids" onclick="toggleMatchField('kids')"><span class="dot"></span>Kids</div>
-              <div class="match-toggle on" id="mt-religion" onclick="toggleMatchField('religion')"><span class="dot"></span>Religion</div>
-              <div class="match-toggle on" id="mt-politics" onclick="toggleMatchField('politics')"><span class="dot"></span>Politics</div>
-              <div class="match-toggle on" id="mt-body_type" onclick="toggleMatchField('body_type')"><span class="dot"></span>Body Type</div>
-              <div class="match-toggle on" id="mt-income" onclick="toggleMatchField('income')"><span class="dot"></span>Income</div>
-              <div class="match-toggle on" id="mt-location" onclick="toggleMatchField('location')"><span class="dot"></span>Location</div>
-            </div>
-          </div>
-
           <!-- LOCATION FILTERS -->
           <div style="background:white;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px">
             <div style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Location</div>
@@ -2903,6 +2888,8 @@ function optionsHtml(category, anyLabel = 'Any') {
 function populateSidebarFilters() {
   // Single-select dropdowns
   const singleMaps = [
+    ['f-seeking', 'seeking'],
+    ['f-gender', 'gender'],
     ['f-date-with-kids', 'date_with_kids'],
     ['f-relocation-in', 'relocation'],
     ['f-relocation-out', 'relocation'],
