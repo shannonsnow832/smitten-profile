@@ -1675,10 +1675,10 @@ function buildProfilesUrl(forCount = false) {
   if (f.education && f.education.length) params.push(`education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
   if (f.religion && f.religion.length) params.push(`religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
   if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
-  if (f.status === 'active') params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned_at=is.null');
+  if (f.status === 'active') params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned=eq.false');
   if (f.status === 'inactive') params.push('is_active=eq.false');
   if (f.status === 'invite_paused') params.push('invite_paused=eq.true');
-  if (f.status === 'banned') params.push('banned_at=not.is.null');
+  if (f.status === 'banned') params.push('banned=eq.true');
   // Completeness filter — translate tiers to field null checks
   const allFields = ['gender','kids','want_kids','religion','politics','body_type','income_level','min_age','max_age','preferred_body_type'];
   const coreFields = ['gender','kids','want_kids','religion'];
@@ -1766,7 +1766,7 @@ function buildProfilesUrl(forCount = false) {
   const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
 
   if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
-  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,banned_at,ban_reason,removed_from_matching,removed_from_matching_reason&order=created_at.desc`;
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,banned,ban_reason&order=created_at.desc`;
 }
 
 async function loadProfiles() {
