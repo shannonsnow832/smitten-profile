@@ -971,14 +971,22 @@
         <div id="match-group-panel" style="display:none">
           <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
             <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Generate Match Groups</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
               <div class="modal-field">
                 <label>Group Name</label>
                 <input type="text" id="mg-name" value="Match Group" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
               </div>
               <div class="modal-field">
+                <label>Number of Groups</label>
+                <select id="mg-group-count" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%;background:white">
+                  <option value="">Select...</option>
+                </select>
+              </div>
+              <div class="modal-field">
                 <label>People per Group</label>
-                <input type="number" id="mg-count" value="4" min="2" max="20" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+                <select id="mg-count" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%;background:white">
+                  <option value="">Select...</option>
+                </select>
               </div>
             </div>
             <!-- Anchor person -->
@@ -1491,6 +1499,7 @@ async function doVerifyOtp() {
       return;
     }
     supabaseSession = data.access_token;
+    if (data.refresh_token) sessionStorage.setItem('smitten_refresh', data.refresh_token);
 
     // Get auth user id from session JWT
     const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
@@ -1539,6 +1548,7 @@ function showLoginErrorOtp(msg) {
 function doLogout() {
   sessionStorage.removeItem('smitten_admin');
   sessionStorage.removeItem('smitten_session');
+  sessionStorage.removeItem('smitten_refresh');
   adminUser = null; supabaseSession = null; otpEmail = '';
   document.getElementById('screen-login').style.display = 'flex';
   document.getElementById('screen-app').style.display = 'none';
@@ -3035,6 +3045,8 @@ function populateModalDropdowns() {
     ['m-relocation-in', 'relocation'],
     ['m-relocation-out', 'relocation'],
     ['m-pref-income', 'preferred_income'],
+    ['mg-group-count', 'group_count'],
+    ['mg-count', 'group_size'],
   ];
   maps.forEach(([id, cat]) => {
     const el = document.getElementById(id);
@@ -3215,9 +3227,9 @@ async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
   if (subject.gender) {
     const genderLower = subject.gender.toLowerCase();
     if (genderLower === 'male') {
-      params.push(`seeking=cs.{Date Men}`);
+      params.push(`seeking=cs.{"Date Men"}`);
     } else if (genderLower === 'female') {
-      params.push(`seeking=cs.{Date Women}`);
+      params.push(`seeking=cs.{"Date Women"}`);
     }
     // Non-binary/other: no filter (they may be sought via Date Any/Other Gender)
   }
@@ -3779,6 +3791,7 @@ async function runMatching() {
     results = results.map(p => ({ ...p, _met: metMap[p.profile_id] || [] }));
 
     _lastMatchResults = results;
+    await loadSubjectMatches(subjectId);
     document.getElementById('match-results-search-wrap').style.display = '';
     document.getElementById('match-results-search').value = '';
     renderMatchResults(results, el);
@@ -3796,9 +3809,127 @@ function filterMatchResults() {
   renderMatchResults(filtered, document.getElementById('match-1to1-results'));
 }
 
+// ── Match list state ──────────────────────────────────────────────────────────
+let _subjectMatches = {}; // profile_id → {id, match_type}
+
+async function loadSubjectMatches(subjectId) {
+  const token = supabaseSession || SUPABASE_ANON;
+  _subjectMatches = {};
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/matchmaker_matches?profile_id=eq.${subjectId}&removed_at=is.null&select=id,matched_profile_id,match_type,compatibility_score`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } }
+    );
+    const rows = await r.json();
+    if (Array.isArray(rows)) rows.forEach(r => { _subjectMatches[r.matched_profile_id] = { id: r.id, match_type: r.match_type }; });
+  } catch(e) { console.warn('loadSubjectMatches failed', e); }
+}
+
+async function addMatch(profileId, score, btn) {
+  if (!matchSubject) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/matchmaker_matches`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        profile_id: matchSubject.id,
+        matched_profile_id: profileId,
+        compatibility_score: score,
+        match_type: 'potential',
+        organization_id: matchSubject.organization_id || null,
+        proposed_by: adminUser ? adminUser.id : null,
+        status: 'proposed'
+      })
+    });
+    const rows = await r.json();
+    if (!r.ok) throw new Error(JSON.stringify(rows));
+    _subjectMatches[profileId] = { id: rows[0].id, match_type: 'potential' };
+    renderMatchResults(_lastMatchResults, document.getElementById('match-1to1-results'));
+  } catch(e) { console.error('addMatch failed', e); btn.disabled = false; btn.textContent = '+ Add Match'; }
+}
+
+async function introduceMatch(profileId, btn) {
+  const existing = _subjectMatches[profileId];
+  if (!existing) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/matchmaker_matches?id=eq.${existing.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ match_type: 'introduction', introduced_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    _subjectMatches[profileId].match_type = 'introduction';
+    renderMatchResults(_lastMatchResults, document.getElementById('match-1to1-results'));
+  } catch(e) { console.error('introduceMatch failed', e); btn.disabled = false; btn.textContent = 'Introduce'; }
+}
+
+async function removeMatch(profileId, btn) {
+  const existing = _subjectMatches[profileId];
+  if (!existing) return;
+  if (!confirm('Remove this match?')) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/matchmaker_matches?id=eq.${existing.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ removed_at: new Date().toISOString(), removed_by: adminUser ? adminUser.id : null, remove_reason: 'admin_removed', updated_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    delete _subjectMatches[profileId];
+    renderMatchResults(_lastMatchResults, document.getElementById('match-1to1-results'));
+  } catch(e) { console.error('removeMatch failed', e); btn.disabled = false; }
+}
+
+async function exportMatches() {
+  if (!matchSubject) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/matchmaker_matches?profile_id=eq.${matchSubject.id}&removed_at=is.null&select=match_type,compatibility_score,introduced_at,created_at,profiles!matched_profile_id(first_name,last_name,date_of_birth,gender,city,state)&order=match_type.asc,compatibility_score.desc`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } }
+    );
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) { alert('No saved matches to export.'); return; }
+    const headers = ['Name','Age','Gender','City','State','Match %','Type','Date Added'];
+    const csvRows = rows.map(r => {
+      const p = r.profiles || {};
+      const age = p.date_of_birth ? Math.floor((new Date() - new Date(p.date_of_birth)) / 31557600000) : '';
+      return [
+        `${p.first_name || ''} ${p.last_name || ''}`.trim(),
+        age,
+        p.gender || '',
+        p.city || '',
+        p.state || '',
+        r.compatibility_score ? Math.round(r.compatibility_score) + '%' : '',
+        r.match_type === 'introduction' ? 'Introduction' : 'Potential',
+        r.created_at ? new Date(r.created_at).toLocaleDateString() : ''
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+    });
+    const csv = [headers.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `matches-${matchSubject.first_name}-${matchSubject.last_name}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  } catch(e) { console.error('exportMatches failed', e); alert('Export failed.'); }
+}
+
 function renderMatchResults(results, el) {
   if (!results.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No matches found in this pool.</p></div>'; return; }
-  el.innerHTML = `<h3 style="font-size:14px;font-weight:700;margin-bottom:14px">${results.length} Matches Ranked by Compatibility</h3>` +
+  const savedCount = Object.keys(_subjectMatches).length;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-size:14px;font-weight:700;margin:0">${results.length} Matches Ranked by Compatibility</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${savedCount ? `<span style="font-size:12px;color:var(--gray-mid)">${savedCount} saved</span>` : ''}
+        <button onclick="exportMatches()" style="font-size:11px;padding:5px 12px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif;font-weight:600">⬇ Export</button>
+      </div>
+    </div>` +
     results.map((p, i) => {
       const score = Math.round(p.compatibility_score || 0);
       const scoreColor = score >= 70 ? '#166534' : score >= 40 ? '#92400e' : '#C6302C';
@@ -3806,6 +3937,14 @@ function renderMatchResults(results, el) {
       const warnings = p.missing_fields && p.missing_fields.length ? p.missing_fields.join(', ') : null;
       const met = p._met && p._met.length > 0;
       const metBadge = met ? `<span style="font-size:10px;background:#F0F9FF;color:#0369a1;border:1px solid #BAE6FD;padding:2px 7px;border-radius:10px;margin-left:6px">Met at event</span>` : '';
+      const saved = _subjectMatches[p.profile_id];
+      const matchBtns = saved
+        ? saved.match_type === 'introduction'
+          ? `<span style="font-size:10px;font-weight:700;color:#166534;background:#F0FFF4;border:1px solid #BBF7D0;padding:3px 8px;border-radius:10px">Introduced ✓</span>
+             <button onclick="removeMatch('${p.profile_id}',this)" style="font-size:11px;padding:3px 8px;border:1px solid #FECACA;border-radius:6px;background:white;color:var(--red);cursor:pointer;font-family:Montserrat,sans-serif">Remove</button>`
+          : `<button onclick="introduceMatch('${p.profile_id}',this)" style="font-size:11px;padding:3px 8px;border:1px solid #C6302C;border-radius:6px;background:white;color:var(--red);cursor:pointer;font-family:Montserrat,sans-serif;font-weight:600">Introduce</button>
+             <button onclick="removeMatch('${p.profile_id}',this)" style="font-size:11px;padding:3px 8px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif">Remove</button>`
+        : `<button onclick="addMatch('${p.profile_id}',${score},this)" style="font-size:11px;padding:3px 8px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif">+ Add Match</button>`;
       return `<div style="background:white;border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
         <div style="font-size:13px;font-weight:700;color:var(--gray-mid);width:24px;text-align:center">${i+1}</div>
         <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);cursor:pointer" onclick="openProfileById('${p.profile_id}')">
@@ -3822,7 +3961,10 @@ function renderMatchResults(results, el) {
             <div style="font-size:20px;font-weight:800;color:${scoreColor}">${score}%</div>
             <div style="font-size:10px;font-weight:600;color:${scoreColor}">match</div>
           </div>
-          <button onclick="excludeMatch('${p.profile_id}','${p.first_name} ${p.last_name}',this)" style="font-size:11px;padding:3px 10px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;white-space:nowrap">Exclude</button>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+            ${matchBtns}
+            <button onclick="excludeMatch('${p.profile_id}','${p.first_name} ${p.last_name}',this)" style="font-size:11px;padding:3px 10px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;white-space:nowrap">Exclude</button>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -3880,7 +4022,8 @@ async function generateGroups() {
   }
 
   const name = document.getElementById('mg-name').value.trim() || 'Match Group';
-  const count = parseInt(document.getElementById('mg-count').value) || 4;
+  const count = parseInt(document.getElementById('mg-group-count').value) || 4;
+  const groupSize = parseInt(document.getElementById('mg-count').value) || 4;
   const balanced = true;
   const eventId = document.getElementById('m-pool-event') && document.getElementById('m-pool-event').value ? document.getElementById('m-pool-event').value : null;
 
@@ -3892,6 +4035,7 @@ async function generateGroups() {
       body: JSON.stringify({
         p_profile_ids: matchPool.map(p => p.id),
         p_group_count: count,
+        p_people_per_group: groupSize || null,
         p_gender_balanced: balanced,
         p_group_name: name,
         p_event_id: eventId,
@@ -4390,12 +4534,38 @@ async function toggleStaffActive(id, currentState) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+async function refreshSession() {
+  const refreshToken = sessionStorage.getItem('smitten_refresh');
+  if (!refreshToken) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    const data = await res.json();
+    if (res.ok && data.access_token) {
+      supabaseSession = data.access_token;
+      sessionStorage.setItem('smitten_session', supabaseSession);
+      if (data.refresh_token) sessionStorage.setItem('smitten_refresh', data.refresh_token);
+    } else {
+      console.warn('Session refresh failed — user may need to log in again.');
+    }
+  } catch(e) {
+    console.warn('Session refresh error:', e);
+  }
+}
+
+// Refresh every 45 minutes to prevent token expiry mid-session
+setInterval(refreshSession, 45 * 60 * 1000);
+
 const saved = sessionStorage.getItem('smitten_admin');
 const savedSession = sessionStorage.getItem('smitten_session');
 if (saved && savedSession) {
   try {
     adminUser = JSON.parse(saved);
     supabaseSession = savedSession;
+    refreshSession(); // Refresh immediately in case token is stale
     launchApp();
   } catch(e) { /* bad session */ }
 }
