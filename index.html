@@ -497,6 +497,72 @@
     .save-bar { padding: 12px 16px; }
   }
 
+  /* ── COMPLETENESS CHECKLIST ──────────────────────────────────── */
+  .completeness-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+  }
+  .completeness-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .completeness-pct {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .completeness-pct.complete { color: #166534; }
+  .completeness-bar {
+    height: 6px;
+    background: var(--gray-light);
+    border-radius: 3px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .completeness-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--red);
+    transition: width 0.4s ease;
+  }
+  .completeness-bar-fill.complete { background: #166534; }
+  .completeness-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .completeness-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--gray-dark);
+  }
+  .completeness-item .ci-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gray-mid);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: transparent;
+  }
+  .completeness-item.done .ci-icon {
+    background: #166534;
+    border-color: #166534;
+    color: white;
+  }
+  .completeness-item.done { color: #166534; }
+
   /* ── PHOTO LIGHTBOX ──────────────────────────────────────────── */
   #photo-lightbox { position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column; }
   #photo-lightbox.open { display:flex; }
@@ -621,11 +687,36 @@
           <p class="photo-upload-note">Up to 6 photos · Clear, recent photos only<br>No sunglasses or group shots for your first photo</p>
         </div>
 
+        <!-- Completeness checklist -->
+        <div class="completeness-card" id="completeness-card" style="display:none;">
+          <h3>
+            Profile Completeness
+            <span class="completeness-pct" id="completeness-pct-label"></span>
+          </h3>
+          <p style="font-size:12px;color:#555;margin:-4px 0 12px;">These are the most commonly used matchmaking fields. Completing your <strong>entire profile</strong> gives matchmakers the full picture and leads to better matches.</p>
+          <div class="completeness-bar">
+            <div class="completeness-bar-fill" id="completeness-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="completeness-list" id="completeness-list"></div>
+
+          <!-- Preferences section -->
+          <div style="border-top:1px solid var(--gray-light);margin-top:14px;padding-top:14px;display:none;" id="preferences-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:13px;font-weight:600;">Match Preferences</span>
+              <span id="preferences-pct-label" class="completeness-pct"></span>
+            </div>
+            <div class="completeness-bar" style="margin-bottom:10px;">
+              <div class="completeness-bar-fill" id="preferences-bar-fill" style="width:0%"></div>
+            </div>
+            <p style="font-size:12px;color:#555;margin:0;">Sharing your preferences helps us find even better matches for you.</p>
+          </div>
+        </div>
+
         <div class="privacy-card">
           <span class="privacy-icon"></span>
           <div>
             <strong>Privacy Guaranteed</strong>
-            <p>Your profile is only visible to Smitten Singles staff and matchmakers — never to other participants.</p>
+            <p>Your profile is only visible to Smitten Singles staff and matchmakers you've opted in to work with — never to other participants.</p>
           </div>
         </div>
       </div>
@@ -1569,6 +1660,7 @@ async function loadExistingProfile() {
     renderPhotoGrid();
 
     updateProgress();
+    refreshCompletenessChecklist();
   } catch (e) {
     console.error('Could not load profile:', e);
   }
@@ -1706,6 +1798,7 @@ async function saveProfile(silent = false) {
     } else {
       // Show a subtle autosave indicator
       showAutosaveIndicator();
+      refreshCompletenessChecklist();
     }
   } catch (e) {
     if (!silent) {
@@ -1869,6 +1962,7 @@ async function savePhotos(newAll) {
   allProfilePhotos = newAll;
   renderPhotoGrid();
   showAutosaveIndicator();
+  refreshCompletenessChecklist();
 }
 
 // ── Photo delete confirmation ─────────────────────────────────────────────────
@@ -2048,6 +2142,89 @@ async function loadOptions() {
 
 function returnToProfile() {
   showScreen('profile');
+}
+
+// ── Completeness checklist ────────────────────────────────────────────────────
+const COMPLETENESS_FIELDS = [
+  { key: 'photo',         label: 'Profile photo' },
+  { key: 'gender',        label: 'Gender' },
+  { key: 'date_of_birth', label: 'Date of birth' },
+  { key: 'seeking',       label: 'Seeking' },
+  { key: 'kids',          label: 'Has kids' },
+  { key: 'want_kids',     label: 'Wants kids' },
+  { key: 'politics',      label: 'Politics' },
+  { key: 'religion',      label: 'Religion' },
+  { key: 'body_type',     label: 'Body type' },
+  { key: 'income_level',  label: 'Income' },
+  { key: 'min_age',       label: 'Min age preference' },
+  { key: 'max_age',       label: 'Max age preference' },
+  { key: 'postal_code',   label: 'Zip / postal code' },
+];
+
+async function refreshCompletenessChecklist() {
+  const card = document.getElementById('completeness-card');
+  const pctLabel = document.getElementById('completeness-pct-label');
+  const barFill = document.getElementById('completeness-bar-fill');
+  const list = document.getElementById('completeness-list');
+  if (!card || !currentEmail) return;
+
+  try {
+    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+    if (!profile) return;
+
+    // Determine which fields are filled
+    const done = {
+      gender:        !!profile.gender,
+      date_of_birth: !!profile.date_of_birth,
+      seeking:       Array.isArray(profile.seeking) ? profile.seeking.length > 0 : !!profile.seeking,
+      kids:          !!profile.kids,
+      want_kids:     !!profile.want_kids,
+      politics:      !!profile.politics,
+      religion:      !!profile.religion,
+      body_type:     !!profile.body_type,
+      income_level:  !!profile.income_level,
+      min_age:       profile.min_age != null,
+      max_age:       profile.max_age != null,
+      photo:         !!(profile.image_url || (profile.photos && profile.photos.length)),
+      postal_code:   !!(profile.postal_code && profile.postal_code.trim()),
+    };
+
+    // Use DB completeness_pct, but fall back to client-side calculation if DB
+    // returns 0 while fields are clearly populated (stale trigger / timing issue)
+    const filledCount = Object.values(done).filter(Boolean).length;
+    const clientPct = filledCount === 13 ? 100 : filledCount * 7;
+    const dbPct = profile.completeness_pct ?? 0;
+    const pct = (dbPct === 0 && filledCount > 0) ? clientPct : dbPct;
+
+    pctLabel.textContent = pct + '%';
+    pctLabel.className = 'completeness-pct' + (pct === 100 ? ' complete' : '');
+    barFill.style.width = pct + '%';
+    barFill.className = 'completeness-bar-fill' + (pct === 100 ? ' complete' : '');
+
+    list.innerHTML = COMPLETENESS_FIELDS.map(f => `
+      <div class="completeness-item ${done[f.key] ? 'done' : ''}">
+        <div class="ci-icon">${done[f.key] ? '✓' : ''}</div>
+        <span>${f.label}</span>
+      </div>
+    `).join('');
+
+    // Preferences section
+    const prefPct = profile.preferences_pct ?? 0;
+    const prefLabel = document.getElementById('preferences-pct-label');
+    const prefFill = document.getElementById('preferences-bar-fill');
+    const prefSection = document.getElementById('preferences-section');
+    if (prefLabel && prefFill && prefSection) {
+      prefLabel.textContent = prefPct + '%';
+      prefLabel.className = 'completeness-pct' + (prefPct === 100 ? ' complete' : '');
+      prefFill.style.width = prefPct + '%';
+      prefFill.className = 'completeness-bar-fill' + (prefPct === 100 ? ' complete' : '');
+      prefSection.style.display = 'block';
+    }
+
+    card.style.display = 'block';
+  } catch (e) {
+    console.warn('Could not refresh completeness checklist:', e);
+  }
 }
 
 // ── Autosave on blur ──────────────────────────────────────────────────────────
