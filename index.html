@@ -693,18 +693,30 @@
             Profile Completeness
             <span class="completeness-pct" id="completeness-pct-label"></span>
           </h3>
-          <p style="font-size:12px;color:var(--gray-mid);margin:-4px 0 12px;">These are the most commonly used matchmaking fields. Completing your <strong>entire profile</strong> gives matchmakers the full picture and leads to better matches.</p>
+          <p style="font-size:12px;color:#555;margin:-4px 0 12px;">These are the most commonly used matchmaking fields. Completing your <strong>entire profile</strong> gives matchmakers the full picture and leads to better matches.</p>
           <div class="completeness-bar">
             <div class="completeness-bar-fill" id="completeness-bar-fill" style="width:0%"></div>
           </div>
           <div class="completeness-list" id="completeness-list"></div>
+
+          <!-- Preferences section -->
+          <div style="border-top:1px solid var(--gray-light);margin-top:14px;padding-top:14px;" id="preferences-section" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:13px;font-weight:600;">Match Preferences</span>
+              <span id="preferences-pct-label" class="completeness-pct"></span>
+            </div>
+            <div class="completeness-bar" style="margin-bottom:10px;">
+              <div class="completeness-bar-fill" id="preferences-bar-fill" style="width:0%"></div>
+            </div>
+            <p style="font-size:12px;color:#555;margin:0;">Sharing your preferences helps us find even better matches for you.</p>
+          </div>
         </div>
 
         <div class="privacy-card">
           <span class="privacy-icon"></span>
           <div>
             <strong>Privacy Guaranteed</strong>
-            <p>Your profile is only visible to Smitten Singles staff and matchmakers — never to other participants.</p>
+            <p>Your profile is only visible to Smitten Singles staff and matchmakers you've opted in to work with — never to other participants.</p>
           </div>
         </div>
       </div>
@@ -2143,6 +2155,7 @@ const COMPLETENESS_FIELDS = [
   { key: 'politics',      label: 'Politics' },
   { key: 'religion',      label: 'Religion' },
   { key: 'body_type',     label: 'Body type' },
+  { key: 'income_level',  label: 'Income' },
   { key: 'min_age',       label: 'Min age preference' },
   { key: 'max_age',       label: 'Max age preference' },
   { key: 'postal_code',   label: 'Zip / postal code' },
@@ -2169,6 +2182,7 @@ async function refreshCompletenessChecklist() {
       politics:      !!profile.politics,
       religion:      !!profile.religion,
       body_type:     !!profile.body_type,
+      income_level:  !!profile.income_level,
       min_age:       profile.min_age != null,
       max_age:       profile.max_age != null,
       photo:         !!(profile.image_url || (profile.photos && profile.photos.length)),
@@ -2178,7 +2192,7 @@ async function refreshCompletenessChecklist() {
     // Use DB completeness_pct, but fall back to client-side calculation if DB
     // returns 0 while fields are clearly populated (stale trigger / timing issue)
     const filledCount = Object.values(done).filter(Boolean).length;
-    const clientPct = filledCount === 12 ? 100 : filledCount * 8;
+    const clientPct = filledCount === 13 ? 100 : filledCount * 7;
     const dbPct = profile.completeness_pct ?? 0;
     const pct = (dbPct === 0 && filledCount > 0) ? clientPct : dbPct;
 
@@ -2193,6 +2207,19 @@ async function refreshCompletenessChecklist() {
         <span>${f.label}</span>
       </div>
     `).join('');
+
+    // Preferences section
+    const prefPct = profile.preferences_pct ?? 0;
+    const prefLabel = document.getElementById('preferences-pct-label');
+    const prefFill = document.getElementById('preferences-bar-fill');
+    const prefSection = document.getElementById('preferences-section');
+    if (prefLabel && prefFill && prefSection) {
+      prefLabel.textContent = prefPct + '%';
+      prefLabel.className = 'completeness-pct' + (prefPct === 100 ? ' complete' : '');
+      prefFill.style.width = prefPct + '%';
+      prefFill.className = 'completeness-bar-fill' + (prefPct === 100 ? ' complete' : '');
+      prefSection.style.display = 'block';
+    }
 
     card.style.display = 'block';
   } catch (e) {
