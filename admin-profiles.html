@@ -1580,7 +1580,7 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'staff') { const s = document.getElementById('staff-search'); if(s) s.value=''; loadStaff(); loadStaffRoles(); }
-  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); setMatchMode('1to1'); }
+  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); }
   if (name === 'archived') loadArchivedProfiles();
 }
 
@@ -3091,26 +3091,9 @@ function setMatchMode(mode) {
   document.getElementById('match-group-panel').style.display = mode === 'group' ? '' : 'none';
   document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
   document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
-  // Collapse sidebar in 1-to-1 without removing from DOM flow
-  // display:none collapses the grid column which blanks the main panel
+  // Show pool sidebar only for group mode
   const sidebar = document.querySelector('#tab-matching > div > div:first-child');
-  if (sidebar) {
-    if (mode === 'group') {
-      sidebar.style.width = '';
-      sidebar.style.minWidth = '';
-      sidebar.style.padding = '';
-      sidebar.style.overflow = '';
-      sidebar.style.visibility = '';
-      sidebar.style.borderRight = '';
-    } else {
-      sidebar.style.width = '0';
-      sidebar.style.minWidth = '0';
-      sidebar.style.padding = '0';
-      sidebar.style.overflow = 'hidden';
-      sidebar.style.visibility = 'hidden';
-      sidebar.style.borderRight = 'none';
-    }
-  }
+  if (sidebar) sidebar.style.display = mode === 'group' ? '' : 'none';
 }
 
 
@@ -3952,6 +3935,7 @@ async function renderGroupResults(groups) {
     <div style="display:flex;flex-direction:column">` +
     groupDetails.map(g => {
       const scoreColor = g.avg_compatibility >= 70 ? '#166534' : g.avg_compatibility >= 40 ? '#92400e' : '#C6302C';
+      const scoreBg = g.avg_compatibility >= 70 ? '#F0FFF4' : g.avg_compatibility >= 40 ? '#FFFBEB' : '#FFF0F0';
       const memberHtml = g.members.map(m => {
         const p = m.profiles || {};
         const initials = [(p.first_name||'?')[0],(p.last_name||'')[0]].join('').toUpperCase();
