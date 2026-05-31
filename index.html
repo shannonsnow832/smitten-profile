@@ -1,1 +1,2091 @@
-placeholder
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Profile - Smitten Singles</title>
+<link rel="icon" type="image/png" href="Smitten_Icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C6302C;
+    --red-light: #DA5C58;
+    --pink: #FBB3B1;
+    --gray-light: #EFEFF1;
+    --gray-dark: #5A5353;
+    --gray-mid: #BFBFBF;
+    --white: #FFFFFF;
+    --black: #000000;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(90,83,83,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--gray-light);
+    color: var(--gray-dark);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--white);
+    border-bottom: 1px solid #eee;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    color: var(--red);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--gray-dark);
+    margin-left: 4px;
+  }
+
+  /* FLOW SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* STEP 1 - Identity gate */
+  .gate-wrap {
+    max-width: 480px;
+    margin: 60px auto;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+  }
+  .gate-wrap h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 28px;
+    color: var(--black);
+    margin-bottom: 8px;
+  }
+  .gate-wrap p {
+    font-size: 14px;
+    color: var(--gray-dark);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  /* OTP screen */
+  .otp-wrap {
+    max-width: 480px;
+    margin: 60px auto;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+    text-align: center;
+  }
+  .otp-wrap h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .otp-wrap p { font-size: 14px; color: var(--gray-dark); margin-bottom: 28px; line-height: 1.6; }
+  .otp-inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .otp-inputs input {
+    width: 40px;
+    height: 50px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .otp-inputs input:focus { border-color: var(--red); }
+
+  /* MAIN PROFILE FORM */
+  .profile-wrap {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+  }
+  .profile-header {
+    margin-bottom: 28px;
+  }
+  .profile-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 30px;
+    color: var(--black);
+  }
+  .profile-header p {
+    font-size: 14px;
+    color: var(--gray-dark);
+    margin-top: 4px;
+  }
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* LEFT COLUMN */
+  .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+  .photo-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+
+  /* ── PHOTO GRID (drag-to-reorder, 6 max) ── */
+  .photo-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .photo-card .photo-hint {
+    font-size: 12px;
+    color: var(--gray-dark);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .photo-slot {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    background: var(--gray-light);
+    border: 2px dashed var(--gray-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s, opacity 0.15s;
+  }
+  .photo-slot:hover { border-color: var(--red); }
+  .photo-slot.has-photo { border-style: solid; border-color: transparent; }
+  .photo-slot.is-main { border-color: var(--red); border-style: solid; }
+  .photo-slot.drag-over { border-color: var(--red); opacity: 0.7; }
+  .photo-slot.dragging { opacity: 0.4; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+  .photo-slot .cam { font-size: 22px; color: var(--gray-dark); pointer-events: none; }
+  .photo-slot .main-badge {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    background: var(--red); color: white; font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 10px; white-space: nowrap; pointer-events: none; z-index: 5;
+  }
+  .photo-delete-btn {
+    position: absolute; top: 6px; right: 6px;
+    width: 26px; height: 26px;
+    background: rgba(0,0,0,0.55); border: none; border-radius: 50%;
+    color: white; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 10; opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    padding: 0; line-height: 1;
+  }
+  .photo-delete-btn:hover { background: rgba(198,48,44,0.9); }
+  .photo-slot:hover .photo-delete-btn { opacity: 1; }
+  .photo-upload-note {
+    font-size: 11px;
+    color: var(--gray-dark);
+    text-align: center;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .privacy-card {
+    background: #FFF5F5;
+    border: 1px solid var(--pink);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .privacy-card .privacy-icon { color: var(--red); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .privacy-card strong { font-size: 13px; display: block; margin-bottom: 4px; color: var(--gray-dark); }
+  .privacy-card p { font-size: 12px; color: var(--gray-dark); line-height: 1.5; }
+
+  /* RIGHT COLUMN */
+  .right-col { display: flex; flex-direction: column; gap: 0; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--white);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: 2px solid var(--gray-light);
+    overflow: hidden;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 16px 8px;
+    border: none;
+    background: var(--gray-light);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    border-right: 1px solid #e0e0e0;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active {
+    color: var(--red);
+    border-bottom-color: var(--red);
+    background: var(--white);
+  }
+  .tab-btn:hover:not(.active) {
+    background: #e8e8e8;
+    color: var(--gray-dark);
+  }
+
+  .tab-content {
+    background: var(--white);
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    display: none;
+  }
+  .tab-content.active { display: block; }
+
+  /* FORM ELEMENTS */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  .section-title:not(:first-child) { margin-top: 32px; }
+  .section-title .icon { color: var(--red); }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-dark);
+  }
+  .field .hint {
+    font-size: 11px;
+    color: #333;
+    margin-top: -2px;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    border: 1.5px solid #E8E8E8;
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: var(--gray-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--white);
+    width: 100%;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus { border-color: var(--red); }
+  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  /* SEEKING CHECKBOXES */
+  .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--gray-dark);
+  }
+  .check-item input[type=checkbox],
+  .check-item input[type=radio] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--red);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .check-item.with-desc { align-items: flex-start; }
+  .check-item.with-desc .check-text strong { display: block; font-size: 14px; }
+  .check-item.with-desc .check-text span { font-size: 12px; color: var(--gray-dark); line-height: 1.5; display: block; margin-top: 2px; }
+
+  /* SAVE BAR */
+  .save-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid #eee;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .save-bar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: var(--red-light); }
+  .btn-primary:disabled { background: var(--gray-mid); cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    color: var(--red);
+    border: 1.5px solid var(--red);
+  }
+  .btn-outline:hover { background: #FFF5F5; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-dark);
+    border: 1.5px solid var(--gray-mid);
+  }
+
+  /* FORM ROW - full width fields */
+  .form-full { margin-bottom: 16px; }
+
+  /* ALERTS */
+  .alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .alert.error { background: #FFF0F0; border: 1px solid var(--pink); color: var(--red); }
+  .alert.success { background: #F0FFF4; border: 1px solid #86efac; color: #166534; }
+  .alert.show { display: block; }
+
+  /* DUPLICATE FOUND */
+  .duplicate-msg {
+    text-align: center;
+    padding: 16px;
+    background: #FFF5F5;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--pink);
+    display: none;
+  }
+  .duplicate-msg.show { display: block; }
+  .duplicate-msg p { font-size: 14px; color: var(--gray-dark); margin-bottom: 12px; }
+  .duplicate-msg a { color: var(--red); font-weight: 600; text-decoration: none; }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 4px;
+    background: var(--gray-light);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--gray-dark);
+  }
+  .footer a { color: var(--red); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--gray-light);
+    margin: 24px 0;
+  }
+
+  /* SUCCESS */
+  .success-wrap {
+    max-width: 480px;
+    margin: 80px auto;
+    text-align: center;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 48px 40px;
+  }
+  .success-wrap .success-icon { font-size: 48px; margin-bottom: 16px; }
+  .success-wrap h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  .success-wrap p { font-size: 14px; color: var(--gray-dark); line-height: 1.6; }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::placeholder { color: #888; }
+
+  @media (max-width: 768px) {
+    .profile-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-row.three { grid-template-columns: 1fr 1fr; }
+    .gate-wrap, .otp-wrap { margin: 20px; padding: 28px 20px; }
+    .profile-wrap { padding: 0 12px 40px; }
+    .save-bar { padding: 12px 16px; }
+  }
+
+  /* ── PHOTO LIGHTBOX ──────────────────────────────────────────── */
+  #photo-lightbox { position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column; }
+  #photo-lightbox.open { display:flex; }
+  #photo-lightbox img { max-width:88vw;max-height:82vh;object-fit:contain;border-radius:8px;user-select:none; }
+  #photo-lightbox .lb-counter { color:rgba(255,255,255,0.7);font-size:13px;margin-top:12px;font-family:Montserrat,sans-serif; }
+  #photo-lightbox .lb-close { position:absolute;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;opacity:0.8;line-height:1; }
+  #photo-lightbox .lb-close:hover { opacity:1; }
+  #photo-lightbox .lb-arrow { position:absolute;top:50%;transform:translateY(-50%);color:white;font-size:36px;cursor:pointer;opacity:0.7;padding:0 20px;user-select:none; }
+  #photo-lightbox .lb-arrow:hover { opacity:1; }
+  #photo-lightbox .lb-prev { left:0; }
+  #photo-lightbox .lb-next { right:0; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="Singles Red Background.png" alt="Smitten Singles" style="height:44px;width:44px;border-radius:50%;">
+  <span class="header-logo">Smitten Singles</span>
+  <span class="header-sub">Profile Setup</span>
+</div>
+
+<!-- SCREEN 1: Identity Gate -->
+<div id="screen-gate" class="screen active">
+  <div class="gate-wrap">
+    <h1>Create or Update Your Profile</h1>
+    <p>Enter your information below. We'll send a quick verification code to your email — new singles will be guided through setup, and returning singles will be taken straight to their profile.</p>
+
+    <div id="gate-alert" class="alert error"></div>
+    <div class="form-row">
+      <div class="field">
+        <label>First Name *</label>
+        <input type="text" id="g-first" placeholder="Sarah" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label>Last Name *</label>
+        <input type="text" id="g-last" placeholder="Jenkins" autocomplete="family-name">
+      </div>
+    </div>
+    <div class="form-row full form-full">
+      <div class="field">
+        <label>Email Address *</label>
+        <input type="email" id="g-email" placeholder="sarah@example.com" autocomplete="email">
+      </div>
+    </div>
+    <div class="form-row full form-full">
+      <div class="field">
+        <label>Phone Number *</label>
+        <input type="tel" id="g-phone" placeholder="(402) 555-0100" autocomplete="tel">
+      </div>
+    </div>
+
+    <div class="form-row full form-full">
+      <div class="field">
+        <label style="text-transform:none;font-size:13px;font-weight:400;">
+          <label class="check-item" style="gap:8px;">
+            <input type="checkbox" id="g-consent">
+            <span>By continuing, I acknowledge that submitting this form creates a Smitten Singles account and profile.</span>
+          </label>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-check" onclick="checkDuplicate()" style="width:100%;margin-top:8px;">
+      Continue
+    </button>
+    <p style="margin-top:16px;font-size:12px;color:var(--gray-mid);text-align:center;">
+      Having trouble signing in? <a href="mailto:info@thesmittenproject.com" style="color:var(--red);font-weight:600;text-decoration:none;">Contact us</a>
+    </p>
+  </div>
+</div>
+
+<!-- SCREEN 2: OTP Verification -->
+<div id="screen-otp" class="screen">
+  <div class="otp-wrap">
+    <img src="Singles Red Background.png" alt="Smitten Singles" style="height:60px;width:60px;border-radius:50%;margin-bottom:12px;">
+    <h2>Check Your Email</h2>
+    <p id="otp-desc">We sent an 8-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
+    <div id="otp-alert" class="alert error"></div>
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" class="otp-digit" id="otp0">
+      <input type="text" maxlength="1" class="otp-digit" id="otp1">
+      <input type="text" maxlength="1" class="otp-digit" id="otp2">
+      <input type="text" maxlength="1" class="otp-digit" id="otp3">
+      <input type="text" maxlength="1" class="otp-digit" id="otp4">
+      <input type="text" maxlength="1" class="otp-digit" id="otp5">
+      <input type="text" maxlength="1" class="otp-digit" id="otp6">
+      <input type="text" maxlength="1" class="otp-digit" id="otp7">
+    </div>
+    <button class="btn btn-primary" id="btn-verify" onclick="verifyOtp()" style="width:100%;margin-bottom:16px;">Verify Code</button>
+    <p style="font-size:13px;color:var(--gray-mid);">Didn't get it? <a href="#" onclick="resendOtp()" style="color:var(--red);font-weight:600;">Resend code</a></p>
+  </div>
+</div>
+
+<!-- SCREEN 3: Full Profile Form -->
+<div id="screen-profile" class="screen">
+  <div class="save-bar">
+    <span class="save-bar-title">Complete Your Profile</span>
+    <button class="btn btn-primary" id="btn-save" onclick="saveProfile()">Save Profile</button>
+  </div>
+
+  <div class="profile-wrap">
+    <div class="profile-header">
+      <h1>Submit or Update Profile</h1>
+      <p>View and update your personal information, lifestyle details, and match preferences.</p>
+      <div class="progress-bar" style="margin-top:16px;">
+        <div class="progress-fill" id="progress-fill" style="width:10%"></div>
+      </div>
+    </div>
+
+    <div id="profile-alert" class="alert error"></div>
+    <div id="profile-success" class="alert success"></div>
+
+    <div class="profile-grid">
+      <!-- LEFT -->
+      <div class="left-col">
+        <div class="photo-card">
+          <h3>Profile Photos <span style="color:#C6302C">*</span></h3>
+          <p class="photo-hint">Drag photos to reorder. First photo is your profile picture.</p>
+          <div class="photo-grid" id="photo-grid"></div>
+          <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="handlePhotoFileInput(this)">
+          <p class="photo-upload-note">Up to 6 photos · Clear, recent photos only<br>No sunglasses or group shots for your first photo</p>
+        </div>
+
+        <div class="privacy-card">
+          <span class="privacy-icon"></span>
+          <div>
+            <strong>Privacy Guaranteed</strong>
+            <p>Your profile is only visible to Smitten Singles staff and matchmakers — never to other participants.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="right-col">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('basic',this)">Basic Info</button>
+          <button class="tab-btn" onclick="switchTab('lifestyle',this)">Lifestyle</button>
+          <button class="tab-btn" onclick="switchTab('preferences',this)">Preferences</button>
+        </div>
+
+        <!-- TAB: BASIC INFO -->
+        <div id="tab-basic" class="tab-content active">
+
+          <div class="section-title">Personal Details</div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>First Name *</label>
+                <input type="text" id="p-first" placeholder="Sarah">
+              </div>
+              <div class="field">
+                <label>Last Name *</label>
+                <input type="text" id="p-last" placeholder="Jenkins">
+                <span class="hint">Kept private</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>Email Address *</label>
+                <input type="email" id="p-email" placeholder="sarah@example.com" readonly style="background:#f9f9f9;color:var(--gray-mid);">
+              </div>
+              <div class="field">
+                <label>Phone Number</label>
+                <input type="tel" id="p-phone" placeholder="(402) 555-0100">
+                <span class="hint">Kept private</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <label>Date of Birth <span style="color:#C6302C">*</span></label>
+                <input type="date" id="p-dob">
+              </div>
+              <div class="field">
+                <label>Gender <span style="color:#C6302C">*</span></label>
+                <select id="p-gender" data-category="gender"><option value="">Select...</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="field">
+              <label>Street Address</label>
+              <input type="text" id="p-address" placeholder="123 Main St">
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row three">
+              <div class="field">
+                <label>City <span style="color:#C6302C">*</span></label>
+                <input type="text" id="p-city" placeholder="Omaha">
+              </div>
+              <div class="field">
+                <label>State <span style="color:#C6302C">*</span></label>
+                <select id="p-state">
+                  <option value="">State</option>
+                  <option value="AL">AL</option>
+                  <option value="AK">AK</option>
+                  <option value="AZ">AZ</option>
+                  <option value="AR">AR</option>
+                  <option value="CA">CA</option>
+                  <option value="CO">CO</option>
+                  <option value="CT">CT</option>
+                  <option value="DE">DE</option>
+                  <option value="FL">FL</option>
+                  <option value="GA">GA</option>
+                  <option value="HI">HI</option>
+                  <option value="ID">ID</option>
+                  <option value="IL">IL</option>
+                  <option value="IN">IN</option>
+                  <option value="IA">IA</option>
+                  <option value="KS">KS</option>
+                  <option value="KY">KY</option>
+                  <option value="LA">LA</option>
+                  <option value="ME">ME</option>
+                  <option value="MD">MD</option>
+                  <option value="MA">MA</option>
+                  <option value="MI">MI</option>
+                  <option value="MN">MN</option>
+                  <option value="MS">MS</option>
+                  <option value="MO">MO</option>
+                  <option value="MT">MT</option>
+                  <option value="NE">NE</option>
+                  <option value="NV">NV</option>
+                  <option value="NH">NH</option>
+                  <option value="NJ">NJ</option>
+                  <option value="NM">NM</option>
+                  <option value="NY">NY</option>
+                  <option value="NC">NC</option>
+                  <option value="ND">ND</option>
+                  <option value="OH">OH</option>
+                  <option value="OK">OK</option>
+                  <option value="OR">OR</option>
+                  <option value="PA">PA</option>
+                  <option value="RI">RI</option>
+                  <option value="SC">SC</option>
+                  <option value="SD">SD</option>
+                  <option value="TN">TN</option>
+                  <option value="TX">TX</option>
+                  <option value="UT">UT</option>
+                  <option value="VT">VT</option>
+                  <option value="VA">VA</option>
+                  <option value="WA">WA</option>
+                  <option value="WV">WV</option>
+                  <option value="WI">WI</option>
+                  <option value="WY">WY</option>
+                  <option value="DC">DC</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Postal Code <span style="color:#C6302C">*</span></label>
+                <input type="text" id="p-zip" placeholder="68102">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-full">
+            <div class="form-row">
+              <div class="field">
+                <!-- Country hidden — hardcoded US -->
+                <select id="p-country" style="display:none"><option value="US" selected>United States</option></select>
+              </div>
+              <div class="field">
+                <label>Closest Major City</label>
+                <input type="text" id="p-closest-city" placeholder="Omaha">
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title">Seeking <span style="color:#C6302C">*</span></div>
+
+          <div class="form-full">
+            <div class="checkbox-group">
+              <label class="check-item"><input type="checkbox" value="Date Men" class="seeking-cb"> Date Men</label>
+              <label class="check-item"><input type="checkbox" value="Date Women" class="seeking-cb"> Date Women</label>
+              <label class="check-item"><input type="checkbox" value="Date Any/Other Gender" class="seeking-cb"> Date Any/Other Gender</label>
+              <label class="check-item"><input type="checkbox" value="Friendship" class="seeking-cb"> Friendship</label>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title">About Me</div>
+
+          <div class="form-full">
+            <div class="field">
+              <textarea id="p-bio" placeholder="Write a short bio about yourself..." rows="4"></textarea>
+              <span class="hint">This will be visible to your matchmaker.</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title">Consent &amp; Communication</div>
+
+          <div class="form-full">
+            <div class="checkbox-group">
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-share-matchmakers">
+                <div class="check-text">
+                  <strong>Share my profile with matchmakers</strong>
+                  <span>By checking this box, you give permission for your information to be shared with trusted matchmakers for the purpose of potential matchmaking. You acknowledge that Smitten may receive a referral fee if a matchmaker chooses to work with you or facilitates a match.</span>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-interested-matchmaking">
+                <div class="check-text">
+                  <strong>I am interested in learning more about matchmaking services</strong>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-email-opt">
+                <div class="check-text">
+                  <strong>Email Opt-In</strong>
+                  <span>By checking this box, you agree to receive occasional emails from Smitten about groups, events, and opportunities. You can unsubscribe at any time.</span>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-services-text">
+                <div class="check-text">
+                  <strong>Services Text Opt-In</strong>
+                  <span>By checking this box, I consent to receive transactional messages related to my account, orders, or services I have requested. These messages may include appointment reminders, order confirmations, and account notifications. Message frequency may vary. Message &amp; Data rates may apply. Reply HELP for help or STOP to opt-out.</span>
+                </div>
+              </label>
+              <label class="check-item with-desc">
+                <input type="checkbox" id="p-marketing-text">
+                <div class="check-text">
+                  <strong>Marketing Text Opt-Ins</strong>
+                  <span>By checking this box, I consent to receive marketing and promotional messages, including special offers, discounts, and new product updates. Message frequency may vary. Message &amp; Data rates may apply. Reply HELP for help or STOP to opt-out.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="switchTab('lifestyle', document.querySelectorAll('.tab-btn')[1])">Next: Lifestyle &rarr;</button>
+          </div>
+        </div>
+
+        <!-- TAB: LIFESTYLE -->
+        <div id="tab-lifestyle" class="tab-content">
+          <div class="section-title">Background &amp; Lifestyle</div>
+          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">This helps our algorithm find better matches for you.</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Height</label>
+              <div style="display:flex;gap:8px;">
+                <select id="p-height-ft" style="flex:1;">
+                  <option value="">Feet</option>
+                  <option value="4">4 ft</option>
+                  <option value="5">5 ft</option>
+                  <option value="6">6 ft</option>
+                  <option value="7">7 ft</option>
+                </select>
+                <select id="p-height-in" style="flex:1;">
+                  <option value="">Inches</option>
+                  <option value="0">0 in</option>
+                  <option value="1">1 in</option>
+                  <option value="2">2 in</option>
+                  <option value="3">3 in</option>
+                  <option value="4">4 in</option>
+                  <option value="5">5 in</option>
+                  <option value="6">6 in</option>
+                  <option value="7">7 in</option>
+                  <option value="8">8 in</option>
+                  <option value="9">9 in</option>
+                  <option value="10">10 in</option>
+                  <option value="11">11 in</option>
+                </select>
+              </div>
+              <input type="hidden" id="p-height">
+            </div>
+            <div class="field">
+              <label>Education</label>
+              <select id="p-education" data-category="education"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Occupation / Industry</label>
+              <input type="text" id="p-occupation" placeholder="e.g. Software Engineer, Healthcare">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Employer</label>
+              <input type="text" id="p-employer" placeholder="Company name">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Do you have kids?</label>
+              <select id="p-kids" data-category="kids"><option value="">Select...</option></select>
+            </div>
+            <div class="field">
+              <label>Do you want kids?</label>
+              <select id="p-want-kids" data-category="want_kids"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Smoking</label>
+              <select id="p-smoking" data-category="smoking"><option value="">Select...</option></select>
+            </div>
+            <div class="field">
+              <label>Drinking</label>
+              <select id="p-drinking" data-category="drinking"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Religion</label>
+              <select id="p-religion" data-category="religion"><option value="">Select...</option></select>
+            </div>
+            <div class="field">
+              <label>Politics</label>
+              <select id="p-politics" data-category="politics"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Income Level</label>
+              <select id="p-income" data-category="income_level"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Ethnicity</label>
+              <select id="p-ethnicity" data-category="ethnicity"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Body Type</label>
+              <select id="p-body-type" data-category="body_type"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Hair Color</label>
+              <select id="p-hair" data-category="hair_color"><option value="">Select...</option></select>
+            </div>
+            <div class="field">
+              <label>Eye Color</label>
+              <select id="p-eyes" data-category="eye_color"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Pets</label>
+              <input type="text" id="p-pets" placeholder="e.g. Dog, Cat, None">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Languages Spoken</label>
+              <input type="text" id="p-languages" placeholder="e.g. English, Spanish">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Activities &amp; Hobbies</label>
+              <div class="checkbox-group" id="activities-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Relationship Status</label>
+              <select id="p-rel-status" data-category="relationship_status"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Ideal Match Description</label>
+              <textarea id="p-ideal-match" placeholder="Describe who you're looking for..." rows="3"></textarea>
+            </div>
+          </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:space-between;">
+            <button class="btn btn-ghost" onclick="switchTab('basic', document.querySelectorAll('.tab-btn')[0])">&larr; Basic Info</button>
+            <button class="btn btn-outline" onclick="switchTab('preferences', document.querySelectorAll('.tab-btn')[2])">Next: Preferences &rarr;</button>
+          </div>
+        </div>
+
+        <!-- TAB: PREFERENCES -->
+        <div id="tab-preferences" class="tab-content">
+          <div class="section-title">Match Preferences</div>
+          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">Who are you looking to meet?</p>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Minimum Age</label>
+              <input type="number" id="p-min-age" placeholder="e.g. 28" min="18" max="99">
+            </div>
+            <div class="field">
+              <label>Maximum Age</label>
+              <input type="number" id="p-max-age" placeholder="e.g. 45" min="18" max="99">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Maximum Distance (miles)</label>
+              <select id="p-max-distance" data-category="max_distance"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Height Min</label>
+              <input type="text" id="p-pref-height-min" placeholder="e.g. 5'4&quot;">
+            </div>
+            <div class="field">
+              <label>Preferred Height Max</label>
+              <input type="text" id="p-pref-height-max" placeholder="e.g. 6'2&quot;">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Body Type</label>
+              <div class="checkbox-group" id="pref-body-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Ethnicity</label>
+              <div class="checkbox-group" id="pref-ethnicity-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Religion</label>
+              <div class="checkbox-group" id="pref-religion-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Politics</label>
+              <div class="checkbox-group" id="pref-politics-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Education</label>
+              <div class="checkbox-group" id="pref-education-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Preferred Income Level</label>
+              <select id="p-pref-income" data-category="preferred_income"><option value="">Any</option></select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Smoking</label>
+              <div class="checkbox-group" id="pref-smoking-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Drinking</label>
+              <div class="checkbox-group" id="pref-alcohol-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="field">
+              <label>Preferred Relationship Status</label>
+              <div class="checkbox-group" id="pref-rel-status-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title">Lifestyle Compatibility</div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Open to dating someone with kids?</label>
+              <select id="p-date-with-kids" data-category="date_with_kids"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label>Willing to relocate (In State)?</label>
+              <select id="p-relocation-in" data-category="relocation"><option value="">Select...</option></select>
+            </div>
+            <div class="field">
+              <label>Willing to relocate (Out of State)?</label>
+              <select id="p-relocation-out" data-category="relocation"><option value="">Select...</option></select>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-title">Dealbreakers</div>
+
+          <div class="form-row full">
+            <div class="field">
+              <div class="checkbox-group" id="dealbreakers-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+              <textarea id="p-dealbreakers-other" placeholder="Describe any other dealbreakers..." rows="2" style="margin-top:12px;display:none;"></textarea>
+              <span class="hint">Any strict dealbreakers our matchmakers should know about?</span>
+            </div>
+          </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:space-between;align-items:center;">
+            <button class="btn btn-ghost" onclick="switchTab('lifestyle', document.querySelectorAll('.tab-btn')[1])">&larr; Lifestyle</button>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 4: Success -->
+<div id="screen-success" class="screen">
+  <div class="success-wrap">
+    <h2>Profile Saved!</h2>
+    <p id="success-msg">Thank you! Your profile has been submitted. Our team will be in touch soon. Keep an eye on your email for updates about upcoming events and matches.</p>
+    <br>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="returnToProfile()">Update my profile</button>
+      <a href="https://smittensingles.com" class="btn btn-primary">Visit Smitten Singles</a>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  &copy; 2026 Smitten Singles. All rights reserved. &nbsp;|&nbsp;
+  <a href="https://thesmittenproject.com/privacy-policy/">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="https://thesmittenproject.com/terms-of-service/">Terms of Service</a> &nbsp;|&nbsp;
+  <a href="https://thesmittenproject.com/code-of-conduct/">Code of Conduct</a>
+</div>
+
+
+<!-- PHOTO LIGHTBOX -->
+<div id="photo-lightbox" onclick="lbClose()">
+  <span class="lb-close" onclick="lbClose()">×</span>
+  <span class="lb-arrow lb-prev" onclick="event.stopPropagation();lbNav(-1)">&#8249;</span>
+  <img id="lb-img" src="" alt="photo" onclick="event.stopPropagation()">
+  <span class="lb-arrow lb-next" onclick="event.stopPropagation();lbNav(1)">&#8250;</span>
+  <div class="lb-counter" id="lb-counter"></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgctltxcgsnbrdtbhmay.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+
+let currentEmail = '';
+let currentPhone = '';
+let currentFirstName = '';
+let currentLastName = '';
+let currentProfileId = null;
+let supabaseSession = null;
+let isExistingUser = false;
+const orgSlug = new URLSearchParams(window.location.search).get('org') || 'smitten-singles';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// ── PHOTO LIGHTBOX ────────────────────────────────────────────────────────
+let lbPhotos = [];
+let lbIndex = 0;
+
+function lbOpen(photos, startIndex) {
+  lbPhotos = Array.isArray(photos) ? photos.filter(Boolean) : [photos];
+  lbIndex = startIndex || 0;
+  lbShow();
+  document.getElementById('photo-lightbox').classList.add('open');
+  document.addEventListener('keydown', lbKeydown);
+}
+
+function lbShow() {
+  const img = document.getElementById('lb-img');
+  const counter = document.getElementById('lb-counter');
+  img.src = lbPhotos[lbIndex];
+  counter.textContent = lbPhotos.length > 1 ? (lbIndex + 1) + ' of ' + lbPhotos.length : '';
+  document.querySelectorAll('.lb-arrow').forEach(a => a.style.display = lbPhotos.length > 1 ? '' : 'none');
+}
+
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  lbShow();
+}
+
+function lbClose() {
+  document.getElementById('photo-lightbox').classList.remove('open');
+  document.removeEventListener('keydown', lbKeydown);
+}
+
+function lbKeydown(e) {
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  else if (e.key === 'ArrowRight') lbNav(1);
+  else if (e.key === 'Escape') lbClose();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function setLoading(btnId, loading, text) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading ? `<span class="spinner"></span>${text}` : text;
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'alert'; el.textContent = ''; }
+}
+
+function cleanPhone(raw) {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits[0] === '1') return '+' + digits;
+  return raw;
+}
+
+async function rpc(fn, params) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${supabaseSession || SUPABASE_ANON}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(params)
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.message || err.hint || 'Request failed');
+  }
+  return r.json();
+}
+
+// ── STEP 1: Duplicate check ───────────────────────────────────────────────────
+async function checkDuplicate() {
+  hideAlert('gate-alert');
+
+  const first   = document.getElementById('g-first').value.trim();
+  const last    = document.getElementById('g-last').value.trim();
+  const email   = document.getElementById('g-email').value.trim().toLowerCase();
+  const phone   = cleanPhone(document.getElementById('g-phone').value.trim());
+  const consent = document.getElementById('g-consent').checked;
+
+  if (!first || !last || !email) {
+    showAlert('gate-alert', 'Please fill in your name and email address.', 'error'); return;
+  }
+  if (!consent) {
+    showAlert('gate-alert', 'Please acknowledge that submitting this form creates a Smitten Singles account.', 'error'); return;
+  }
+
+  currentEmail     = email;
+  currentPhone     = phone;
+  currentFirstName = first;
+  currentLastName  = last;
+
+  setLoading('btn-check', true, 'Sending code...');
+  await proceedToOtp();
+  setLoading('btn-check', false, 'Continue');
+}
+
+async function proceedToOtp() {
+  document.getElementById('otp-email-display').textContent = currentEmail;
+
+  // Pre-fill form fields from gate
+  document.getElementById('p-first').value = currentFirstName;
+  document.getElementById('p-last').value  = currentLastName;
+  document.getElementById('p-email').value = currentEmail;
+  document.getElementById('p-phone').value = currentPhone;
+
+  // Detect existing user BEFORE sending OTP so verifyType is correct at verify time
+  try {
+    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+    isExistingUser = !!(profile && profile.id);
+  } catch (e) {
+    isExistingUser = false;
+  }
+
+  try {
+    await sendOtp(currentEmail, isExistingUser);
+    showScreen('otp');
+  } catch (e) {
+    let msg = 'Could not send verification code. Please try again.';
+    if (e.message && e.message.includes('429')) msg = 'Please wait 60 seconds before requesting another code.';
+    else if (e.message) msg = e.message;
+    showAlert('gate-alert', msg, 'error');
+  }
+}
+
+async function sendOtp(email, existingUser) {
+  // Use recovery for existing auth users, signup for new ones
+  const body = existingUser
+    ? { email }
+    : { email, create_user: true };
+
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    if (r.status === 429) throw new Error('429: Please wait 60 seconds before requesting another code.');
+    throw new Error(err.msg || err.message || 'Failed to send verification code.');
+  }
+}
+
+// ── OTP digits ────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const digits = document.querySelectorAll('.otp-digit');
+  digits.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/, '');
+      if (inp.value && i < digits.length - 1) digits[i + 1].focus();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) digits[i - 1].focus();
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      [...paste].slice(0, digits.length).forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
+      const last = Math.min(paste.length, digits.length) - 1;
+      if (digits[last]) digits[last].focus();
+    });
+  });
+
+  loadOptions();
+  updateProgress();
+  document.querySelectorAll('#screen-profile input:not([readonly]):not([type=hidden]), #screen-profile select, #screen-profile textarea')
+    .forEach(el => {
+      el.addEventListener('change', updateProgress);
+      el.addEventListener('blur', autosave);
+    });
+});
+
+// ── STEP 2: Verify OTP ────────────────────────────────────────────────────────
+async function verifyOtp() {
+  hideAlert('otp-alert');
+  const token = [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
+  if (token.length !== 8) {
+    showAlert('otp-alert', 'Please enter all 8 digits.', 'error'); return;
+  }
+  setLoading('btn-verify', true, 'Verifying...');
+  try {
+    const verifyType = isExistingUser ? 'recovery' : 'email';
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: verifyType, email: currentEmail, token })
+    });
+    const data = await r.json();
+    if (!r.ok || !data.access_token) {
+      showAlert('otp-alert', 'Invalid or expired code. Please try again.', 'error');
+      setLoading('btn-verify', false, 'Verify Code'); return;
+    }
+    supabaseSession = data.access_token;
+
+    // Detect existing vs new by checking for a profile — no duplicate check needed
+    try {
+      const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+      if (profile && profile.id) {
+        // Existing user — load their profile
+        isExistingUser = true;
+        await loadExistingProfile();
+        document.getElementById('btn-save').textContent = 'Update Profile';
+        document.querySelector('.save-bar-title').textContent = 'Update Your Profile';
+        document.querySelector('.profile-header h1').textContent = 'Update Your Profile';
+      } else {
+        // New user — create stub row
+        isExistingUser = false;
+        try {
+          const pid = await rpc('intake_create_incomplete', {
+            p_email:      currentEmail,
+            p_first_name: currentFirstName,
+            p_last_name:  currentLastName,
+            p_phone:      currentPhone || null,
+            p_org_slug:   orgSlug
+          });
+          currentProfileId = pid;
+        } catch (e) {
+          console.warn('Could not create incomplete profile:', e);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not check for existing profile:', e);
+    }
+
+    showScreen('profile');
+  } catch (e) {
+    showAlert('otp-alert', 'Verification failed. Please try again.', 'error');
+    console.error(e);
+  }
+  setLoading('btn-verify', false, 'Verify Code');
+}
+
+async function resendOtp() {
+  const link = document.querySelector('#screen-otp a[onclick]');
+  try {
+    await sendOtp(currentEmail);
+    showAlert('otp-alert', 'Code resent! Check your email.', 'success');
+    document.getElementById('otp-alert').className = 'alert success show';
+    if (link) {
+      link.style.pointerEvents = 'none';
+      link.style.color = 'var(--gray-mid)';
+      let secs = 60;
+      link.textContent = `Resend code (${secs}s)`;
+      const interval = setInterval(() => {
+        secs--;
+        link.textContent = secs > 0 ? `Resend code (${secs}s)` : 'Resend code';
+        if (secs <= 0) {
+          clearInterval(interval);
+          link.style.pointerEvents = '';
+          link.style.color = 'var(--red)';
+        }
+      }, 1000);
+    }
+  } catch (e) {
+    showAlert('otp-alert', 'Could not resend. Please wait 60 seconds before trying again.', 'error');
+  }
+}
+
+// ── Load existing profile into form ──────────────────────────────────────────
+async function loadExistingProfile() {
+  try {
+    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
+    if (!profile) return;
+
+    currentProfileId = profile.id;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+    const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    const setSelect = (id, val) => {
+      const el = document.getElementById(id);
+      if (!el || val == null) return;
+      [...el.options].forEach(o => { if (o.value === val || o.text === val) el.value = o.value; });
+    };
+
+    set('p-first', profile.first_name);
+    set('p-last', profile.last_name);
+    set('p-email', profile.email);
+    set('p-phone', profile.phone);
+    set('p-dob', profile.date_of_birth);
+    setSelect('p-gender', profile.gender);
+    set('p-address', profile.street_address);
+    set('p-city', profile.city);
+    set('p-state', profile.state);
+    set('p-zip', profile.postal_code);
+    setSelect('p-country', profile.country);
+    set('p-closest-city', profile.closest_major_city);
+    set('p-bio', profile.bio);
+    setCheck('p-share-matchmakers', profile.share_with_matchmakers);
+    setCheck('p-interested-matchmaking', profile.interested_in_matchmaking);
+    setCheck('p-email-opt', profile.email_opt_in);
+    setCheck('p-services-text', profile.services_text_opt_in);
+    setCheck('p-marketing-text', profile.marketing_text_opt_in);
+
+    // Seeking checkboxes
+    if (profile.seeking && Array.isArray(profile.seeking)) {
+      document.querySelectorAll('.seeking-cb').forEach(cb => {
+        cb.checked = profile.seeking.includes(cb.value);
+      });
+    }
+
+    // Lifestyle
+    if (profile.height_inches) {
+      const ft     = Math.floor(profile.height_inches / 12);
+      const inches = profile.height_inches % 12;
+      document.getElementById('p-height-ft').value = ft;
+      document.getElementById('p-height-in').value = inches;
+    }
+    setSelect('p-education', profile.education);
+    set('p-occupation', profile.occupation);
+    set('p-employer', profile.employer);
+    setSelect('p-kids', profile.kids);
+    setSelect('p-want-kids', profile.want_kids);
+    setSelect('p-smoking', profile.smoking);
+    setSelect('p-drinking', profile.drinking);
+    setSelect('p-religion', profile.religion);
+    setSelect('p-politics', profile.politics);
+    setSelect('p-income', profile.income_level);
+    setSelect('p-ethnicity', Array.isArray(profile.ethnicity) ? profile.ethnicity[0] : profile.ethnicity);
+    setSelect('p-body-type', profile.body_type);
+    setSelect('p-hair', profile.hair_color);
+    setSelect('p-eyes', profile.eye_color);
+    set('p-pets', profile.pets);
+    set('p-languages', profile.languages);
+    setChecked('activities-group', profile.activities_hobbies);
+    setSelect('p-rel-status', profile.relationship_status);
+    set('p-ideal-match', profile.ideal_match);
+
+    // Preferences
+    set('p-min-age', profile.min_age);
+    set('p-max-age', profile.max_age);
+    setSelect('p-max-distance', profile.max_distance ? String(profile.max_distance) : null);
+    set('p-pref-height-min', profile.preferred_height_min);
+    set('p-pref-height-max', profile.preferred_height_max);
+    setChecked('pref-body-group', profile.preferred_body_type);
+    setChecked('pref-ethnicity-group', profile.preferred_ethnicities);
+    setChecked('pref-religion-group', profile.preferred_religion);
+    setChecked('pref-politics-group', profile.preferred_politics);
+    setChecked('pref-education-group', profile.preferred_education);
+    setSelect('p-pref-income', profile.preferred_income);
+    setChecked('pref-smoking-group', profile.preferred_smoking);
+    setChecked('pref-alcohol-group', profile.preferred_alcohol);
+    setChecked('pref-rel-status-group', profile.preferred_relationship_status);
+    setSelect('p-date-with-kids', profile.date_with_kids);
+    setSelect('p-relocation-in', profile.relocation_in);
+    setSelect('p-relocation-out', profile.relocation_out);
+    setChecked('dealbreakers-group', Array.isArray(profile.dealbreakers) ? profile.dealbreakers.filter(d => d !== 'Other' && !document.querySelector('#dealbreakers-group input[value="' + d + '"]')?.value) : null);
+    // Handle "Other" text
+    if (Array.isArray(profile.dealbreakers)) {
+      const knownVals = [...document.querySelectorAll('#dealbreakers-group input[type=checkbox]')].map(b => b.value);
+      const otherText = profile.dealbreakers.filter(d => !knownVals.includes(d)).join(', ');
+      if (otherText) {
+        document.getElementById('p-dealbreakers-other').value = otherText;
+        document.getElementById('p-dealbreakers-other').style.display = 'block';
+        const otherBox = document.querySelector('#dealbreakers-group input[value="Other"]');
+        if (otherBox) otherBox.checked = true;
+      }
+      setChecked('dealbreakers-group', profile.dealbreakers);
+    }
+
+    // Load photos into grid
+    allProfilePhotos = [];
+    if (profile.image_url) allProfilePhotos.push(profile.image_url);
+    if (profile.photos && profile.photos.length) {
+      profile.photos.forEach(u => { if (u && !allProfilePhotos.includes(u)) allProfilePhotos.push(u); });
+    }
+    renderPhotoGrid();
+
+    updateProgress();
+  } catch (e) {
+    console.error('Could not load profile:', e);
+  }
+}
+
+// ── STEP 3: Save / Update Profile ────────────────────────────────────────────
+async function saveProfile(silent = false) {
+  if (!silent) { hideAlert('profile-alert'); hideAlert('profile-success'); }
+
+  const seeking = [...document.querySelectorAll('.seeking-cb:checked')].map(c => c.value);
+
+  // Required field validation
+  if (!silent) {
+    const dob = document.getElementById('p-dob').value;
+    const gender = document.getElementById('p-gender').value;
+    const city = document.getElementById('p-city').value.trim();
+    const state = document.getElementById('p-state').value.trim();
+    const errors = [];
+    if (!dob) errors.push('Date of birth is required');
+    if (!gender) errors.push('Gender is required');
+    if (!seeking.length) errors.push('Please select at least one option for Seeking');
+    if (!city) errors.push('City is required');
+    if (!state) errors.push('State is required');
+    if (!allProfilePhotos.length) errors.push('At least one photo is required');
+    const zip = document.getElementById('p-zip').value.trim();
+    if (!zip) errors.push('Postal code is required');
+    if (errors.length) {
+      showAlert('profile-alert', errors.join(' · '), 'error');
+      // Scroll to top of form so they see the error
+      document.getElementById('profile-alert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+
+  if (!silent) setLoading('btn-save', true, 'Saving...');
+
+  // Build params — matches every argument intake_create_profile and intake_update_profile expect
+  const params = {
+    p_email:               currentEmail,
+    p_first_name:          document.getElementById('p-first').value.trim() || null,
+    p_last_name:           document.getElementById('p-last').value.trim() || null,
+    p_middle_name:         null,   // not collected in this form
+    p_phone:               currentPhone || document.getElementById('p-phone').value.trim() || null,
+    p_date_of_birth:       document.getElementById('p-dob').value || null,
+    p_gender:              document.getElementById('p-gender').value || null,
+    p_gender_identity:     null,   // not collected in this form
+    p_street_address:      document.getElementById('p-address').value.trim() || null,
+    p_city:                document.getElementById('p-city').value.trim() || null,
+    p_state:               document.getElementById('p-state').value.trim() || null,
+    p_postal_code:         document.getElementById('p-zip').value.trim() || null,
+    p_country:             'US',
+    p_closest_major_city:  document.getElementById('p-closest-city').value.trim() || null,
+    p_timezone:            Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    p_seeking:             seeking.length ? seeking : null,
+    p_bio:                 document.getElementById('p-bio').value.trim() || null,
+    p_share_with_matchmakers:    document.getElementById('p-share-matchmakers').checked,
+    p_interested_in_matchmaking: document.getElementById('p-interested-matchmaking').checked,
+    p_email_opt_in:              document.getElementById('p-email-opt').checked,
+    p_services_text_opt_in:      document.getElementById('p-services-text').checked,
+    p_marketing_text_opt_in:     document.getElementById('p-marketing-text').checked,
+    p_height_inches: (() => {
+      const ft     = parseInt(document.getElementById('p-height-ft').value);
+      const inches = parseInt(document.getElementById('p-height-in').value);
+      if (!isNaN(ft) && !isNaN(inches)) return ft * 12 + inches;
+      return null;
+    })(),
+    p_body_type:           document.getElementById('p-body-type').value || null,
+    p_hair_color:          document.getElementById('p-hair').value || null,
+    p_eye_color:           document.getElementById('p-eyes').value || null,
+    p_ethnicity:           document.getElementById('p-ethnicity').value ? [document.getElementById('p-ethnicity').value] : null,
+    p_occupation:          document.getElementById('p-occupation').value.trim() || null,
+    p_employer:            document.getElementById('p-employer').value.trim() || null,
+    p_education:           document.getElementById('p-education').value || null,
+    p_university:          null,   // not collected in this form
+    p_relationship_status: document.getElementById('p-rel-status').value || null,
+    p_kids:                document.getElementById('p-kids').value || null,
+    p_want_kids:           document.getElementById('p-want-kids').value || null,
+    p_pets:                document.getElementById('p-pets').value.trim() || null,
+    p_smoking:             document.getElementById('p-smoking').value || null,
+    p_drinking:            document.getElementById('p-drinking').value || null,
+    p_religion:            document.getElementById('p-religion').value || null,
+    p_politics:            document.getElementById('p-politics').value || null,
+    p_income_level:        document.getElementById('p-income').value || null,
+    p_activities_hobbies:  getChecked('activities-group'),
+    p_languages:           document.getElementById('p-languages').value.trim() || null,
+    p_ideal_match:         document.getElementById('p-ideal-match').value.trim() || null,
+    p_dealbreakers:        (() => {
+      const checked = getChecked('dealbreakers-group');
+      const other = document.getElementById('p-dealbreakers-other').value.trim();
+      if (!checked && !other) return null;
+      const arr = checked || [];
+      if (other) arr.push(other);
+      return arr.length ? arr : null;
+    })(),
+    p_date_with_kids:      document.getElementById('p-date-with-kids').value || null,
+    p_relocation_in:       document.getElementById('p-relocation-in').value || null,
+    p_relocation_out:      document.getElementById('p-relocation-out').value || null,
+    p_min_age:             document.getElementById('p-min-age').value ? parseInt(document.getElementById('p-min-age').value) : null,
+    p_max_age:             document.getElementById('p-max-age').value ? parseInt(document.getElementById('p-max-age').value) : null,
+    p_max_distance:        document.getElementById('p-max-distance').value ? parseInt(document.getElementById('p-max-distance').value) : null,
+    p_preferred_height_min:         document.getElementById('p-pref-height-min').value.trim() || null,
+    p_preferred_height_max:         document.getElementById('p-pref-height-max').value.trim() || null,
+    p_preferred_body_type:           getChecked('pref-body-group'),
+    p_preferred_ethnicities:         getChecked('pref-ethnicity-group'),
+    p_preferred_religion:            getChecked('pref-religion-group'),
+    p_preferred_politics:            getChecked('pref-politics-group'),
+    p_preferred_education:           getChecked('pref-education-group'),
+    p_preferred_income:              document.getElementById('p-pref-income').value || null,
+    p_preferred_smoking:             getChecked('pref-smoking-group'),
+    p_preferred_alcohol:             getChecked('pref-alcohol-group'),
+    p_preferred_relationship_status: getChecked('pref-rel-status-group'),
+    // Required by intake_create_profile only — org resolved server-side from slug
+    p_organization_id: null,
+    p_org_slug:        orgSlug,
+  };
+
+  try {
+    let profileId;
+    // If we already have a stub row (new user post-OTP) OR existing user — always update.
+    // Only create a brand-new full profile if somehow no stub exists yet.
+    if (isExistingUser || currentProfileId) {
+      // intake_update_profile does not accept p_org_slug or p_organization_id
+      const { p_org_slug, p_organization_id, ...updateParams } = params;
+      profileId = await rpc('intake_update_profile', updateParams);
+    } else {
+      profileId = await rpc('intake_create_profile', params);
+    }
+    currentProfileId = profileId;
+    await uploadPhotos(profileId);
+    if (!silent) {
+      if (isExistingUser) {
+        document.getElementById('success-msg').textContent = 'Your profile has been updated successfully. Our team will be in touch soon.';
+      }
+      showScreen('success');
+    } else {
+      // Show a subtle autosave indicator
+      showAutosaveIndicator();
+    }
+  } catch (e) {
+    if (!silent) {
+      showAlert('profile-alert', 'There was a problem saving your profile. Please try again. If this keeps happening, contact us at hello@smittensingles.com.', 'error');
+      document.getElementById('profile-alert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    console.error('saveProfile error:', e);
+  }
+
+  if (!silent) setLoading('btn-save', false, isExistingUser ? 'Update Profile' : 'Save Profile');
+}
+
+// ── Autosave indicator ────────────────────────────────────────────────────────
+function showAutosaveIndicator() {
+  let indicator = document.getElementById('autosave-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'autosave-indicator';
+    indicator.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 999;
+      background: #166534; color: white; font-family: 'Montserrat', sans-serif;
+      font-size: 12px; font-weight: 600; padding: 8px 14px;
+      border-radius: 8px; opacity: 0; transition: opacity 0.3s ease;
+      pointer-events: none;
+    `;
+    indicator.textContent = '✓ Draft saved';
+    document.body.appendChild(indicator);
+  }
+  indicator.style.opacity = '1';
+  clearTimeout(indicator._hideTimer);
+  indicator._hideTimer = setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
+}
+
+// ── Photo system (drag-to-reorder, 6 max) ────────────────────────────────────
+const MAX_PHOTOS = 6;
+let allProfilePhotos = []; // [image_url, ...photos] flat array
+let _photoUploadTargetSlot = null;
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  // Always render all MAX_PHOTOS slots so grid is always full
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    const url = allProfilePhotos[i] || null;
+    const slot = document.createElement('div');
+    const slotIndex = i; // capture for closures
+
+    if (url) {
+      // Filled slot
+      slot.className = 'photo-slot has-photo' + (slotIndex === 0 ? ' is-main' : '');
+      slot.draggable = true;
+      slot.dataset.index = slotIndex;
+
+      const img = document.createElement('img');
+      img.src = url;
+      slot.appendChild(img);
+
+      if (slotIndex === 0) {
+        const badge = document.createElement('div');
+        badge.className = 'main-badge';
+        badge.textContent = 'MAIN';
+        slot.appendChild(badge);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'photo-delete-btn';
+      del.innerHTML = '×';
+      slot.appendChild(del);
+
+      // Click img → lightbox; click delete → delete; click slot background → replace
+      img.addEventListener('click', (e) => { e.stopPropagation(); lbOpen(allProfilePhotos.filter(Boolean), slotIndex); });
+      del.addEventListener('click', (e) => { e.stopPropagation(); confirmDeletePhoto(slotIndex); });
+      slot.addEventListener('click', (e) => {
+        if (e.target === img || e.target === del || (e.target.classList && e.target.classList.contains('main-badge'))) return;
+        _photoUploadTargetSlot = slotIndex;
+        document.getElementById('photo-file-input').click();
+      });
+
+      // Drag events
+      slot.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', String(slotIndex));
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => slot.classList.add('dragging'), 0);
+      });
+      slot.addEventListener('dragend', () => slot.classList.remove('dragging'));
+
+    } else {
+      // Empty slot
+      slot.className = 'photo-slot';
+      slot.innerHTML = '<span class="cam">+</span>';
+      slot.addEventListener('click', () => {
+        _photoUploadTargetSlot = slotIndex;
+        document.getElementById('photo-file-input').click();
+      });
+    }
+
+    // Drop target on every slot
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('drag-over');
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = slotIndex;
+      if (isNaN(fromIdx) || fromIdx === toIdx) return;
+      if (toIdx >= allProfilePhotos.length) return; // can't drop onto empty
+      reorderPhotos(fromIdx, toIdx);
+    });
+
+    grid.appendChild(slot);
+  }
+}
+
+async function reorderPhotos(fromIdx, toIdx) {
+  const reordered = [...allProfilePhotos];
+  const [moved] = reordered.splice(fromIdx, 1);
+  reordered.splice(toIdx, 0, moved);
+  await savePhotos(reordered);
+}
+
+async function handlePhotoFileInput(input) {
+  if (!input.files[0]) return;
+  if (!supabaseSession) { console.warn('No session'); return; }
+  if (!currentProfileId) { console.warn('No profile ID'); return; }
+  const file = input.files[0];
+  try {
+    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
+    const ext = file.name.split('.').pop();
+    const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}`, 'Content-Type': file.type },
+      body: file
+    });
+    if (!r.ok) { console.warn('Upload failed'); return; }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
+    const newAll = [...allProfilePhotos];
+    const slot = _photoUploadTargetSlot;
+    if (slot !== null && slot < newAll.length) {
+      newAll[slot] = publicUrl;
+    } else {
+      if (newAll.length >= MAX_PHOTOS) { alert(`Maximum ${MAX_PHOTOS} photos allowed.`); return; }
+      newAll.push(publicUrl);
+    }
+    _photoUploadTargetSlot = null;
+    await savePhotos(newAll);
+  } catch(e) { console.warn('Photo upload failed:', e); }
+  input.value = '';
+}
+
+async function savePhotos(newAll) {
+  const newImageUrl = newAll[0] || null;
+  const newPhotos = newAll.slice(1);
+  await rpc('intake_update_profile', {
+    p_email: currentEmail,
+    p_image_url: newImageUrl,
+    p_photos: newPhotos.length ? newPhotos : null
+  });
+  allProfilePhotos = newAll;
+  renderPhotoGrid();
+  showAutosaveIndicator();
+}
+
+// ── Photo delete confirmation ─────────────────────────────────────────────────
+let _pendingDeleteSlot = null;
+
+function confirmDeletePhoto(slot) {
+  _pendingDeleteSlot = slot;
+  const overlay = document.getElementById('photo-confirm-overlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closePhotoConfirm() {
+  _pendingDeleteSlot = null;
+  const overlay = document.getElementById('photo-confirm-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+async function executeDeletePhoto() {
+  const slot = _pendingDeleteSlot;
+  closePhotoConfirm();
+  if (slot === null || slot === undefined) return;
+  const newAll = allProfilePhotos.filter((_, i) => i !== slot);
+  await savePhotos(newAll);
+}
+
+// Legacy stubs — kept so any existing call sites don't break
+function previewMainPhoto() {}
+function previewExtra() {}
+function mainPhotoClick() {}
+function extraPhotoClick() {}
+async function autoUploadPhoto() {}
+async function uploadPhotos() {}
+async function deletePhoto() {}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+function updateProgress() {
+  const fields = document.querySelectorAll('#screen-profile input:not([readonly]):not([type=hidden]), #screen-profile select, #screen-profile textarea');
+  let filled = 0;
+  fields.forEach(f => {
+    if (f.type === 'checkbox') { if (f.checked) filled++; }
+    else if (f.value && f.value.trim()) filled++;
+  });
+  const pct = Math.min(10 + Math.round((filled / fields.length) * 90), 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ── Checkbox group helpers ────────────────────────────────────────────────────
+function getChecked(groupId) {
+  const boxes = document.querySelectorAll(`#${groupId} input[type=checkbox]:checked`);
+  const vals = [...boxes].map(b => b.value);
+  return vals.length ? vals : null;
+}
+
+function setChecked(groupId, values) {
+  if (!values || !Array.isArray(values)) return;
+  document.querySelectorAll(`#${groupId} input[type=checkbox]`).forEach(cb => {
+    cb.checked = values.includes(cb.value);
+  });
+}
+
+function buildCheckboxGroup(containerId, options, onchange) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = options.map(o =>
+    `<label class="check-item" style="font-size:13px;">
+      <input type="checkbox" value="${o.value}" ${onchange ? `onchange="${onchange}"` : ''}>
+      ${o.label}
+    </label>`
+  ).join('');
+}
+
+// When "All" is checked, uncheck others; when any other is checked, uncheck "All"
+// Lifestyle groups (ethnicity, activities, dealbreakers):
+// Checking "All" unchecks everything else. Checking anything else unchecks "All".
+function handleAllCheckbox(groupId) {
+  const allBox = document.querySelector(`#${groupId} input[value="All"]`);
+  if (!allBox) return;
+  const others = [...document.querySelectorAll(`#${groupId} input[type=checkbox]`)].filter(b => b.value !== 'All');
+  allBox.addEventListener('change', () => {
+    if (allBox.checked) others.forEach(b => b.checked = false);
+  });
+  others.forEach(b => b.addEventListener('change', () => {
+    if (b.checked) allBox.checked = false;
+  }));
+}
+
+// Preference groups (pref-*):
+// Checking "Any" checks ALL options. Unchecking any individual option unchecks "Any".
+function handleAnyCheckbox(groupId) {
+  const anyBox = document.querySelector(`#${groupId} input[value="Any"]`);
+  if (!anyBox) return;
+  const others = [...document.querySelectorAll(`#${groupId} input[type=checkbox]`)].filter(b => b.value !== 'Any');
+  anyBox.addEventListener('change', () => {
+    others.forEach(b => b.checked = anyBox.checked);
+  });
+  others.forEach(b => b.addEventListener('change', () => {
+    if (!b.checked) anyBox.checked = false;
+    if (others.every(o => o.checked)) anyBox.checked = true;
+  }));
+}
+
+// Show/hide "Other" textarea for dealbreakers
+function handleDealbreakerOther() {
+  const otherBox = document.querySelector('#dealbreakers-group input[value="Other"]');
+  const otherText = document.getElementById('p-dealbreakers-other');
+  if (!otherBox || !otherText) return;
+  otherBox.addEventListener('change', () => {
+    otherText.style.display = otherBox.checked ? 'block' : 'none';
+  });
+}
+
+// ── Load dropdown options from Supabase ───────────────────────────────────────
+// Checkbox group definitions: [groupId, category]
+const CHECKBOX_GROUPS = [
+  ['activities-group',      'activities'],
+  ['dealbreakers-group',    'dealbreakers'],
+  ['pref-body-group',       'body_type'],
+  ['pref-ethnicity-group',  'ethnicity'],
+  ['pref-religion-group',   'religion'],
+  ['pref-politics-group',   'politics'],
+  ['pref-education-group',  'education'],
+  ['pref-smoking-group',    'smoking'],
+  ['pref-alcohol-group',    'drinking'],
+  ['pref-rel-status-group', 'relationship_status'],
+];
+
+async function loadOptions() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profile_options?select=category,value,label,sort_order&is_active=eq.true&order=category,sort_order`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+    });
+    const options = await r.json();
+
+    // Group by category
+    const grouped = {};
+    options.forEach(o => {
+      if (!grouped[o.category]) grouped[o.category] = [];
+      grouped[o.category].push(o);
+    });
+
+    // Populate dropdowns
+    document.querySelectorAll('select[data-category]').forEach(sel => {
+      const category = sel.getAttribute('data-category');
+      const opts = grouped[category] || [];
+      const isAny = sel.querySelector('option')?.value === '' && sel.querySelector('option')?.textContent === 'Any';
+      const placeholder = isAny ? '<option value="">Any</option>' : '<option value="">Select...</option>';
+      sel.innerHTML = placeholder + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    });
+
+    // Populate checkbox groups
+    // All checkbox groups use the same "Any/All checks everything" behavior
+    CHECKBOX_GROUPS.forEach(([groupId, category]) => {
+      const opts = grouped[category] || [];
+      buildCheckboxGroup(groupId, opts);
+      handleAnyCheckbox(groupId);
+    });
+
+    handleDealbreakerOther();
+
+    // Wire checkbox changes to autosave
+    document.querySelectorAll('#screen-profile .checkbox-group input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', () => { updateProgress(); if (currentEmail && supabaseSession) autosave(); });
+    });
+
+  } catch (e) {
+    console.error('Could not load profile options:', e);
+  }
+}
+
+function returnToProfile() {
+  showScreen('profile');
+}
+
+// ── Autosave on blur ──────────────────────────────────────────────────────────
+let autosaveTimeout = null;
+let autosaveInProgress = false;
+
+function autosave() {
+  // Must have a session and either a stub row or be an existing user
+  if (!currentEmail || !supabaseSession) return;
+  if (!currentProfileId && !isExistingUser) return;
+
+  // Debounce — wait 800ms after last blur before firing
+  clearTimeout(autosaveTimeout);
+  autosaveTimeout = setTimeout(async () => {
+    if (autosaveInProgress) return;
+    autosaveInProgress = true;
+    try {
+      await saveProfile(true); // silent = true
+    } catch (e) {
+      console.warn('Autosave failed:', e);
+    } finally {
+      autosaveInProgress = false;
+    }
+  }, 800);
+}
+</script>
+<!-- Photo delete confirmation modal -->
+<div id="photo-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:32px 28px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;">
+    <div style="font-size:32px;margin-bottom:12px;">🗑️</div>
+    <h3 style="font-family:Montserrat,sans-serif;font-size:18px;color:#1A1414;margin-bottom:8px;">Remove Photo?</h3>
+    <p style="font-size:13px;color:#5A5353;margin-bottom:24px;line-height:1.5;">This will permanently remove the photo from your profile.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button onclick="closePhotoConfirm()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E8E8E8;background:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#5A5353;">Cancel</button>
+      <button id="photo-confirm-btn" onclick="executeDeletePhoto()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#C6302C;color:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Remove</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
