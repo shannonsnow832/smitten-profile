@@ -1995,10 +1995,11 @@ function openProfile(p) {
       });
     }
   }
+  const banBtn = document.getElementById('btn-modal-ban');
   if (banBtn) {
-    banBtn.textContent = p.banned_at ? 'Unban' : 'Ban';
-    banBtn.style.background = p.banned_at ? '#7c3aed' : 'transparent';
-    banBtn.style.color = p.banned_at ? 'white' : '#7c3aed';
+    banBtn.textContent = p.banned ? 'Unban' : 'Ban';
+    banBtn.style.background = p.banned ? '#7c3aed' : 'transparent';
+    banBtn.style.color = p.banned ? 'white' : '#7c3aed';
   }
   setChk('m-interested-matchmaking', p.interested_in_matchmaking);
   setChk('m-email-opt', p.email_opt_in);
