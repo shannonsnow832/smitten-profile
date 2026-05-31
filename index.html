@@ -691,8 +691,9 @@
         <div class="completeness-card" id="completeness-card" style="display:none;">
           <h3>
             Profile Completeness
-            <span class="completeness-pct" id="completeness-pct-label">0%</span>
+            <span class="completeness-pct" id="completeness-pct-label"></span>
           </h3>
+          <p style="font-size:12px;color:var(--gray-mid);margin:-4px 0 12px;">These are the most commonly used matchmaking fields. Completing your <strong>entire profile</strong> gives matchmakers the full picture and leads to better matches.</p>
           <div class="completeness-bar">
             <div class="completeness-bar-fill" id="completeness-bar-fill" style="width:0%"></div>
           </div>
@@ -2133,6 +2134,7 @@ function returnToProfile() {
 
 // ── Completeness checklist ────────────────────────────────────────────────────
 const COMPLETENESS_FIELDS = [
+  { key: 'photo',         label: 'Profile photo' },
   { key: 'gender',        label: 'Gender' },
   { key: 'date_of_birth', label: 'Date of birth' },
   { key: 'seeking',       label: 'Seeking' },
@@ -2143,7 +2145,6 @@ const COMPLETENESS_FIELDS = [
   { key: 'body_type',     label: 'Body type' },
   { key: 'min_age',       label: 'Min age preference' },
   { key: 'max_age',       label: 'Max age preference' },
-  { key: 'photo',         label: 'Profile photo' },
   { key: 'postal_code',   label: 'Zip / postal code' },
 ];
 
@@ -2157,14 +2158,6 @@ async function refreshCompletenessChecklist() {
   try {
     const profile = await rpc('intake_load_profile', { p_email: currentEmail });
     if (!profile) return;
-
-    const pct = profile.completeness_pct ?? 0;
-
-    // Update label + bar
-    pctLabel.textContent = pct + '%';
-    pctLabel.className = 'completeness-pct' + (pct === 100 ? ' complete' : '');
-    barFill.style.width = pct + '%';
-    barFill.className = 'completeness-bar-fill' + (pct === 100 ? ' complete' : '');
 
     // Determine which fields are filled
     const done = {
@@ -2181,6 +2174,18 @@ async function refreshCompletenessChecklist() {
       photo:         !!(profile.image_url || (profile.photos && profile.photos.length)),
       postal_code:   !!(profile.postal_code && profile.postal_code.trim()),
     };
+
+    // Use DB completeness_pct, but fall back to client-side calculation if DB
+    // returns 0 while fields are clearly populated (stale trigger / timing issue)
+    const filledCount = Object.values(done).filter(Boolean).length;
+    const clientPct = filledCount === 12 ? 100 : filledCount * 8;
+    const dbPct = profile.completeness_pct ?? 0;
+    const pct = (dbPct === 0 && filledCount > 0) ? clientPct : dbPct;
+
+    pctLabel.textContent = pct + '%';
+    pctLabel.className = 'completeness-pct' + (pct === 100 ? ' complete' : '');
+    barFill.style.width = pct + '%';
+    barFill.className = 'completeness-bar-fill' + (pct === 100 ? ' complete' : '');
 
     list.innerHTML = COMPLETENESS_FIELDS.map(f => `
       <div class="completeness-item ${done[f.key] ? 'done' : ''}">
