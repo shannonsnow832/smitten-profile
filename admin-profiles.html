@@ -114,8 +114,11 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* ── PROFILES TAB ── */
-  .profiles-layout { display: grid; grid-template-columns: 280px 1fr; gap: 0; min-height: calc(100vh - 56px); }
+  /* ── SHARED APP LAYOUT — sidebar persists across tabs ── */
+  .app-layout { display: grid; grid-template-columns: 280px 1fr; gap: 0; min-height: calc(100vh - 56px); }
+  .app-content { min-width: 0; overflow: hidden; }
+  /* Legacy alias */
+  .profiles-layout { display: contents; }
 
   /* FILTER SIDEBAR */
   .filter-sidebar {
@@ -552,13 +555,13 @@
     </div>
   </div>
 
-  <!-- PROFILES TAB -->
-  <div id="tab-profiles" class="tab-panel active">
-    <div class="profiles-layout">
-      <!-- SIDEBAR FILTERS -->
-      <div class="filter-sidebar">
-        <h3>Filters</h3>
-        <div class="filter-sidebar-scroll">
+  <!-- SHARED APP LAYOUT: sidebar persists across Profiles/Matching tabs -->
+  <div class="app-layout">
+
+    <!-- SHARED SIDEBAR FILTERS -->
+    <div class="filter-sidebar">
+      <h3>Filters</h3>
+      <div class="filter-sidebar-scroll">
 
         <!-- BASIC — always open -->
         <div class="filter-section">
@@ -766,159 +769,53 @@
 
         </div><!-- end filter-sidebar-scroll -->
         <div class="filter-sidebar-footer">
-          <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
+          <button class="btn-apply" id="sidebar-action-btn" onclick="sidebarAction()">Apply Filters</button>
           <button class="btn-clear" onclick="clearFilters()">Clear All</button>
         </div>
-      </div>
+      </div><!-- end shared sidebar -->
 
-      <!-- MAIN CONTENT -->
-      <div class="profiles-main">
-        <div class="profiles-header">
-          <h2>All Profiles</h2>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span class="profile-count" id="profile-count"></span>
-            <button class="btn btn-outline" onclick="exportCSV()" id="btn-export" style="font-size:12px;padding:6px 14px">Export CSV</button>
+    <!-- APP CONTENT: tab panels -->
+    <div class="app-content">
+
+      <!-- PROFILES TAB -->
+      <div id="tab-profiles" class="tab-panel active">
+        <!-- MAIN CONTENT -->
+        <div class="profiles-main">
+          <div class="profiles-header">
+            <h2>All Profiles</h2>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="profile-count" id="profile-count"></span>
+              <button class="btn btn-outline" onclick="exportCSV()" id="btn-export" style="font-size:12px;padding:6px 14px">Export CSV</button>
+            </div>
           </div>
-        </div>
 
-        <div class="search-bar">
-          <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
+          <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search by name or email…" oninput="debounceSearch()">
+          </div>
+          <div id="profiles-list" class="profiles-grid">
+            <div class="loading-state">Loading profiles…</div>
+          </div>
+          <div class="pagination" id="pagination"></div>
         </div>
-        <!-- quick filters moved to sidebar priority section -->
-        <div id="profiles-list" class="profiles-grid">
-          <div class="loading-state">Loading profiles…</div>
-        </div>
-        <div class="pagination" id="pagination"></div>
       </div>
-    </div>
-  </div>
 
 
   <!-- MATCHING TAB -->
   <div id="tab-matching" class="tab-panel">
-    <div style="display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 56px)">
-      <!-- MATCHING SIDEBAR -->
-      <div style="background:white;border-right:1px solid #E8E8E8;padding:24px 20px;overflow-y:auto;position:sticky;top:56px;height:calc(100vh - 56px)">
-        <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gray-mid);margin-bottom:20px">Pool Filters</h3>
-
-        <div class="filter-group">
-          <label>Age Range</label>
-          <div class="age-range">
-            <input type="number" id="m-pool-age-min" placeholder="Min" min="18" max="99">
-            <input type="number" id="m-pool-age-max" placeholder="Max" min="18" max="99">
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Gender</label>
-          <select id="m-pool-gender"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Income</label>
-          <select id="m-pool-income"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Has Kids</label>
-          <select id="m-pool-kids"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Wants Kids</label>
-          <select id="m-pool-want-kids"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Religion</label>
-          <select id="m-pool-religion"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Education</label>
-          <select id="m-pool-education"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Seeking</label>
-          <select id="m-pool-seeking"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Has Photo</label>
-          <select id="m-pool-photo">
-            <option value="">Any</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>State</label>
-          <input type="text" id="m-pool-state" placeholder="e.g. Nebraska">
-        </div>
-        <div class="filter-group">
-          <label>City</label>
-          <input type="text" id="m-pool-city" placeholder="e.g. Omaha">
-        </div>
-        <div class="filter-group">
-          <label>Distance Search</label>
-          <input type="text" id="m-pool-distance-zip" placeholder="Center zip code" style="margin-bottom:6px">
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="number" id="m-pool-distance-miles" placeholder="Miles" min="1" max="500" style="width:80px">
-            <span style="font-size:12px;color:var(--gray-mid)">miles radius</span>
-          </div>
-          <div id="m-pool-distance-status" style="font-size:11px;color:var(--gray-mid);margin-top:4px"></div>
-        </div>
-        <div class="filter-group">
-          <label>Relationship Status</label>
-          <select id="m-pool-rel-status"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Politics</label>
-          <select id="m-pool-politics"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Body Type</label>
-          <select id="m-pool-body-type"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Smoking</label>
-          <select id="m-pool-smoking"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Drinking</label>
-          <select id="m-pool-drinking"><option value="">Any</option></select>
-        </div>
-        <div class="filter-group">
-          <label>Share w/ Matchmakers</label>
-          <select id="m-pool-matchmakers">
-            <option value="">Any</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Activities / Interests</label>
-          <input type="text" id="m-pool-activities" placeholder="e.g. hiking, cooking..." style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filter-group">
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-mid)">Or Build from Event</label>
-          <select id="m-pool-event" style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;background:white">
-            <option value="">Manual filters above</option>
-          </select>
-          <div style="font-size:11px;color:var(--gray-mid);margin-top:4px">Loads all invited attendees</div>
-        </div>
-
-        <div id="pool-mf-count" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-bottom:8px;display:none"></div>
-
-        <button class="btn-apply" onclick="buildPool()">Build Pool</button>
-        <button onclick="clearPoolFilters()" style="width:100%;margin-top:8px;padding:9px;border:1px solid #ddd;border-radius:var(--radius-sm);background:white;color:var(--gray-dark);font-size:13px;font-family:Montserrat,sans-serif;cursor:pointer">Clear Filters</button>
-        <div id="pool-status" style="font-size:12px;color:var(--gray-mid);margin-top:10px;text-align:center"></div>
-      </div>
-
       <!-- MATCHING MAIN -->
       <div style="padding:24px 28px;overflow-y:auto;height:calc(100vh - 56px)">
-        <!-- MODE TABS -->
-        <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center">
+        <!-- MODE TABS + SECONDARY FILTERS -->
+        <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-primary" id="match-mode-1to1" onclick="setMatchMode('1to1')">1-to-1 Match</button>
           <button class="btn btn-outline" id="match-mode-group" onclick="setMatchMode('group')">Group Match</button>
           <span id="pool-count-badge" style="font-size:12px;color:var(--gray-mid);margin-left:8px"></span>
+          <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+            <input type="text" id="m-pool-activities" placeholder="Activities filter (e.g. hiking)" style="width:180px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
+            <select id="m-pool-event" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;background:white">
+              <option value="">Or load from event…</option>
+            </select>
+            <div id="pool-status" style="font-size:12px;color:var(--gray-mid);white-space:nowrap"></div>
+          </div>
         </div>
 
         <!-- 1-TO-1 MODE -->
@@ -1050,7 +947,6 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 
   <div id="tab-staff" class="tab-panel">
@@ -1146,6 +1042,8 @@
       </div>
     </div>
   </div>
+    </div><!-- end app-content -->
+  </div><!-- end app-layout -->
 </div>
 
 <!-- PROFILE DETAIL MODAL -->
@@ -1589,9 +1487,27 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  // Update sidebar action button based on active tab
+  const actionBtn = document.getElementById('sidebar-action-btn');
+  if (actionBtn) {
+    if (name === 'matching') {
+      actionBtn.textContent = 'Build Pool';
+    } else {
+      actionBtn.textContent = 'Apply Filters';
+    }
+  }
   if (name === 'staff') { const s = document.getElementById('staff-search'); if(s) s.value=''; loadStaff(); loadStaffRoles(); }
-  if (name === 'matching') { loadMatchingOptions(); loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); }
+  if (name === 'matching') { loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); }
   if (name === 'archived') loadArchivedProfiles();
+}
+
+function sidebarAction() {
+  const activeTab = document.querySelector('.tab-panel.active');
+  if (activeTab && activeTab.id === 'tab-matching') {
+    buildPool();
+  } else {
+    applyFilters();
+  }
 }
 
 function toggleFilter(header) {
@@ -1857,7 +1773,8 @@ function renderProfiles(profiles) {
     const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
     const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
     const location = [p.city, p.state].filter(Boolean).join(', ');
-    const meta = [age ? `${age} yrs` : null, p.gender, location].filter(Boolean).join(' · ');
+    const locationWithZip = [location, p.postal_code].filter(Boolean).join(' · ');
+    const meta = [age ? `${age} yrs` : null, p.gender, locationWithZip].filter(Boolean).join(' · ');
     const avatar = p.image_url
       ? '<img src="' + p.image_url + '" alt="' + name + '" onerror="this.style.display=&apos;none&apos;">'
       : '<span>' + initials + '</span>';
@@ -3103,9 +3020,6 @@ function setMatchMode(mode) {
   document.getElementById('match-group-panel').style.display = mode === 'group' ? '' : 'none';
   document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
   document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
-  // Show pool sidebar only for group mode
-  const sidebar = document.querySelector('#tab-matching > div > div:first-child');
-  if (sidebar) sidebar.style.display = mode === 'group' ? '' : 'none';
 }
 
 
@@ -3268,16 +3182,10 @@ async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
 }
 
 function clearPoolFilters() {
-  ['m-pool-age-min','m-pool-age-max','m-pool-state','m-pool-city','m-pool-distance-zip','m-pool-distance-miles','m-pool-activities'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  ['m-pool-gender','m-pool-income','m-pool-kids','m-pool-want-kids','m-pool-religion',
-   'm-pool-education','m-pool-seeking','m-pool-photo','m-pool-rel-status','m-pool-politics',
-   'm-pool-body-type','m-pool-smoking','m-pool-drinking','m-pool-matchmakers'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
+  clearFilters();
   matchPool = [];
-  document.getElementById('pool-status').textContent = '';
+  const statusEl = document.getElementById('pool-status');
+  if (statusEl) statusEl.textContent = '';
   document.getElementById('pool-count-badge').textContent = '';
   const preview = document.getElementById('pool-preview');
   if (preview) preview.style.display = 'none';
@@ -3517,28 +3425,138 @@ function renderPoolPreview() {
 
 async function buildPool() {
   const statusEl = document.getElementById('pool-status');
-  statusEl.textContent = 'Building pool...';
+  if (statusEl) statusEl.textContent = 'Building pool...';
   const token = supabaseSession || SUPABASE_ANON;
 
-  let params = ['deleted_at=is.null', 'is_active=eq.true', 'invite_paused=eq.false', 'banned=eq.false'];
-  const ageMin = document.getElementById('m-pool-age-min').value;
-  const ageMax = document.getElementById('m-pool-age-max').value;
-  const gender = document.getElementById('m-pool-gender').value;
-  const seeking = document.getElementById('m-pool-seeking').value;
-  const state = document.getElementById('m-pool-state').value.trim();
-  const city = document.getElementById('m-pool-city').value.trim();
-  const religion = document.getElementById('m-pool-religion').value;
-  const politics = document.getElementById('m-pool-politics').value;
-  const education = document.getElementById('m-pool-education').value;
-  const income = document.getElementById('m-pool-income').value;
-  const hasPhoto = document.getElementById('m-pool-photo').value;
-  const bodyType = document.getElementById('m-pool-body-type').value;
-  const smoking = document.getElementById('m-pool-smoking').value;
-  const drinking = document.getElementById('m-pool-drinking').value;
-  const kids = document.getElementById('m-pool-kids').value;
-  const wantKids = document.getElementById('m-pool-want-kids').value;
-  const relStatus = document.getElementById('m-pool-rel-status').value;
-  const matchmakers = document.getElementById('m-pool-matchmakers').value;
+  // Read from unified sidebar filters (same as applyFilters)
+  const getVal = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const ageMin = getVal('f-age-min');
+  const ageMax = getVal('f-age-max');
+  const gender = getVal('f-gender');
+  const seeking = getVal('f-seeking');
+  const state = getVal('f-state');
+  const city = getVal('f-city');
+  const zip = getVal('f-zip');
+  const hasPhoto = getVal('f-has-photo');
+  const matchmakers = getVal('f-matchmakers');
+  const status = getVal('f-status');
+  const distanceZip = getVal('f-distance-zip');
+  const distanceMiles = parseFloat(getVal('f-distance-miles')) || 0;
+  const relocationIn = getVal('f-relocation-in');
+  const relocationOut = getVal('f-relocation-out');
+  const dateWithKids = getVal('f-date-with-kids');
+  const religion = msGetValues('f-religion');
+  const politics = msGetValues('f-politics');
+  const education = msGetValues('f-education');
+  const income = msGetValues('f-income');
+  const bodyType = msGetValues('f-body-type');
+  const smoking = msGetValues('f-smoking');
+  const drinking = msGetValues('f-drinking');
+  const kids = msGetValues('f-kids');
+  const wantKids = msGetValues('f-want-kids');
+  const relStatus = msGetValues('f-rel-status');
+
+  let params = ['deleted_at=is.null'];
+
+  // Status filter — apply exactly as specified (no override)
+  if (status === 'active') { params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned=eq.false'); }
+  else if (status === 'inactive') { params.push('is_active=eq.false'); }
+  else if (status === 'invite_paused') { params.push('invite_paused=eq.true'); }
+  else if (status === 'banned') { params.push('banned=eq.true'); }
+  else { params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned=eq.false'); } // default
+
+  if (gender) params.push(`gender=eq.${encodeURIComponent(gender)}`);
+  if (seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + seeking + '"}')}`) ;
+  if (state) params.push(`state=eq.${encodeURIComponent(state)}`);
+  if (city) params.push(`city=eq.${encodeURIComponent(city)}`);
+  if (zip) params.push(`postal_code=eq.${encodeURIComponent(zip)}`);
+  if (hasPhoto === 'yes') params.push('image_url=not.is.null');
+  if (hasPhoto === 'no') params.push('image_url=is.null');
+  if (matchmakers) params.push(`share_with_matchmakers=eq.${matchmakers}`);
+  if (religion && religion.length) params.push(`religion=in.(${religion.map(v=>`"${v}"`).join(',')})`);
+  if (politics && politics.length) params.push(`politics=in.(${politics.map(v=>`"${v}"`).join(',')})`);
+  if (education && education.length) params.push(`education=in.(${education.map(v=>`"${v}"`).join(',')})`);
+  if (income && income.length) params.push(`income_level=in.(${income.map(v=>`"${v}"`).join(',')})`);
+  if (bodyType && bodyType.length) params.push(`body_type=in.(${bodyType.map(v=>`"${v}"`).join(',')})`);
+  if (smoking && smoking.length) params.push(`smoking=in.(${smoking.map(v=>`"${v}"`).join(',')})`);
+  if (drinking && drinking.length) params.push(`drinking=in.(${drinking.map(v=>`"${v}"`).join(',')})`);
+  if (kids && kids.length) params.push(`kids=in.(${kids.map(v=>`"${v}"`).join(',')})`);
+  if (wantKids && wantKids.length) params.push(`want_kids=in.(${wantKids.map(v=>`"${v}"`).join(',')})`);
+  if (relStatus && relStatus.length) params.push(`relationship_status=in.(${relStatus.map(v=>`"${v}"`).join(',')})`);
+  if (relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(relocationIn)}`);
+  if (relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(relocationOut)}`);
+  if (dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(dateWithKids)}`);
+
+  // Server-side age filter
+  if (ageMin || ageMax) {
+    const today = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    if (ageMin) { const d = new Date(today); d.setFullYear(d.getFullYear()-parseInt(ageMin)); params.push(`date_of_birth=lte.${fmt(d)}`); }
+    if (ageMax) { const d = new Date(today); d.setFullYear(d.getFullYear()-parseInt(ageMax)); params.push(`date_of_birth=gte.${fmt(d)}`); }
+  }
+
+  // Distance filter
+  if (distanceZip && distanceMiles) {
+    const statusEl2 = document.getElementById('f-distance-status');
+    if (statusEl2) statusEl2.textContent = 'Geocoding zip...';
+    try {
+      const geo = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(distanceZip)}`);
+      const geoData = await geo.json();
+      if (geoData && geoData.places && geoData.places[0]) {
+        const centerLat = parseFloat(geoData.places[0].latitude);
+        const centerLon = parseFloat(geoData.places[0].longitude);
+        const latDelta = distanceMiles / 69.0;
+        const lonDelta = distanceMiles / (69.0 * Math.cos(centerLat * Math.PI / 180));
+        params.push(`latitude=gte.${(centerLat-latDelta).toFixed(4)}`);
+        params.push(`latitude=lte.${(centerLat+latDelta).toFixed(4)}`);
+        params.push(`longitude=gte.${(centerLon-lonDelta).toFixed(4)}`);
+        params.push(`longitude=lte.${(centerLon+lonDelta).toFixed(4)}`);
+        if (statusEl2) statusEl2.textContent = `Within ${distanceMiles}mi of ${distanceZip}`;
+      } else {
+        if (statusEl2) statusEl2.textContent = 'Zip not found';
+      }
+    } catch(e) {
+      if (document.getElementById('f-distance-status')) document.getElementById('f-distance-status').textContent = 'Geocode failed';
+    }
+  }
+
+  // Event-based pool override
+  const eventId = document.getElementById('m-pool-event') ? document.getElementById('m-pool-event').value : '';
+
+  try {
+    let data = [];
+    if (eventId) {
+      const r2 = await fetch(`${SUPABASE_URL}/rest/v1/event_invites?event_id=eq.${eventId}&select=profiles(id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies)&limit=500`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const invites = await r2.json();
+      data = Array.isArray(invites) ? invites.map(i => i.profiles).filter(Boolean) : [];
+    } else {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies&order=created_at.desc&limit=500`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      data = await r.json();
+      data = Array.isArray(data) ? data : [];
+    }
+
+    matchPool = data;
+    const maleCount = matchPool.filter(p => p.gender === 'Male').length;
+    const femaleCount = matchPool.filter(p => p.gender === 'Female').length;
+    const otherCount = matchPool.length - maleCount - femaleCount;
+    const mfText = `${maleCount}M · ${femaleCount}F${otherCount > 0 ? ' · ' + otherCount + ' Other' : ''}`;
+    if (statusEl) statusEl.textContent = `Pool: ${matchPool.length} · ${mfText}`;
+    document.getElementById('pool-count-badge').textContent = matchPool.length ? `${matchPool.length} in pool` : '';
+    const genderBreakdown = document.getElementById('pool-gender-breakdown');
+    if (genderBreakdown) genderBreakdown.textContent = matchPool.length ? mfText : '';
+    const mfCountEl = document.getElementById('pool-mf-count');
+    if (mfCountEl) { mfCountEl.textContent = mfText; mfCountEl.style.display = matchPool.length ? '' : 'none'; }
+    renderPoolPreview();
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Failed to build pool.';
+    console.error(e);
+  }
+}
 
   if (gender) params.push(`gender=eq.${encodeURIComponent(gender)}`);
   if (state) params.push(`state=ilike.*${encodeURIComponent(state)}*`);
@@ -3677,12 +3695,18 @@ function selectMatchSubject(p) {
   document.getElementById('match-subject-results').style.display = 'none';
   document.getElementById('match-subject-search').value = `${p.first_name} ${p.last_name}`;
   const age = calcAge(p.date_of_birth);
+  // Auto-populate distance zip from subject's postal code
+  if (p.postal_code) {
+    const zipEl = document.getElementById('f-distance-zip');
+    if (zipEl && !zipEl.value) zipEl.value = p.postal_code;
+  }
+  const zipDisplay = p.postal_code ? ` · ${p.postal_code}` : '';
   document.getElementById('match-subject-selected').innerHTML = `
     <div style="background:#FFF5F5;border:1px solid var(--pink);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px">
       <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red)">
         ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
       </div>
-      <div style="flex:1"><strong>${p.first_name} ${p.last_name}</strong> · ${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}</div>
+      <div style="flex:1"><strong>${p.first_name} ${p.last_name}</strong> · ${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}${zipDisplay}</div>
       <button onclick="event.stopPropagation();clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;margin-right:6px">✕ Clear</button>
       <button onclick="event.stopPropagation();runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
     </div>`;
@@ -3733,11 +3757,11 @@ async function runMatching() {
   const miles = parseFloat(document.getElementById('mt-miles').value) || 0;
   const includeTravel = document.getElementById('mt-include-travel').checked;
 
-  if (!matchPool.length || zip) {
+  if (!matchPool.length) {
     el.innerHTML = '<div class="loading-state">Building pool...</div>';
-    await autoBuildPoolForSubject(matchSubject, zip, miles, includeTravel);
+    await buildPool();
     if (!matchPool.length) {
-      el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting location or removing filters.</p></div>';
+      el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting filters on the left.</p></div>';
       return;
     }
   }
