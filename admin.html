@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Portal</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
+.app{max-width:700px;margin:0 auto;padding:1.5rem 1rem}
+h1{font-size:20px;font-weight:700;color:#C6302C}
+.sub{font-size:13px;color:#555;margin-bottom:1.5rem;margin-top:2px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;color:#1a1a1a;outline:none;margin-bottom:8px}
+input:focus,select:focus{border-color:#C6302C}
+.btn{padding:8px 16px;background:#C6302C;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#a8231f}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.btn-out{background:#fff;color:#C6302C;border:1px solid #C6302C}
+.btn-out:hover{background:#fdecea}
+.btn-g{background:#2e7d32;color:#fff;border:none}.btn-g:hover{background:#1b5e20}
+.btn-gray{background:#888;color:#fff;border:none}
+.btn-full{display:block;width:100%}
+.al{padding:10px 14px;border-radius:8px;font-size:14px;margin-top:8px}
+.ok{background:#e8f5e9;color:#2e7d32}.er{background:#fdecea;color:#b71c1c}.inf{background:#e3f2fd;color:#1565c0}
+.nav{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap}
+.nt{padding:8px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#555;white-space:nowrap}
+.nt.on{background:#C6302C;color:#fff;border-color:#C6302C;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;color:#555;font-weight:600;padding:6px 8px;border-bottom:1px solid #eee;text-transform:uppercase;letter-spacing:.04em}
+td{padding:10px 8px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.bi{background:#e8f5e9;color:#2e7d32}.br{background:#fff3e0;color:#e65100}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.sp{display:inline-block;width:14px;height:14px;border:2px solid rgba(198,48,44,.2);border-top-color:#C6302C;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sl{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.otp-wrap{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.otp-wrap input{width:36px;height:44px;text-align:center;font-size:20px;font-weight:700;padding:0;margin:0;border:1.5px solid #ddd;border-radius:8px}
+.otp-wrap input:focus{border-color:#C6302C}
+.tlink{background:none;border:none;color:#C6302C;font-size:13px;cursor:pointer;text-decoration:underline;display:block;text-align:center;margin-top:12px}
+.tlink-gray{color:#555}
+@media(max-width:600px){
+  table{font-size:12px}th{padding:4px;font-size:10px}td{padding:6px 4px}
+  .actions{flex-direction:column}.nav{gap:4px}.nt{padding:8px;font-size:12px}
+  th:nth-child(3),td:nth-child(3){display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div id="vl">
+  <div class="card" style="max-width:360px;margin:3rem auto">
+    <h1 id="org-name" style="margin-bottom:4px">Smitten Singles</h1>
+    <p style="font-size:13px;color:#555;margin-bottom:16px">Admin &amp; Host Portal</p>
+    <p class="sl">Sign in</p>
+    <p style="font-size:14px;color:#555;margin-bottom:12px">Enter your email to receive an 8-digit code.</p>
+    <input type="email" id="ei" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doSendOtp()">
+    <button class="btn btn-full" id="otpb" onclick="doSendOtp()">Send code</button>
+    <div id="em" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="votp" style="display:none">
+  <div class="card" style="max-width:360px;margin:3rem auto">
+    <h1 style="margin-bottom:4px">Smitten Singles</h1>
+    <p style="font-size:13px;color:#555;margin-bottom:16px">Admin &amp; Host Portal</p>
+    <p class="sl">Enter your code</p>
+    <p style="font-size:14px;color:#555;margin-bottom:14px">We sent an 8-digit code to <strong id="otp-label"></strong></p>
+    <div class="otp-wrap" id="otp-boxes"></div>
+    <button class="btn btn-full" id="verifb" onclick="doVerifyOtp()">Verify</button>
+    <div id="vm2" style="margin-top:10px"></div>
+    <button class="tlink tlink-gray" onclick="showEmailCard()">Use a different email</button>
+    <button class="tlink" onclick="doSendOtp(true)" style="margin-top:6px">Resend code</button>
+  </div>
+</div>
+
+<div id="vd" style="display:none">
+  <div class="card" style="max-width:360px;margin:3rem auto;text-align:center">
+    <p style="font-size:16px;font-weight:600;margin-bottom:8px">Access denied</p>
+    <p style="font-size:14px;color:#555;margin-bottom:16px">Your account does not have admin or host access. Contact your administrator to request access.</p>
+    <button class="btn btn-full" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
+<div id="vep" style="display:none">
+  <div class="card" style="max-width:400px;margin:3rem auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h1>Select Event</h1>
+      <button class="btn" style="background:#888;padding:6px 12px;font-size:12px" onclick="signOut()">Sign out</button>
+    </div>
+    <select id="ev-sel" style="margin-bottom:12px"><option value="">Loading...</option></select>
+    <button class="btn btn-full" onclick="enterEvent()">Open event</button>
+    <div id="epm" style="margin-top:8px"></div>
+    <div id="manage-hosts-link" style="display:none;margin-top:16px;text-align:center">
+      <button class="tlink" onclick="sv('vh');loadHosts()">Manage hosts &amp; admins</button>
+    </div>
+  </div>
+</div>
+
+<div id="vh" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+    <h1>Manage Hosts</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="background:#555;padding:7px 14px;font-size:13px" onclick="sv('vep')">Back</button>
+      <button class="btn" style="background:#888;padding:7px 14px;font-size:13px" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div class="card">
+    <p class="sl">Add host or admin</p>
+    <p style="font-size:14px;color:#555;margin-bottom:12px">They will be able to sign in immediately.</p>
+    <input type="text" id="hfn" placeholder="First name">
+    <input type="text" id="hln" placeholder="Last name">
+    <input type="email" id="he" placeholder="Email">
+    <label style="font-size:13px;color:#555;display:block;margin-bottom:6px">Role</label>
+    <select id="hrole" style="margin-bottom:12px">
+      <option value="host">Host</option>
+      <option value="super_admin">Super Admin</option>
+    </select>
+    <button class="btn" onclick="addHost()">Add</button>
+    <div id="hm" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <p class="sl" style="margin:0">Current hosts &amp; admins</p>
+      <button class="btn btn-out" style="padding:6px 12px;font-size:13px" onclick="loadHosts()">&#8635; Refresh</button>
+    </div>
+    <div id="hl"><span class="sp"></span></div>
+  </div>
+</div>
+
+<div id="va" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+    <div><h1>Event Admin</h1><p class="sub" id="ev-sub"></p></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" style="background:#555;padding:7px 14px;font-size:13px" onclick="switchEvent()">Switch event</button>
+      <button class="btn" style="background:#888;padding:7px 14px;font-size:13px" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nt on" id="na" onclick="sec('a')">Attendees</button>
+    <button class="nt" id="np" onclick="sec('p')">Add participant</button>
+    <button class="nt" id="nm" onclick="sec('m')">Release matches</button>
+    <button class="nt" id="nr" onclick="sec('r')">Match results</button>
+    <button class="nt" id="nh" onclick="sec('h')" style="display:none">Hosts</button>
+  </div>
+  <div id="sa">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span class="sl">Registered attendees</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-out" style="padding:6px 12px;font-size:13px" onclick="exportCSV()">&#11015; CSV</button>
+          <button class="btn btn-out" style="padding:6px 12px;font-size:13px" onclick="loadAtt()">&#8635; Refresh</button>
+        </div>
+      </div>
+      <div id="at"><div style="text-align:center;padding:1rem"><span class="sp"></span></div></div>
+    </div>
+  </div>
+  <div id="sp" style="display:none">
+    <div class="card">
+      <p class="sl">Add participant by email</p>
+      <p style="font-size:14px;color:#555;margin-bottom:12px">Looks up existing profile and registers them.</p>
+      <input type="email" id="ae" placeholder="participant@email.com">
+      <button class="btn" onclick="addP()">Look up &amp; register</button>
+      <div id="am"></div>
+    </div>
+    <div class="card" id="create-card" style="display:none">
+      <p class="sl">Create new participant</p>
+      <input type="text" id="cfn" placeholder="First name">
+      <input type="text" id="cln" placeholder="Last name">
+      <input type="email" id="ce" placeholder="Email" readonly style="background:#f0f0f0;color:#555">
+      <button class="btn" onclick="createP()">Create &amp; register</button>
+      <div id="cm"></div>
+    </div>
+  </div>
+  <div id="sm" style="display:none">
+    <div class="card">
+      <p class="sl">Release matches</p>
+      <p style="font-size:14px;color:#555;margin-bottom:1rem">Computes all mutual picks. Participants see results immediately.</p>
+      <button class="btn btn-g" style="padding:12px 24px;font-size:15px" onclick="doRelease()">&#10024; Compute &amp; release now</button>
+      <div id="mm"></div>
+    </div>
+    <div class="card"><p class="sl">Pick totals</p><div id="ps"><span class="sp"></span></div></div>
+    <div class="card">
+      <p class="sl">Who has submitted picks</p>
+      <button class="btn btn-out" style="padding:6px 12px;font-size:13px;margin-bottom:12px" onclick="loadPS()">&#8635; Refresh</button>
+      <div id="ws"><span class="sp"></span></div>
+    </div>
+  </div>
+  <div id="sh" style="display:none">
+    <div class="card">
+      <p class="sl">Add host to this event</p>
+      <p style="font-size:14px;color:#555;margin-bottom:12px">Enter their email. If they're already a host, they'll be assigned. If new, they'll be created and assigned.</p>
+      <input type="text" id="ehfn" placeholder="First name">
+      <input type="text" id="ehln" placeholder="Last name (optional)">
+      <input type="email" id="ehe" placeholder="Email">
+      <button class="btn" onclick="addHostToEvent()">Add host</button>
+      <div id="ehm" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <p class="sl" style="margin:0">Hosts assigned to this event</p>
+        <button class="btn btn-out" style="padding:6px 12px;font-size:13px" onclick="loadEventHosts()">&#8635; Refresh</button>
+      </div>
+      <div id="ehl"><span class="sp"></span></div>
+    </div>
+  </div>
+  <div id="sr" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span class="sl">Mutual matches</span>
+        <button class="btn btn-out" style="padding:6px 12px;font-size:13px" onclick="loadResults()">&#8635; Refresh</button>
+      </div>
+      <div id="mr"><div style="text-align:center;padding:1rem"><span class="sp"></span></div></div>
+    </div>
+    <div class="card"><p class="sl">No matches</p><div id="um"></div></div>
+    <div class="card">
+      <p class="sl">All picks</p>
+      <div style="margin-bottom:12px;display:flex;gap:8px">
+        <select id="pick-filter" onchange="filterPicks()" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fafafa;flex:1"><option value="">All participants</option></select>
+        <button class="btn btn-out" style="padding:8px 12px;font-size:13px" onclick="filterPicks()">Filter</button>
+      </div>
+      <div id="ap"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+var S='https://qgctltxcgsnbrdtbhmay.supabase.co';
+var AN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+var PASS='smitten2026';
+var ORG_ID='fc511c38-937d-4a1a-bfe2-28ce4c7c7744';
+var SES=null,UID=null,ROLE=null,EV=null,OTP_EMAIL='',ALL_PICKS_DATA=[],ATT_DATA=[];
+
+function sv(v){['vl','votp','vd','vep','vh','va'].forEach(function(n){document.getElementById(n).style.display=n===v?'':'none';});}
+function saveSes(){localStorage.setItem('ss_admin_s',JSON.stringify({t:SES.t,r:SES.r}));}
+function hdrs(){return{apikey:AN,Authorization:'Bearer '+(SES&&SES.t||AN),'Content-Type':'application/json'};}
+async function rpc(fn,args){var r=await fetch(S+'/rest/v1/rpc/'+fn,{method:'POST',headers:hdrs(),body:JSON.stringify(args)});return r.json();}
+
+async function loadOrgConfig(){
+  try{
+    var r=await fetch(S+'/rest/v1/rpc/get_org_config',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({p_domain:window.location.hostname})});
+    if(r.ok){
+      var d=await r.json();
+      if(d&&d.brand_name){
+        if(d.admin_secret)PASS=d.admin_secret;
+        if(d.id)ORG_ID=d.id;
+        var name=d.brand_name;
+        var color=d.brand_primary_color||'#C6302C';
+        document.title=name+' Admin';
+        document.querySelectorAll('#org-name,h1').forEach(function(el){if(el.textContent==='Smitten Singles')el.textContent=name;});
+        var st=document.createElement('style');
+        st.textContent=
+          'h1{color:'+color+'}'+
+          '.btn:not(.btn-out):not(.btn-g):not(.btn-gray){background:'+color+'}'+
+          '.btn:not(.btn-out):not(.btn-g):not(.btn-gray):hover{background:'+color+'dd}'+
+          '.nt.on{background:'+color+';border-color:'+color+'}'+
+          'input:focus,select:focus{border-color:'+color+'}'+
+          '.sp{border-top-color:'+color+'}'+
+          '.otp-wrap input:focus{border-color:'+color+'}'+
+          '.tlink{color:'+color+'}';
+        document.head.appendChild(st);
+      }
+    }
+  }catch(e){}
+}
+
+// OTP
+function buildOtpBoxes(){
+  var w=document.getElementById('otp-boxes');w.innerHTML='';
+  for(var i=0;i<8;i++){
+    var inp=document.createElement('input');
+    inp.type='text';inp.inputMode='numeric';inp.maxLength=1;inp.dataset.idx=i;
+    inp.addEventListener('input',otpInput);inp.addEventListener('keydown',otpKeydown);inp.addEventListener('paste',otpPaste);
+    w.appendChild(inp);
+  }
+}
+function otpInput(e){
+  var boxes=document.querySelectorAll('#otp-boxes input');
+  var i=parseInt(e.target.dataset.idx);
+  e.target.value=e.target.value.replace(/\D/g,'').slice(-1);
+  if(e.target.value&&i<7)boxes[i+1].focus();
+}
+function otpKeydown(e){
+  var boxes=document.querySelectorAll('#otp-boxes input');
+  var i=parseInt(e.target.dataset.idx);
+  if(e.key==='Backspace'&&!e.target.value&&i>0)boxes[i-1].focus();
+  if(e.key==='Enter')doVerifyOtp();
+}
+function otpPaste(e){
+  e.preventDefault();
+  var txt=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,8);
+  var boxes=document.querySelectorAll('#otp-boxes input');
+  for(var i=0;i<txt.length&&i<8;i++)boxes[i].value=txt[i];
+  if(txt.length>0)boxes[Math.min(txt.length,7)].focus();
+}
+function getOtpValue(){return Array.from(document.querySelectorAll('#otp-boxes input')).map(function(b){return b.value;}).join('');}
+function showEmailCard(){sv('vl');document.getElementById('em').innerHTML='';}
+
+async function doSendOtp(resend){
+  var e=resend?OTP_EMAIL:document.getElementById('ei').value.trim().toLowerCase();
+  if(!e){document.getElementById('em').innerHTML='<div class="al er">Please enter your email.</div>';return;}
+  OTP_EMAIL=e;
+  var b=document.getElementById('otpb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Sending&hellip;';
+  var r=await fetch(S+'/auth/v1/otp',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({email:e})});
+  b.disabled=false;b.textContent='Send code';
+  if(!r.ok){var err=await r.json();document.getElementById('em').innerHTML='<div class="al er">'+(err.msg||'Something went wrong.')+'</div>';return;}
+  buildOtpBoxes();
+  document.getElementById('otp-label').textContent=e;
+  sv('votp');
+  if(resend)document.getElementById('vm2').innerHTML='<div class="al ok">New code sent!</div>';
+  setTimeout(function(){document.getElementById('otp-boxes').querySelectorAll('input')[0].focus();},100);
+}
+
+async function doVerifyOtp(){
+  var token=getOtpValue();
+  if(token.length!==8){document.getElementById('vm2').innerHTML='<div class="al er">Enter all 8 digits.</div>';return;}
+  var b=document.getElementById('verifb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Verifying&hellip;';
+  var r=await fetch(S+'/auth/v1/verify',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({email:OTP_EMAIL,token:token,type:'email'})});
+  var d=await r.json();
+  b.disabled=false;b.textContent='Verify';
+  if(!r.ok||!d.access_token){document.getElementById('vm2').innerHTML='<div class="al er">Invalid or expired code.</div>';return;}
+  SES={t:d.access_token,r:d.refresh_token};UID=d.user.id;saveSes();
+  checkAccess();
+}
+
+async function checkAccess(){
+  var ue=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+  var udata=ue.ok?await ue.json():{};
+  var userEmail=udata.email||OTP_EMAIL||'';
+  if(userEmail)await fetch(S+'/rest/v1/rpc/staff_link_user',{method:'POST',headers:hdrs(),body:JSON.stringify({p_email:userEmail})});
+  var r=await fetch(S+'/rest/v1/staff?user_id=eq.'+UID+'&is_active=eq.true&select=id,role&limit=1',{headers:hdrs()});
+  var staff=r.ok?await r.json():[];
+  if(!staff||!staff.length){sv('vd');return;}
+  ROLE=staff[0].role;
+  loadEvents();
+}
+
+async function refreshSes(){
+  if(!SES||!SES.r)return false;
+  var r=await fetch(S+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({refresh_token:SES.r})});
+  if(!r.ok)return false;
+  var d=await r.json();if(!d.access_token)return false;
+  SES={t:d.access_token,r:d.refresh_token};UID=d.user.id;saveSes();return true;
+}
+
+async function init(){
+  await loadOrgConfig();
+  var st=localStorage.getItem('ss_admin_s');
+  if(!st){sv('vl');return;}
+  try{var d=JSON.parse(st);SES={t:d.t,r:d.r};}catch(e){sv('vl');return;}
+  var ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+  if(!ur.ok){
+    var ok=await refreshSes();
+    if(!ok){localStorage.removeItem('ss_admin_s');sv('vl');return;}
+    ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+    if(!ur.ok){localStorage.removeItem('ss_admin_s');sv('vl');return;}
+  }
+  UID=(await ur.json()).id;
+  checkAccess();
+}
+
+async function loadEvents(){
+  sv('vep');
+  document.getElementById('manage-hosts-link').style.display=ROLE==='super_admin'?'':'none';
+  var sel=document.getElementById('ev-sel');
+  sel.innerHTML='<option value="">Loading...</option>';
+  var events=[];
+  if(ROLE==='super_admin'){
+    var today=new Date().toISOString().slice(0,10);
+    var r=await fetch(S+'/rest/v1/events?select=id,name,event_date,start_time,city,state&event_date=gte.'+today+'&order=event_date.asc',{headers:hdrs()});
+    if(r.ok)events=await r.json();
+  } else {
+    var r=await fetch(S+'/rest/v1/rpc/get_host_events',{method:'POST',headers:hdrs(),body:JSON.stringify({p_user_id:UID})});
+    if(r.ok)events=await r.json();
+  }
+  if(!events.length){sel.innerHTML='<option value="">No events found</option>';return;}
+  sel.innerHTML='<option value="">-- Select an event --</option>'
+    +events.map(function(ev){
+      var dt=ev.event_date?new Date(ev.event_date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}):'';
+      var loc=[ev.city,ev.state].filter(Boolean).join(', ');
+      return '<option value="'+ev.id+'">'+(ev.name||'Event')+(dt?' - '+dt:'')+(loc?' ('+loc+')':'')+'</option>';
+    }).join('');
+}
+
+function enterEvent(){
+  var sel=document.getElementById('ev-sel');
+  var id=sel.value;
+  var label=sel.options[sel.selectedIndex]&&sel.options[sel.selectedIndex].text;
+  if(!id){document.getElementById('epm').innerHTML='<div class="al er">Please select an event.</div>';return;}
+  EV=id;document.getElementById('ev-sub').textContent=label;
+  if(ROLE==='super_admin')document.getElementById('nh').style.display='';
+  sv('va');sec('a');loadAtt();
+}
+function switchEvent(){EV=null;document.getElementById('epm').innerHTML='';loadEvents();}
+function signOut(){localStorage.removeItem('ss_admin_s');SES=null;UID=null;ROLE=null;EV=null;sv('vl');}
+
+// Manage hosts
+async function loadHosts(){
+  var el=document.getElementById('hl');
+  el.innerHTML='<span class="sp"></span>';
+  var r=await fetch(S+'/rest/v1/rpc/admin_get_staff',{method:'POST',headers:hdrs(),body:JSON.stringify({})});
+  var staff=r.ok?await r.json():[];
+  var er=await fetch(S+'/rest/v1/events?select=id,name,event_date&order=event_date.desc',{headers:hdrs()});
+  var allEvents=er.ok?await er.json():[];
+  if(!staff.length){el.innerHTML='<p style="color:#555;padding:8px 0">No staff found.</p>';return;}
+  var html='<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Assigned Events</th><th></th></tr></thead><tbody>';
+  for(var i=0;i<staff.length;i++){
+    var s=staff[i];
+    var name=((s.first_name||'')+(s.last_name?' '+s.last_name:'')).trim()||'Unknown';
+    var roleLabel=s.role==='super_admin'
+      ?'<span class="badge" style="background:#fce4ec;color:#880e4f">Super Admin</span>'
+      :'<span class="badge bi">Host</span>';
+    var isSelf=s.email&&s.email.toLowerCase()===OTP_EMAIL.toLowerCase();
+    var hostEvents=[];
+    if(s.user_id){
+      var her=await fetch(S+'/rest/v1/rpc/get_host_events',{method:'POST',headers:hdrs(),body:JSON.stringify({p_user_id:s.user_id})});
+      if(her.ok)hostEvents=await her.json();
+    }
+    var uid=s.user_id||'';
+    var assignedHtml=hostEvents.length
+      ?hostEvents.map(function(ev){
+          return '<span style="display:inline-flex;align-items:center;gap:4px;background:#f0f0f0;border-radius:6px;padding:3px 8px;font-size:12px;margin:2px">'
+            +(ev.name||'Event')
+            +(uid?'<button data-uid="'+uid+'" data-eid="'+ev.id+'" onclick="removeHostEvent(this)" style="background:none;border:none;color:#b71c1c;cursor:pointer;font-size:14px;padding:0;line-height:1">&times;</button>':'')
+            +'</span>';
+        }).join('')
+      :'<span style="color:#aaa;font-size:12px">None</span>';
+    var evOpts=allEvents.map(function(ev){
+      var dt=ev.event_date?new Date(ev.event_date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+      return '<option value="'+ev.id+'">'+(ev.name||'Event')+(dt?' - '+dt:'')+'</option>';
+    }).join('');
+    var assignRow=uid&&evOpts
+      ?'<div style="display:flex;gap:6px;margin-top:6px"><select data-idx="'+i+'" style="margin:0;padding:6px 8px;font-size:12px;flex:1">'+evOpts+'</select>'
+        +'<button class="btn" data-uid="'+uid+'" data-idx="'+i+'" style="padding:5px 10px;font-size:12px" onclick="assignHostEvent(this)">Assign</button></div>'
+      :'';
+    html+='<tr style="vertical-align:top">'
+      +'<td style="font-weight:500;padding-top:14px">'+name+(isSelf?' <span style="font-size:11px;color:#888">(you)</span>':'')+'</td>'
+      +'<td style="color:#555;font-size:13px;padding-top:14px">'+(s.email||'')+'</td>'
+      +'<td style="padding-top:14px">'+roleLabel+'</td>'
+      +'<td><div>'+assignedHtml+'</div>'+assignRow+'</td>'
+      +'<td style="padding-top:14px">'+(isSelf?''
+        :'<button class="btn btn-out" style="font-size:12px;padding:4px 10px;border-color:#b71c1c;color:#b71c1c" data-sid="'+s.id+'" data-name="'+(s.first_name||'this person')+'" onclick="deactivateHost(this)">Remove</button>')
+      +'</td></tr>';
+  }
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
+
+async function assignHostEvent(btn){
+  var uid=btn.dataset.uid;
+  var idx=btn.dataset.idx;
+  var sel=document.querySelector('select[data-idx="'+idx+'"]');
+  var evId=sel?sel.value:'';
+  if(!evId)return;
+  btn.disabled=true;btn.textContent='...';
+  var d=await rpc('admin_assign_host_to_event',{p_host_user_id:uid,p_event_id:evId});
+  btn.disabled=false;btn.textContent='Assign';
+  if(d&&d.ok)loadHosts();else alert(d&&d.error?d.error:'Failed.');
+}
+
+async function removeHostEvent(btn){
+  var uid=btn.dataset.uid;var evId=btn.dataset.eid;
+  btn.disabled=true;
+  var d=await rpc('admin_remove_host_from_event',{p_host_user_id:uid,p_event_id:evId});
+  if(d&&d.ok)loadHosts();else{btn.disabled=false;alert('Failed.');}
+}
+
+async function addHost(){
+  var fn=document.getElementById('hfn').value.trim();
+  var ln=document.getElementById('hln').value.trim();
+  var email=document.getElementById('he').value.trim().toLowerCase();
+  var role=document.getElementById('hrole').value;
+  var msg=document.getElementById('hm');
+  if(!fn||!email){msg.innerHTML='<div class="al er">First name and email required.</div>';return;}
+  msg.innerHTML='<div class="al inf"><span class="sp"></span> Adding&hellip;</div>';
+  var d=await rpc('admin_add_staff',{p_first_name:fn,p_last_name:ln||'',p_email:email,p_role:role,p_org_id:ORG_ID});
+  if(!d||!d.ok){
+    if(d&&d.error==='already_exists')msg.innerHTML='<div class="al inf">Already exists.</div>';
+    else msg.innerHTML='<div class="al er">'+(d&&d.error?d.error:'Something went wrong.')+'</div>';
+    return;
+  }
+  msg.innerHTML='<div class="al ok">'+fn+(d.reactivated?' reactivated':' added')+'.</div>';
+  document.getElementById('hfn').value='';document.getElementById('hln').value='';document.getElementById('he').value='';
+  loadHosts();
+}
+
+async function loadEventHosts(){
+  var el=document.getElementById('ehl');
+  el.innerHTML='<span class="sp"></span>';
+  var r=await fetch(S+'/rest/v1/rpc/get_event_hosts',{method:'POST',headers:hdrs(),body:JSON.stringify({p_event_id:EV})});
+  var hosts=r.ok?await r.json():[];
+  if(!hosts||!hosts.length){el.innerHTML='<p style="color:#aaa;font-size:13px;padding:8px 0">No hosts assigned to this event yet.</p>';return;}
+  el.innerHTML='<table><thead><tr><th>Name</th><th>Email</th><th></th></tr></thead><tbody>'
+    +hosts.map(function(h){
+      var name=((h.first_name||'')+(h.last_name?' '+h.last_name:'')).trim()||'Unknown';
+      return '<tr>'
+        +'<td style="font-weight:500">'+name+'</td>'
+        +'<td style="color:#555;font-size:13px">'+(h.email||'')+'</td>'
+        +'<td><button class="btn btn-out" style="font-size:12px;padding:4px 10px;border-color:#b71c1c;color:#b71c1c" data-uid="'+h.user_id+'" data-eid="'+EV+'" onclick="removeHostEvent(this)">Remove</button></td>'
+        +'</tr>';
+    }).join('')+'</tbody></table>';
+}
+
+async function addHostToEvent(){
+  var fn=document.getElementById('ehfn').value.trim();
+  var ln=document.getElementById('ehln').value.trim();
+  var email=document.getElementById('ehe').value.trim().toLowerCase();
+  var msg=document.getElementById('ehm');
+  if(!fn||!email){msg.innerHTML='<div class="al er">First name and email required.</div>';return;}
+  msg.innerHTML='<div class="al inf"><span class="sp"></span> Adding&hellip;</div>';
+  var d=await rpc('admin_add_staff',{p_first_name:fn,p_last_name:ln||'',p_email:email,p_role:'host',p_org_id:ORG_ID});
+  if(!d||(!d.ok&&d.error!=='already_exists')){
+    msg.innerHTML='<div class="al er">'+(d&&d.error?d.error:'Something went wrong.')+'</div>';return;
+  }
+  var sr=await fetch(S+'/rest/v1/staff?email=eq.'+encodeURIComponent(email)+'&is_active=eq.true&select=user_id&limit=1',{headers:hdrs()});
+  var sarr=sr.ok?await sr.json():[];
+  if(!sarr||!sarr.length){msg.innerHTML='<div class="al er">Host created but could not look up for event assignment. Refresh and try again.</div>';return;}
+  var uid=sarr[0].user_id;
+  if(!uid){msg.innerHTML='<div class="al er">Host added but has no auth account yet. They must sign in once before they can be assigned.</div>';return;}
+  var a=await rpc('admin_assign_host_to_event',{p_host_user_id:uid,p_event_id:EV});
+  if(!a||!a.ok){msg.innerHTML='<div class="al er">'+(a&&a.error?a.error:'Failed to assign to event.')+'</div>';return;}
+  msg.innerHTML='<div class="al ok">'+fn+' added and assigned to this event.</div>';
+  document.getElementById('ehfn').value='';document.getElementById('ehln').value='';document.getElementById('ehe').value='';
+  loadEventHosts();
+}
+
+async function deactivateHost(btn){
+  var id=btn.dataset.sid;var name=btn.dataset.name;
+  if(!confirm('Remove '+name+' from admin access?'))return;
+  btn.disabled=true;btn.textContent='...';
+  var d=await rpc('admin_deactivate_staff',{p_staff_id:id});
+  if(d&&d.ok)loadHosts();else{btn.disabled=false;btn.textContent='Remove';alert('Failed.');}
+}
+
+// Admin sections
+function sec(s){
+  ['a','p','m','r','h'].forEach(function(n){
+    document.getElementById('s'+n).style.display=n===s?'':'none';
+    document.getElementById('n'+n).classList.toggle('on',n===s);
+  });
+  if(s==='m')loadPS();
+  if(s==='r')loadResults();
+  if(s==='h')loadEventHosts();
+}
+
+async function loadAtt(){
+  var el=document.getElementById('at');
+  el.innerHTML='<div style="text-align:center;padding:1rem"><span class="sp"></span></div>';
+  var d=await rpc('admin_get_registrations',{p_event_id:EV,p_admin_secret:PASS});
+  if(!d||!d.length){el.innerHTML='<p style="color:#555;text-align:center;padding:1.5rem">No registrations yet.</p>';return;}
+  ATT_DATA=d;
+  var men=d.filter(function(r){return r.gender==='Male';}).length;
+  var women=d.filter(function(r){return r.gender==='Female';}).length;
+  var ci=d.filter(function(r){return !!r.checked_in_at;}).length;
+  var sum='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<span style="background:#e3f2fd;color:#1565c0;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600">'+men+' Men</span>'
+    +'<span style="background:#fce4ec;color:#880e4f;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600">'+women+' Women</span>'
+    +'<span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600">'+ci+' Checked in</span>'
+    +'<span style="background:#f5f5f5;color:#333;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600">'+d.length+' Total</span>'
+    +'</div>';
+  el.innerHTML=sum+'<table><thead><tr><th>Name</th><th>Email</th><th>Photo</th><th>Status</th><th>Action</th></tr></thead><tbody>'
+    +d.map(function(reg){
+      var name=((reg.first_name||'')+(reg.last_name?' '+reg.last_name[0]+'.':'')).trim()||'Unknown';
+      var chk=!!reg.checked_in_at;
+      var av=reg.image_url
+        ?'<img src="'+reg.image_url+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;vertical-align:middle">'
+        :'<div style="width:36px;height:36px;border-radius:50%;background:#eee;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#888;vertical-align:middle">'+(reg.first_name||'?')[0].toUpperCase()+'</div>';
+      return '<tr>'
+        +'<td style="font-weight:500">'+name+'</td>'
+        +'<td style="color:#555;font-size:13px">'+(reg.email||'')+'</td>'
+        +'<td>'+av+'</td>'
+        +'<td><span class="badge '+(chk?'bi':'br')+'">'+(chk?'Checked in':'Registered')+'</span></td>'
+        +'<td><div class="actions">'
+        +(chk
+          ?'<button class="btn btn-gray" style="font-size:12px;padding:5px 10px" data-rid="'+reg.id+'" onclick="doCO(this)">Check out</button>'
+          :'<button class="btn" style="font-size:12px;padding:5px 10px" data-rid="'+reg.id+'" onclick="doCI(this)">Check in</button>')
+        +'<button class="btn btn-out" style="font-size:12px;padding:5px 10px;border-color:#2e7d32;color:#2e7d32" data-email="'+reg.email+'" onclick="loginAs(this)">Login as</button>'
+        +'<button class="btn btn-out" style="font-size:12px;padding:5px 10px;border-color:#b71c1c;color:#b71c1c" data-rid="'+reg.id+'" data-name="'+(reg.first_name||'participant')+'" onclick="removeP(this)">Remove</button>'
+        +'</div></td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+async function doCI(btn){btn.disabled=true;btn.textContent='...';var d=await rpc('admin_checkin',{p_registration_id:btn.dataset.rid,p_admin_secret:PASS});if(d&&d.ok)loadAtt();else{btn.disabled=false;btn.textContent='Check in';alert('Failed.');}}
+async function doCO(btn){btn.disabled=true;btn.textContent='...';var d=await rpc('admin_checkin',{p_registration_id:btn.dataset.rid,p_admin_secret:PASS});if(d&&d.ok)loadAtt();else{btn.disabled=false;btn.textContent='Check out';alert('Failed.');}}
+function loginAs(btn){window.open('https://event-app.smittensingles.com/pick.html?email='+encodeURIComponent(btn.dataset.email),'_blank');}
+async function removeP(btn){
+  if(!confirm('Remove '+btn.dataset.name+' from the event?'))return;
+  btn.disabled=true;btn.textContent='...';
+  var d=await rpc('admin_remove_registration',{p_registration_id:btn.dataset.rid,p_admin_secret:PASS});
+  if(d&&d.ok)loadAtt();else{btn.disabled=false;btn.textContent='Remove';alert('Failed.');}
+}
+
+function exportCSV(){
+  var rows=[['First Name','Last Name','Email','Gender','Status','Checked In At']];
+  ATT_DATA.forEach(function(r){
+    rows.push([r.first_name||'',r.last_name||'',r.email||'',r.gender||'',r.checked_in_at?'Checked in':'Registered',r.checked_in_at||'']);
+  });
+  var csv=rows.map(function(row){
+    return row.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');
+  }).join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='attendees-'+EV+'.csv';a.click();
+}
+
+async function addP(){
+  var email=document.getElementById('ae').value.trim();
+  var msg=document.getElementById('am');var cc=document.getElementById('create-card');
+  if(!email){msg.innerHTML='<div class="al er">Enter an email.</div>';return;}
+  cc.style.display='none';
+  msg.innerHTML='<div class="al inf"><span class="sp"></span> Looking up&hellip;</div>';
+  var d=await rpc('admin_lookup_and_register',{p_event_id:EV,p_email:email,p_admin_secret:PASS});
+  if(!d||!d.ok){
+    if(d&&d.error&&d.error.indexOf('No profile')>-1){
+      msg.innerHTML='<div class="al inf">No profile found. Fill in details below.</div>';
+      document.getElementById('ce').value=email;document.getElementById('cfn').value='';document.getElementById('cln').value='';
+      document.getElementById('cm').innerHTML='';cc.style.display='';
+    } else {msg.innerHTML='<div class="al er">'+(d&&d.error?d.error:'Something went wrong.')+'</div>';}
+  } else if(d.already_registered){
+    msg.innerHTML='<div class="al inf">'+(d.first_name||email)+' is already registered.</div>';
+  } else {
+    msg.innerHTML='<div class="al ok">'+(d.first_name||email)+' registered!</div>';
+    document.getElementById('ae').value='';loadAtt();
+  }
+}
+
+async function createP(){
+  var fn=document.getElementById('cfn').value.trim();
+  var ln=document.getElementById('cln').value.trim();
+  var email=document.getElementById('ce').value.trim();
+  var msg=document.getElementById('cm');
+  if(!fn){msg.innerHTML='<div class="al er">Enter first name.</div>';return;}
+  msg.innerHTML='<div class="al inf"><span class="sp"></span> Creating&hellip;</div>';
+  var d=await rpc('admin_create_and_register',{p_event_id:EV,p_email:email,p_first_name:fn,p_last_name:ln,p_admin_secret:PASS});
+  if(!d||!d.ok){msg.innerHTML='<div class="al er">'+(d&&d.error?d.error:'Something went wrong.')+'</div>';}
+  else if(d.already_registered){msg.innerHTML='<div class="al inf">'+fn+' is already registered.</div>';}
+  else{msg.innerHTML='<div class="al ok">'+fn+' created and registered!</div>';document.getElementById('ae').value='';document.getElementById('create-card').style.display='none';document.getElementById('am').innerHTML='';loadAtt();}
+}
+
+async function loadPS(){
+  var el=document.getElementById('ps');
+  var summary=await rpc('admin_get_picks_summary',{p_event_id:EV,p_admin_secret:PASS});
+  if(!summary){el.innerHTML='<p style="color:#555">Could not load.</p>';return;}
+  var total=(summary.date||0)+(summary.friend||0)+(summary.not_again||0);
+  el.innerHTML='<table>'
+    +'<tr><td>Date picks</td><td><strong>'+(summary.date||0)+'</strong></td></tr>'
+    +'<tr><td>Friend picks</td><td><strong>'+(summary.friend||0)+'</strong></td></tr>'
+    +'<tr><td>Not again</td><td><strong>'+(summary.not_again||0)+'</strong></td></tr>'
+    +'<tr><td style="color:#555">Total</td><td><strong>'+total+'</strong></td></tr>'
+    +'</table>';
+  var ws=document.getElementById('ws');
+  var d=await rpc('admin_get_registrations',{p_event_id:EV,p_admin_secret:PASS});
+  if(!d||!d.length){ws.innerHTML='<p style="color:#555">No registrations.</p>';return;}
+  var submitterArr=Array.isArray(summary.submitters)?summary.submitters:[];
+  var submitted=new Set(submitterArr.map(function(s){return String(s);}));
+  var done=d.filter(function(r){return submitted.has(String(r.profile_id));}).length;
+  ws.innerHTML='<p style="font-size:14px;color:#333;margin-bottom:10px"><strong>'+done+' of '+d.length+'</strong> participants have submitted picks.</p>'
+    +'<table><thead><tr><th>Name</th><th>Submitted</th></tr></thead><tbody>'
+    +d.map(function(reg){
+      var name=((reg.first_name||'')+(reg.last_name?' '+reg.last_name[0]+'.':'')).trim()||'Unknown';
+      var has=submitted.has(String(reg.profile_id));
+      return '<tr><td>'+name+'</td><td>'+(has?'<span style="color:#2e7d32;font-weight:600">&#10003; Yes</span>':'<span style="color:#b71c1c">Not yet</span>')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+async function doRelease(){
+  var msg=document.getElementById('mm');
+  msg.innerHTML='<div class="al inf"><span class="sp"></span> Computing&hellip;</div>';
+  try{
+    var d=await rpc('release_event_matches',{p_event_id:EV,p_admin_secret:PASS});
+    if(!d||d.error)throw new Error(d&&d.error?d.error:'RPC failed');
+    msg.innerHTML='<div class="al ok">&#10024; Done! '+d.matches+' match(es) released.</div>';
+  }catch(e){msg.innerHTML='<div class="al er">Error: '+e.message+'</div>';}
+}
+
+var ALL_PICKS_DATA=[];
+function filterPicks(){
+  var filter=document.getElementById('pick-filter').value;
+  var el=document.getElementById('ap');
+  var data=filter?ALL_PICKS_DATA.filter(function(p){
+    return ((p.picker_first||'')+' '+(p.picker_last||'')).trim()===filter||((p.picked_first||'')+' '+(p.picked_last||'')).trim()===filter;
+  }):ALL_PICKS_DATA;
+  if(!data.length){el.innerHTML='<p style="color:#555;text-align:center;padding:1rem">No picks found.</p>';return;}
+  el.innerHTML='<table><thead><tr><th>From</th><th>To</th><th>Pick</th><th>Result</th></tr></thead><tbody>'
+    +data.map(function(p){
+      var pt=p.pick_type==='date'?'<span class="badge" style="background:#fdecea;color:#b71c1c">Date</span>'
+        :p.pick_type==='friend'?'<span class="badge" style="background:#e3f2fd;color:#1565c0">Friend</span>'
+        :'<span class="badge" style="background:#eee;color:#555">Not again</span>';
+      var result=p.is_mutual?'<span style="color:#2e7d32;font-weight:600">&#10024; Mutual</span>':'<span style="color:#888">One-sided</span>';
+      return '<tr><td>'+(p.picker_first||'')+' '+(p.picker_last||'')+'</td><td>'+(p.picked_first||'')+' '+(p.picked_last||'')+'</td><td>'+pt+'</td><td>'+result+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+async function loadResults(){
+  var mr=document.getElementById('mr'),um=document.getElementById('um'),ap=document.getElementById('ap');
+  mr.innerHTML='<div style="text-align:center;padding:1rem"><span class="sp"></span></div>';
+  um.innerHTML='';ap.innerHTML='<div style="text-align:center;padding:1rem"><span class="sp"></span></div>';
+  var matches=await rpc('admin_get_matches',{p_event_id:EV,p_admin_secret:PASS});
+  var unmatched=await rpc('admin_get_unmatched',{p_event_id:EV,p_admin_secret:PASS});
+  var allpicks=await rpc('admin_get_all_picks',{p_event_id:EV,p_admin_secret:PASS});
+  if(!matches||!matches.length){mr.innerHTML='<p style="color:#555;text-align:center;padding:1rem">No matches released yet.</p>';}
+  else{
+    mr.innerHTML='<table><thead><tr><th>Person 1</th><th>Person 2</th><th>Type</th></tr></thead><tbody>'
+      +matches.map(function(m){
+        var t=(m.match_type==='date'||m.match_type==='Date')
+          ?'<span class="badge" style="background:#fdecea;color:#b71c1c">Date</span>'
+          :'<span class="badge" style="background:#e3f2fd;color:#1565c0">Friend</span>';
+        return '<tr><td style="font-weight:500">'+(m.user1_first||'')+(m.user1_last?' '+m.user1_last[0]+'.':'')+'</td>'
+          +'<td style="font-weight:500">'+(m.user2_first||'')+(m.user2_last?' '+m.user2_last[0]+'.':'')+'</td><td>'+t+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+  if(!unmatched||!unmatched.length){um.innerHTML='<p style="color:#2e7d32;text-align:center;padding:1rem">Everyone got a match!</p>';}
+  else{
+    um.innerHTML='<table><thead><tr><th>Name</th><th>Email</th></tr></thead><tbody>'
+      +unmatched.map(function(u){
+        return '<tr><td>'+(u.first_name||'')+(u.last_name?' '+u.last_name[0]+'.':'')+'</td><td style="color:#555;font-size:13px">'+(u.email||'')+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+  if(!allpicks||!allpicks.length){ap.innerHTML='<p style="color:#555;text-align:center;padding:1rem">No picks yet.</p>';}
+  else{
+    ALL_PICKS_DATA=allpicks;
+    var names=new Set();
+    allpicks.forEach(function(p){
+      var a=((p.picker_first||'')+' '+(p.picker_last||'')).trim();
+      var b=((p.picked_first||'')+' '+(p.picked_last||'')).trim();
+      if(a)names.add(a);if(b)names.add(b);
+    });
+    var sel=document.getElementById('pick-filter');
+    sel.innerHTML='<option value="">All participants</option>';
+    Array.from(names).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+    filterPicks();
+  }
+}
+
+init();
+</script>
+</body>
+</html>

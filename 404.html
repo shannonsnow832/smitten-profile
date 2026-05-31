@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script>
+  // Catch magic link tokens landing at root and redirect to the app
+  var hash = window.location.hash;
+  var search = window.location.search;
+  if (hash.indexOf('access_token') > -1 || search.indexOf('access_token') > -1) {
+    window.location.href = '/smitten-event-app/' + hash + search;
+  } else {
+    window.location.href = '/smitten-event-app/';
+  }
+</script>
+</head>
+<body></body>
+</html>
