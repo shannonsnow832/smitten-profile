@@ -3215,9 +3215,9 @@ async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
   if (subject.gender) {
     const genderLower = subject.gender.toLowerCase();
     if (genderLower === 'male') {
-      params.push(`seeking=cs.{"Date Men"}`);
+      params.push(`seeking=cs.{Date Men}`);
     } else if (genderLower === 'female') {
-      params.push(`seeking=cs.{"Date Women"}`);
+      params.push(`seeking=cs.{Date Women}`);
     }
     // Non-binary/other: no filter (they may be sought via Date Any/Other Gender)
   }
