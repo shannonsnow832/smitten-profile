@@ -2154,7 +2154,6 @@ const COMPLETENESS_FIELDS = [
   { key: 'want_kids',     label: 'Wants kids' },
   { key: 'politics',      label: 'Politics' },
   { key: 'religion',      label: 'Religion' },
-  { key: 'body_type',     label: 'Body type' },
   { key: 'income_level',  label: 'Income' },
   { key: 'min_age',       label: 'Min age preference' },
   { key: 'max_age',       label: 'Max age preference' },
@@ -2181,7 +2180,6 @@ async function refreshCompletenessChecklist() {
       want_kids:     !!profile.want_kids,
       politics:      !!profile.politics,
       religion:      !!profile.religion,
-      body_type:     !!profile.body_type,
       income_level:  !!profile.income_level,
       min_age:       profile.min_age != null,
       max_age:       profile.max_age != null,
@@ -2192,7 +2190,7 @@ async function refreshCompletenessChecklist() {
     // Use DB completeness_pct, but fall back to client-side calculation if DB
     // returns 0 while fields are clearly populated (stale trigger / timing issue)
     const filledCount = Object.values(done).filter(Boolean).length;
-    const clientPct = filledCount === 13 ? 100 : filledCount * 7;
+    const clientPct = filledCount === 12 ? 100 : filledCount * 8;
     const dbPct = profile.completeness_pct ?? 0;
     const pct = (dbPct === 0 && filledCount > 0) ? clientPct : dbPct;
 
