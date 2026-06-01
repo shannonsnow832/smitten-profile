@@ -1510,6 +1510,11 @@ function switchTab(name, btn) {
 }
 
 function sidebarAction() {
+  const activeTab = document.querySelector('.tab-panel.active');
+  if (!activeTab || activeTab.id !== 'tab-matching') {
+    applyFilters();
+    return;
+  }
   if (matchMode === '1to1') {
     runMatching();
   } else if (matchMode === 'group') {
@@ -3684,7 +3689,6 @@ function selectMatchSubject(p) {
         ${adminUser && adminUser.role !== 'matchmaker' ? `<div class="email">${p.email || ''}</div>` : ''}
         <div style="display:flex;gap:8px;margin-top:8px">
           <button onclick="clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer">✕ Clear</button>
-          <button onclick="runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
         </div>
       </div>
     </div>`;
@@ -3735,17 +3739,11 @@ async function runMatching() {
   if (!matchSubject) { alert('Select a profile first.'); return; }
   const el = document.getElementById('match-1to1-results');
 
-  const zip = (document.getElementById('f-distance-zip') || {}).value || '';
-  const miles = parseFloat((document.getElementById('f-distance-miles') || {}).value) || 0;
-  const includeTravel = false; // sidebar has no travel checkbox — filter via relocation fields instead
-
+  el.innerHTML = '<div class="loading-state">Building pool...</div>';
+  await buildPool();
   if (!matchPool.length) {
-    el.innerHTML = '<div class="loading-state">Building pool...</div>';
-    await buildPool();
-    if (!matchPool.length) {
-      el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting filters on the left.</p></div>';
-      return;
-    }
+    el.innerHTML = '<div class="empty-state"><p>No matching profiles found. Try adjusting filters on the left.</p></div>';
+    return;
   }
   el.innerHTML = '<div class="loading-state">Scoring matches...</div>';
 
@@ -4114,14 +4112,28 @@ async function renderGroupResults(groups) {
   el.innerHTML = '<div class="loading-state">Loading group details...</div>';
   const token = supabaseSession || SUPABASE_ANON;
 
-  // Fetch members for each group
+  // Fetch members for each group — two-step: members then profiles
   const groupDetails = await Promise.all(groups.map(async g => {
     try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${g.group_id}&select=profile_id,compatibility_score,profiles(first_name,last_name,gender,image_url,city,state,date_of_birth,income_level,religion,education,kids,want_kids)&order=compatibility_score.desc`, {
+      // Step 1: get member rows
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${g.group_id}&select=profile_id,compatibility_score&order=compatibility_score.desc`, {
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
       });
-      const members = await r.json();
-      return { ...g, members: Array.isArray(members) ? members : [] };
+      const memberRows = await r.json();
+      if (!Array.isArray(memberRows) || !memberRows.length) return { ...g, members: [] };
+
+      // Step 2: fetch profiles for those IDs
+      const ids = memberRows.map(m => m.profile_id).join(',');
+      const rp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=in.(${ids})&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,kids,want_kids,postal_code,occupation`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const profileRows = await rp.json();
+      const profileMap = {};
+      (Array.isArray(profileRows) ? profileRows : []).forEach(p => { profileMap[p.id] = p; });
+
+      // Merge
+      const members = memberRows.map(m => ({ ...m, profiles: profileMap[m.profile_id] || {} }));
+      return { ...g, members };
     } catch(e) { return { ...g, members: [] }; }
   }));
 
@@ -4274,13 +4286,26 @@ async function loadSavedGroupById(groupId) {
     const gArr = await rg.json();
     const g = gArr[0];
     if (!g) { el.innerHTML = '<div class="empty-state"><p>Group not found.</p></div>'; return; }
-    const rm = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${groupId}&select=profile_id,compatibility_score,profiles(first_name,last_name,gender,image_url,city,state,date_of_birth,income_level,religion,education,kids,want_kids)&order=compatibility_score.desc`, {
+    // Step 1: get member rows
+    const rm = await fetch(`${SUPABASE_URL}/rest/v1/event_match_group_members?group_id=eq.${groupId}&select=profile_id,compatibility_score&order=compatibility_score.desc`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
-    const members = await rm.json();
-    const scores = Array.isArray(members) ? members.map(m => m.compatibility_score || 0) : [];
+    const memberRows = await rm.json();
+    // Step 2: fetch profiles
+    let members = [];
+    if (Array.isArray(memberRows) && memberRows.length) {
+      const ids = memberRows.map(m => m.profile_id).join(',');
+      const rp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=in.(${ids})&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,kids,want_kids,postal_code,occupation`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const profileRows = await rp.json();
+      const profileMap = {};
+      (Array.isArray(profileRows) ? profileRows : []).forEach(p => { profileMap[p.id] = p; });
+      members = memberRows.map(m => ({ ...m, profiles: profileMap[m.profile_id] || {} }));
+    }
+    const scores = members.map(m => m.compatibility_score || 0);
     const avg = scores.length ? scores.reduce((a,b) => a+b, 0) / scores.length : 0;
-    renderGroupResults([{ group_id: g.id, group_name: g.name, avg_compatibility: avg, incomplete_count: 0, members: Array.isArray(members) ? members : [] }]);
+    renderGroupResults([{ group_id: g.id, group_name: g.name, avg_compatibility: avg, incomplete_count: 0, members }]);
   } catch(e) {
     el.innerHTML = '<div class="empty-state"><p>Failed to load group.</p></div>';
     console.error(e);
