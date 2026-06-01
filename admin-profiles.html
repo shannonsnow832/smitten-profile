@@ -808,6 +808,7 @@
         <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-primary" id="match-mode-1to1" onclick="setMatchMode('1to1')">1-to-1 Match</button>
           <button class="btn btn-outline" id="match-mode-group" onclick="setMatchMode('group')">Group Match</button>
+          <button class="btn btn-outline" id="match-mode-saved" onclick="setMatchMode('saved')">Saved Groups</button>
           <span id="pool-count-badge" style="font-size:12px;color:var(--gray-mid);margin-left:8px"></span>
           <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
             <input type="text" id="m-pool-activities" placeholder="Activities filter (e.g. hiking)" style="width:180px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
@@ -860,15 +861,11 @@
               </div>
               <div class="modal-field">
                 <label>Number of Groups</label>
-                <select id="mg-group-count" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%;background:white">
-                  <option value="">Select...</option>
-                </select>
+                <input type="number" id="mg-group-count" value="4" min="1" max="50" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
               </div>
               <div class="modal-field">
                 <label>People per Group</label>
-                <select id="mg-count" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%;background:white">
-                  <option value="">Select...</option>
-                </select>
+                <input type="number" id="mg-count" value="8" min="2" max="50" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
               </div>
             </div>
             <!-- Anchor person -->
@@ -916,10 +913,12 @@
           </div>
         </div>
 
-        <!-- SAVED GROUPS — always visible -->
-        <div style="margin-top:32px">
-          <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
-          <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
+        <!-- SAVED GROUPS TAB PANEL -->
+        <div id="match-saved-panel" style="display:none">
+          <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
+            <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
+          </div>
         </div>
         <!-- SAVED POOLS — always visible -->
         <div style="margin-top:32px;padding-bottom:40px">
@@ -2949,8 +2948,6 @@ function populateModalDropdowns() {
     ['m-relocation-in', 'relocation'],
     ['m-relocation-out', 'relocation'],
     ['m-pref-income', 'preferred_income'],
-    ['mg-group-count', 'group_count'],
-    ['mg-count', 'group_size'],
   ];
   maps.forEach(([id, cat]) => {
     const el = document.getElementById(id);
@@ -3005,8 +3002,11 @@ function setMatchMode(mode) {
   matchMode = mode;
   document.getElementById('match-1to1-panel').style.display = mode === '1to1' ? '' : 'none';
   document.getElementById('match-group-panel').style.display = mode === 'group' ? '' : 'none';
+  document.getElementById('match-saved-panel').style.display = mode === 'saved' ? '' : 'none';
   document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
   document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
+  document.getElementById('match-mode-saved').className = mode === 'saved' ? 'btn btn-primary' : 'btn btn-outline';
+  if (mode === 'saved') loadSavedGroups();
 }
 
 
@@ -3561,7 +3561,7 @@ function searchMatchSubject() {
       const last = encodeURIComponent(words.slice(1).join(' '));
       orClause = `or=(and(first_name.ilike.*${first}*,last_name.ilike.*${last}*),and(first_name.ilike.*${last}*,last_name.ilike.*${first}*),email.ilike.*${encodeURIComponent(q)}*)`;
     }
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&${orClause}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,seeking,min_age,max_age,body_type,kids,want_kids,religion,politics,income_level,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&limit=10`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&${orClause}&select=id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,seeking,occupation,email,share_with_matchmakers,relocation_in,relocation_out,min_age,max_age,body_type,kids,want_kids,religion,politics,income_level,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol&limit=10`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
     const results = await r.json();
@@ -3590,15 +3590,37 @@ function selectMatchSubject(p) {
     const zipEl = document.getElementById('f-distance-zip');
     if (zipEl && !zipEl.value) zipEl.value = p.postal_code;
   }
-  const zipDisplay = p.postal_code ? ` · ${p.postal_code}` : '';
+  const name = [p.first_name, p.last_name].filter(Boolean).join(' ');
+  const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
+  const location = [p.city, p.state].filter(Boolean).join(', ');
+  const locationWithZip = [location, p.postal_code].filter(Boolean).join(' · ');
+  const meta = [age ? `${age} yrs` : null, p.gender, locationWithZip].filter(Boolean).join(' · ');
+  const seeking = Array.isArray(p.seeking) ? p.seeking.join(', ') : (p.seeking || '');
+  const avatar = p.image_url
+    ? `<img src="${p.image_url}" alt="${name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`
+    : `<span>${initials}</span>`;
+  const openToTravel = (p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe');
+
   document.getElementById('match-subject-selected').innerHTML = `
-    <div style="background:#FFF5F5;border:1px solid var(--pink);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red)">
-        ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
+    <div class="profile-card" style="background:#FFF5F5;border:1.5px solid var(--pink);cursor:default">
+      <div class="profile-avatar">${avatar}</div>
+      <div class="profile-info">
+        <h4>${name}</h4>
+        <div class="meta">${meta || '—'}</div>
+        <div class="profile-tags">
+          ${p.occupation ? `<span class="tag">${p.occupation}</span>` : ''}
+          ${seeking ? `<span class="tag red">Seeking: ${seeking}</span>` : ''}
+          ${p.share_with_matchmakers ? `<span class="tag green">Matchmaker</span>` : ''}
+          ${openToTravel ? `<span class="tag" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">Open to Travel</span>` : ''}
+        </div>
       </div>
-      <div style="flex:1"><strong>${p.first_name} ${p.last_name}</strong> · ${age ? age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', ' + p.state : ''}${zipDisplay}</div>
-      <button onclick="event.stopPropagation();clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;margin-right:6px">✕ Clear</button>
-      <button onclick="event.stopPropagation();runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
+      <div class="profile-card-right">
+        ${adminUser && adminUser.role !== 'matchmaker' ? `<div class="email">${p.email || ''}</div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer">✕ Clear</button>
+          <button onclick="runMatching()" class="btn btn-primary" style="font-size:12px;padding:6px 16px">Find Matches →</button>
+        </div>
+      </div>
     </div>`;
   document.getElementById('match-subject-selected').style.display = 'block';
 }
@@ -3836,11 +3858,16 @@ async function exportMatches() {
 function renderMatchResults(results, el) {
   if (!results.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No matches found in this pool.</p></div>'; return; }
   const savedCount = Object.keys(_subjectMatches).length;
+
+  // Build pool lookup for enrichment
+  const poolMap = {};
+  matchPool.forEach(p => { poolMap[p.id] = p; });
+
   el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <h3 style="font-size:14px;font-weight:700;margin:0">${results.length} Matches Ranked by Compatibility</h3>
       <div style="display:flex;gap:8px;align-items:center">
-        ${savedCount ? `<span style="font-size:12px;color:var(--gray-mid)">${savedCount} saved</span>` : ''}
+        ${savedCount ? `<button onclick="toggleSavedOnly()" id="btn-saved-toggle" style="font-size:12px;padding:4px 12px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif">${savedCount} saved</button>` : ''}
         <button onclick="exportMatches()" style="font-size:11px;padding:5px 12px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif;font-weight:600">⬇ Export</button>
       </div>
     </div>` +
@@ -3851,6 +3878,24 @@ function renderMatchResults(results, el) {
       const warnings = p.missing_fields && p.missing_fields.length ? p.missing_fields.join(', ') : null;
       const met = p._met && p._met.length > 0;
       const metBadge = met ? `<span style="font-size:10px;background:#F0F9FF;color:#0369a1;border:1px solid #BAE6FD;padding:2px 7px;border-radius:10px;margin-left:6px">Met at event</span>` : '';
+
+      // Enrich from pool
+      const pool = poolMap[p.profile_id] || {};
+      const age = pool.date_of_birth ? Math.floor((new Date()-new Date(pool.date_of_birth))/31557600000) : (p.age || null);
+      const zip = pool.postal_code || '';
+      const occupation = pool.occupation || '';
+      const seeking = Array.isArray(pool.seeking) ? pool.seeking.join(', ') : (pool.seeking || '');
+      const isMatchmaker = pool.share_with_matchmakers;
+      const openToTravel = (pool.relocation_in === 'Yes' || pool.relocation_out === 'Yes' || pool.relocation_in === 'Maybe' || pool.relocation_out === 'Maybe');
+      const isInactive = pool.is_active === false;
+      const invitePaused = pool.invite_paused;
+      const completeness = pool.completeness_pct !== undefined ? pool.completeness_pct : null;
+      const city = p.city || pool.city || '';
+      const state = p.state || pool.state || '';
+      const location = [city, state].filter(Boolean).join(', ');
+      const locationWithZip = [location, zip].filter(Boolean).join(' · ');
+      const email = pool.email || '';
+
       const saved = _subjectMatches[p.profile_id];
       const matchBtns = saved
         ? saved.match_type === 'introduction'
@@ -3859,18 +3904,30 @@ function renderMatchResults(results, el) {
           : `<button onclick="introduceMatch('${p.profile_id}',this)" style="font-size:11px;padding:3px 8px;border:1px solid #C6302C;border-radius:6px;background:white;color:var(--red);cursor:pointer;font-family:Montserrat,sans-serif;font-weight:600">Introduce</button>
              <button onclick="removeMatch('${p.profile_id}',this)" style="font-size:11px;padding:3px 8px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif">Remove</button>`
         : `<button onclick="addMatch('${p.profile_id}',${score},this)" style="font-size:11px;padding:3px 8px;border:1px solid #E8E8E8;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer;font-family:Montserrat,sans-serif">+ Add Match</button>`;
+
       return `<div style="background:white;border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px">
         <div style="font-size:13px;font-weight:700;color:var(--gray-mid);width:24px;text-align:center">${i+1}</div>
         <div style="width:44px;height:44px;border-radius:50%;background:var(--gray-light);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);cursor:pointer" onclick="openProfileById('${p.profile_id}')">
           ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : (p.first_name||'?')[0]+(p.last_name||'')[0]}
         </div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:14px;cursor:pointer;color:var(--red);display:inline" onclick="openProfileById('${p.profile_id}')">${p.first_name} ${p.last_name}</div>${metBadge}
-          <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${p.age ? p.age + ' · ' : ''}${p.gender || ''} · ${p.city || ''}${p.state ? ', '+p.state : ''}</div>
-          ${(p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe') ? '<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;padding:2px 6px;border-radius:10px;margin-top:3px;display:inline-block">Open to Travel</span>' : ''}
+          <div style="font-size:12px;color:var(--gray-mid);margin-top:2px">${[age ? age+' yrs' : null, p.gender||pool.gender||'', locationWithZip].filter(Boolean).join(' · ')}</div>
+          <div class="profile-tags" style="margin-top:4px">
+            ${occupation ? `<span class="tag">${occupation}</span>` : ''}
+            ${seeking ? `<span class="tag red">Seeking: ${seeking}</span>` : ''}
+            ${isMatchmaker ? `<span class="tag green">Matchmaker</span>` : ''}
+            ${openToTravel ? `<span class="tag" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">Open to Travel</span>` : ''}
+            ${invitePaused ? `<span class="tag" style="background:#fffbeb;color:#92400e;border:1px solid #f59e0b">Invite Paused</span>` : ''}
+            ${isInactive ? `<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>` : ''}
+          </div>
           ${warnings ? `<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Missing: ${warnings}</div>` : ''}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="text-align:right;flex-shrink:0">
+          ${adminUser && adminUser.role !== 'matchmaker' ? `<div style="font-size:11px;color:var(--gray-mid);margin-bottom:4px">${email}</div>` : ''}
+          ${completeness !== null && completeness < 100 ? `<div style="font-size:11px;font-weight:700;color:${completeness < 50 ? '#C6302C' : '#92400e'};margin-bottom:4px">⚠ ${completeness}%</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">
           <div style="text-align:center;background:${scoreBg};padding:8px 14px;border-radius:8px;min-width:60px">
             <div style="font-size:20px;font-weight:800;color:${scoreColor}">${score}%</div>
             <div style="font-size:10px;font-weight:600;color:${scoreColor}">match</div>
@@ -3882,6 +3939,19 @@ function renderMatchResults(results, el) {
         </div>
       </div>`;
     }).join('');
+}
+
+let _showSavedOnly = false;
+function toggleSavedOnly() {
+  _showSavedOnly = !_showSavedOnly;
+  const btn = document.getElementById('btn-saved-toggle');
+  if (btn) btn.style.background = _showSavedOnly ? '#FFF5F5' : 'white';
+  if (_showSavedOnly) {
+    const savedIds = new Set(Object.keys(_subjectMatches));
+    renderMatchResults(_lastMatchResults.filter(p => savedIds.has(p.profile_id)), document.getElementById('match-1to1-results'));
+  } else {
+    filterMatchResults();
+  }
 }
 
 async function excludeMatch(profileId, name, btn) {
@@ -4120,6 +4190,8 @@ async function deleteSavedGroup(groupId, groupName) {
 }
 
 async function loadSavedGroupById(groupId) {
+  // Switch to group match mode so the results panel is visible
+  setMatchMode('group');
   const token = supabaseSession || SUPABASE_ANON;
   const el = document.getElementById('match-group-results');
   if (!el) return;
