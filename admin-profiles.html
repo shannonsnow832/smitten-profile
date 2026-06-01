@@ -769,7 +769,7 @@
 
         </div><!-- end filter-sidebar-scroll -->
         <div class="filter-sidebar-footer">
-          <button class="btn-apply" id="sidebar-action-btn" onclick="sidebarAction()">Apply Filters</button>
+          <button class="btn-apply" id="sidebar-action-btn" onclick="sidebarAction()" style="display:none">Apply Filters</button>
           <button class="btn-clear" onclick="clearFilters()">Clear All</button>
         </div>
       </div><!-- end shared sidebar -->
@@ -804,23 +804,43 @@
   <div id="tab-matching" class="tab-panel">
       <!-- MATCHING MAIN -->
       <div style="padding:24px 28px;overflow-y:auto;height:calc(100vh - 56px)">
-        <!-- MODE TABS + SECONDARY FILTERS -->
-        <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-primary" id="match-mode-1to1" onclick="setMatchMode('1to1')">1-to-1 Match</button>
-          <button class="btn btn-outline" id="match-mode-group" onclick="setMatchMode('group')">Group Match</button>
-          <button class="btn btn-outline" id="match-mode-saved" onclick="setMatchMode('saved')">Saved Groups</button>
-          <span id="pool-count-badge" style="font-size:12px;color:var(--gray-mid);margin-left:8px"></span>
-          <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
-            <input type="text" id="m-pool-activities" placeholder="Activities filter (e.g. hiking)" style="width:180px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
-            <select id="m-pool-event" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;background:white">
-              <option value="">Or load from event…</option>
-            </select>
-            <div id="pool-status" style="font-size:12px;color:var(--gray-mid);white-space:nowrap"></div>
+
+        <!-- MODE SELECTION SCREEN -->
+        <div id="match-mode-select">
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--black)">Matching</h2>
+          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:32px">Choose a matching mode to get started.</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:700px">
+            <div onclick="setMatchMode('1to1')" style="background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='transparent'">
+              <div style="font-size:28px;margin-bottom:10px">🎯</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px">1-to-1 Match</div>
+              <div style="font-size:12px;color:var(--gray-mid)">Score and rank matches for one person</div>
+            </div>
+            <div onclick="setMatchMode('group')" style="background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='transparent'">
+              <div style="font-size:28px;margin-bottom:10px">👥</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px">Group Match</div>
+              <div style="font-size:12px;color:var(--gray-mid)">Generate compatible groups from a pool</div>
+            </div>
+            <div onclick="setMatchMode('saved')" style="background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='transparent'">
+              <div style="font-size:28px;margin-bottom:10px">📋</div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px">Saved Groups</div>
+              <div style="font-size:12px;color:var(--gray-mid)">Review previously generated groups</div>
+            </div>
           </div>
         </div>
 
-        <!-- 1-TO-1 MODE -->
-        <div id="match-1to1-panel">
+        <!-- 1-TO-1 PAGE -->
+        <div id="match-1to1-panel" style="display:none">
+          <!-- Page header -->
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+            <button onclick="setMatchMode(null)" style="background:none;border:none;cursor:pointer;color:var(--gray-mid);font-size:20px;padding:0;line-height:1" title="Back">←</button>
+            <h2 style="font-size:18px;font-weight:700;margin:0;color:var(--black)">1-to-1 Matching</h2>
+            <span id="pool-count-badge" style="font-size:12px;color:var(--gray-mid);margin-left:4px"></span>
+            <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+              <div id="pool-status" style="font-size:12px;color:var(--gray-mid);white-space:nowrap"></div>
+            </div>
+          </div>
+
+          <!-- Subject search -->
           <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px">
             <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">Find Matches For</h3>
             <div style="display:flex;gap:10px">
@@ -830,28 +850,28 @@
             <div id="match-subject-selected" style="margin-top:12px;display:none"></div>
           </div>
 
-          <!-- LOCATION FILTERS -->
-          <div style="background:white;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px">
-            <div style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Location</div>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <input type="text" id="mt-zip" placeholder="Center zip code" style="width:130px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
-              <input type="number" id="mt-miles" placeholder="Miles" min="1" max="500" style="width:70px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
-              <label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer">
-                <input type="checkbox" id="mt-include-travel" style="accent-color:var(--red)"> Include willing to travel
-              </label>
-            </div>
-          </div>
-
           <div id="match-results-search-wrap" style="display:none;margin-bottom:12px">
             <input type="text" id="match-results-search" placeholder="Search results by name…" oninput="filterMatchResults()" style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none">
           </div>
           <div id="match-1to1-results">
-            <div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Toggle scoring fields above to customize results</span></p></div>
+            <div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above, then click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Use the sidebar filters to narrow the pool first</span></p></div>
           </div>
         </div>
 
-        <!-- GROUP MODE -->
+        <!-- GROUP PAGE -->
         <div id="match-group-panel" style="display:none">
+          <!-- Page header -->
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+            <button onclick="setMatchMode(null)" style="background:none;border:none;cursor:pointer;color:var(--gray-mid);font-size:20px;padding:0;line-height:1" title="Back">←</button>
+            <h2 style="font-size:18px;font-weight:700;margin:0;color:var(--black)">Group Match</h2>
+            <span id="pool-gender-breakdown" style="font-size:12px;color:var(--gray-mid);margin-left:4px"></span>
+            <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+              <input type="text" id="m-pool-activities" placeholder="Activities filter (e.g. hiking)" style="width:180px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
+              <select id="m-pool-event" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;background:white">
+                <option value="">Or load from event…</option>
+              </select>
+            </div>
+          </div>
           <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
             <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Generate Match Groups</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
@@ -1460,6 +1480,9 @@ function launchApp() {
   // Clear any stale filter state
   activeFilters = {};
   searchQuery = '';
+  // Show sidebar button for profiles tab (default)
+  const actionBtn = document.getElementById('sidebar-action-btn');
+  if (actionBtn) { actionBtn.textContent = 'Apply Filters'; actionBtn.style.display = ''; }
   loadAllOptions();
   loadStaffRoles();
   loadProfiles();
@@ -1475,19 +1498,21 @@ function switchTab(name, btn) {
   const actionBtn = document.getElementById('sidebar-action-btn');
   if (actionBtn) {
     if (name === 'matching') {
-      actionBtn.textContent = 'Build Pool';
+      actionBtn.style.display = 'none'; // mode select screen shown first
     } else {
       actionBtn.textContent = 'Apply Filters';
+      actionBtn.style.display = '';
     }
   }
   if (name === 'staff') { const s = document.getElementById('staff-search'); if(s) s.value=''; loadStaff(); loadStaffRoles(); }
-  if (name === 'matching') { loadSavedGroups(); loadEventOptions(); loadSavedPoolsList(); }
+  if (name === 'matching') { setMatchMode(null); loadEventOptions(); loadSavedPoolsList(); }
   if (name === 'archived') loadArchivedProfiles();
 }
 
 function sidebarAction() {
-  const activeTab = document.querySelector('.tab-panel.active');
-  if (activeTab && activeTab.id === 'tab-matching') {
+  if (matchMode === '1to1') {
+    runMatching();
+  } else if (matchMode === 'group') {
     buildPool();
   } else {
     applyFilters();
@@ -3000,13 +3025,36 @@ function loadMatchingOptions() {
 
 function setMatchMode(mode) {
   matchMode = mode;
-  document.getElementById('match-1to1-panel').style.display = mode === '1to1' ? '' : 'none';
-  document.getElementById('match-group-panel').style.display = mode === 'group' ? '' : 'none';
-  document.getElementById('match-saved-panel').style.display = mode === 'saved' ? '' : 'none';
-  document.getElementById('match-mode-1to1').className = mode === '1to1' ? 'btn btn-primary' : 'btn btn-outline';
-  document.getElementById('match-mode-group').className = mode === 'group' ? 'btn btn-primary' : 'btn btn-outline';
-  document.getElementById('match-mode-saved').className = mode === 'saved' ? 'btn btn-primary' : 'btn btn-outline';
-  if (mode === 'saved') loadSavedGroups();
+  const modeSelect = document.getElementById('match-mode-select');
+  const panel1to1 = document.getElementById('match-1to1-panel');
+  const panelGroup = document.getElementById('match-group-panel');
+  const panelSaved = document.getElementById('match-saved-panel');
+  const actionBtn = document.getElementById('sidebar-action-btn');
+
+  // Hide all panels
+  if (modeSelect) modeSelect.style.display = 'none';
+  if (panel1to1) panel1to1.style.display = 'none';
+  if (panelGroup) panelGroup.style.display = 'none';
+  if (panelSaved) panelSaved.style.display = 'none';
+
+  if (!mode) {
+    // Back to mode selection screen
+    if (modeSelect) modeSelect.style.display = '';
+    if (actionBtn) { actionBtn.style.display = 'none'; }
+    return;
+  }
+
+  if (mode === '1to1') {
+    if (panel1to1) panel1to1.style.display = '';
+    if (actionBtn) { actionBtn.textContent = 'Find Matches'; actionBtn.style.display = ''; }
+  } else if (mode === 'group') {
+    if (panelGroup) panelGroup.style.display = '';
+    if (actionBtn) { actionBtn.textContent = 'Build Pool'; actionBtn.style.display = ''; }
+  } else if (mode === 'saved') {
+    if (panelSaved) panelSaved.style.display = '';
+    if (actionBtn) { actionBtn.style.display = 'none'; }
+    loadSavedGroups();
+  }
 }
 
 
@@ -3590,6 +3638,24 @@ function selectMatchSubject(p) {
     const zipEl = document.getElementById('f-distance-zip');
     if (zipEl && !zipEl.value) zipEl.value = p.postal_code;
   }
+
+  // Load subject's preferences into sidebar filters
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  if (p.min_age) setVal('f-age-min', p.min_age);
+  if (p.max_age) setVal('f-age-max', p.max_age);
+  // Set seeking filter to match what they want
+  if (p.seeking) {
+    const seekingArr = Array.isArray(p.seeking) ? p.seeking : [p.seeking];
+    if (seekingArr.includes('Date Women')) setVal('f-gender', 'Female');
+    else if (seekingArr.includes('Date Men')) setVal('f-gender', 'Male');
+  }
+  // Multi-selects — set from their preferences
+  if (p.preferred_religion && p.preferred_religion.length) msSetValues('f-pref-religion', Array.isArray(p.preferred_religion) ? p.preferred_religion : [p.preferred_religion]);
+  if (p.preferred_politics && p.preferred_politics.length) msSetValues('f-pref-politics', Array.isArray(p.preferred_politics) ? p.preferred_politics : [p.preferred_politics]);
+  if (p.preferred_body_type && p.preferred_body_type.length) msSetValues('f-pref-body-type', Array.isArray(p.preferred_body_type) ? p.preferred_body_type : [p.preferred_body_type]);
+  if (p.preferred_education && p.preferred_education.length) msSetValues('f-pref-education', Array.isArray(p.preferred_education) ? p.preferred_education : [p.preferred_education]);
+  if (p.preferred_smoking && p.preferred_smoking.length) msSetValues('f-pref-smoking', Array.isArray(p.preferred_smoking) ? p.preferred_smoking : [p.preferred_smoking]);
+  if (p.preferred_alcohol && p.preferred_alcohol.length) msSetValues('f-pref-drinking', Array.isArray(p.preferred_alcohol) ? p.preferred_alcohol : [p.preferred_alcohol]);
   const name = [p.first_name, p.last_name].filter(Boolean).join(' ');
   const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
   const location = [p.city, p.state].filter(Boolean).join(', ');
@@ -3630,7 +3696,11 @@ function clearMatchSubject() {
   document.getElementById('match-subject-search').value = '';
   document.getElementById('match-subject-selected').style.display = 'none';
   document.getElementById('match-subject-selected').innerHTML = '';
-  document.getElementById('match-1to1-results').innerHTML = '<div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above and click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Optionally set pool filters on the left to narrow candidates</span></p></div>';
+  document.getElementById('match-1to1-results').innerHTML = '<div class="empty-state"><div class="icon">🎯</div><p>Search for a profile above, then click <strong>Find Matches →</strong><br><span style="font-size:12px;color:var(--gray-mid)">Use the sidebar filters to narrow the pool first</span></p></div>';
+  document.getElementById('match-results-search-wrap').style.display = 'none';
+  _lastMatchResults = [];
+  _subjectMatches = {};
+  clearFilters();
 }
 
 async function openProfileById(id) {
@@ -3665,9 +3735,9 @@ async function runMatching() {
   if (!matchSubject) { alert('Select a profile first.'); return; }
   const el = document.getElementById('match-1to1-results');
 
-  const zip = document.getElementById('mt-zip').value.trim();
-  const miles = parseFloat(document.getElementById('mt-miles').value) || 0;
-  const includeTravel = document.getElementById('mt-include-travel').checked;
+  const zip = (document.getElementById('f-distance-zip') || {}).value || '';
+  const miles = parseFloat((document.getElementById('f-distance-miles') || {}).value) || 0;
+  const includeTravel = false; // sidebar has no travel checkbox — filter via relocation fields instead
 
   if (!matchPool.length) {
     el.innerHTML = '<div class="loading-state">Building pool...</div>';
