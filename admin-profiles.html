@@ -864,7 +864,7 @@
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
             <button onclick="setMatchMode(null)" style="background:none;border:none;cursor:pointer;color:var(--gray-mid);font-size:20px;padding:0;line-height:1" title="Back">←</button>
             <h2 style="font-size:18px;font-weight:700;margin:0;color:var(--black)">Group Match</h2>
-            <span id="pool-gender-breakdown" style="font-size:12px;color:var(--gray-mid);margin-left:4px"></span>
+            <span id="pool-count-badge" style="font-size:12px;color:var(--gray-mid);margin-left:4px"></span>
             <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
               <input type="text" id="m-pool-activities" placeholder="Activities filter (e.g. hiking)" style="width:180px;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
               <select id="m-pool-event" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:7px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none;background:white">
@@ -905,7 +905,14 @@
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-primary" id="btn-generate-groups" onclick="generateGroups()">Generate Groups</button>
-              <span id="pool-gender-breakdown" style="font-size:13px;color:var(--gray-dark)"></span>
+              <div style="position:relative;display:inline-block">
+                <button onclick="document.getElementById('export-pool-menu-hdr').style.display=document.getElementById('export-pool-menu-hdr').style.display==='none'?'block':'none'" class="btn btn-outline" style="font-size:13px">Export Pool ▾</button>
+                <div id="export-pool-menu-hdr" style="display:none;position:absolute;left:0;top:100%;background:white;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);box-shadow:var(--shadow);z-index:100;min-width:160px;margin-top:4px">
+                  <div onclick="exportPoolCSV('abbreviated');document.getElementById('export-pool-menu-hdr').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0f0" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Abbreviated</div>
+                  <div onclick="exportPoolCSV('expanded');document.getElementById('export-pool-menu-hdr').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Expanded (all fields)</div>
+                </div>
+              </div>
+              <button onclick="clearGeneratedGroups()" class="btn btn-outline" style="font-size:13px">Clear Groups</button>
               <span id="mg-status" style="font-size:12px;color:var(--gray-mid)"></span>
             </div>
           </div>
@@ -4048,6 +4055,15 @@ async function excludeMatch(profileId, name, btn) {
     alert('Failed to exclude: ' + e.message);
     btn.disabled = false; btn.textContent = 'Exclude';
   }
+}
+
+function clearGeneratedGroups() {
+  const el = document.getElementById('match-group-results');
+  if (el) el.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Set group settings above<br>3. Click <strong>Generate Groups</strong></p></div>';
+  window._lastGroupDetails = [];
+  document.getElementById('mg-status').textContent = '';
+  const btn = document.getElementById('btn-generate-groups');
+  if (btn) { btn.disabled = false; btn.textContent = 'Generate Groups'; }
 }
 
 async function generateGroups() {
