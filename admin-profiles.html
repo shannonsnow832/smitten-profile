@@ -175,6 +175,13 @@
     font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px;
   }
   .btn-clear:hover { border-color: var(--gray-dark); }
+  .last-active-preset {
+    font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;
+    border:1.5px solid var(--gray-light);background:white;cursor:pointer;
+    color:var(--gray-mid);transition:all 0.15s;
+  }
+  .last-active-preset:hover { border-color:var(--pink);color:var(--pink); }
+  .last-active-preset.active { background:var(--pink);border-color:var(--pink);color:white; }
   .divider { height: 1px; background: var(--gray-light); margin: 16px 0; }
 
   /* PROFILE LIST */
@@ -763,6 +770,17 @@
                 <option value="invite_paused">Invite Paused</option>
                 <option value="banned">Banned</option>
               </select>
+            </div>
+            <div class="filter-group">
+              <label>Last Active</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <button type="button" class="last-active-preset" onclick="setLastActive(30)" data-days="30">30d</button>
+                <button type="button" class="last-active-preset" onclick="setLastActive(60)" data-days="60">60d</button>
+                <button type="button" class="last-active-preset" onclick="setLastActive(90)" data-days="90">90d</button>
+                <button type="button" class="last-active-preset" onclick="setLastActive(180)" data-days="180">6mo</button>
+                <button type="button" class="last-active-preset" onclick="setLastActive(null)" data-days="">Any</button>
+              </div>
+              <input type="date" id="f-last-active" placeholder="Active since…" style="width:100%;font-size:12px">
             </div>
           </div>
         </div>
@@ -1585,13 +1603,31 @@ function clearFilters() {
    'f-drinking','f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type',
    'f-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
   ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-status','f-completeness',
-   'f-date-with-kids','f-relocation-in','f-relocation-out','f-state','f-city'
+   'f-date-with-kids','f-relocation-in','f-relocation-out','f-state','f-city','f-last-active'
   ].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.querySelectorAll('.last-active-preset').forEach(b => b.classList.remove('active'));
   document.getElementById('f-distance-status').textContent = '';
   distanceCenter = null;
   activeFilters = {};
   currentPage = 0;
   loadProfiles();
+}
+
+function setLastActive(days) {
+  const input = document.getElementById("f-last-active");
+  document.querySelectorAll(".last-active-preset").forEach(b => b.classList.remove("active"));
+  if (!days) {
+    if (input) input.value = "";
+    const anyBtn = document.querySelector(".last-active-preset[data-days=\"\"]");
+    if (anyBtn) anyBtn.classList.add("active");
+    return;
+  }
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  const iso = d.toISOString().split("T")[0];
+  if (input) input.value = iso;
+  const btn = document.querySelector(`.last-active-preset[data-days="${days}"]`);
+  if (btn) btn.classList.add("active");
 }
 
 function calcAge(dob) {
@@ -1698,6 +1734,7 @@ function buildProfilesUrl(forCount = false) {
   if (f.prefRelStatus && f.prefRelStatus.length) params.push(`preferred_relationship_status=ov.{${f.prefRelStatus.map(v => `"${v}"`).join(',')}}`);
   if (f.prefAgeMin) params.push(`min_age=gte.${f.prefAgeMin}`);
   if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
+  if (f.lastActive) params.push(`last_login_at=gte.${encodeURIComponent(f.lastActive)}`);
 
   if (searchQuery) {
     const words = searchQuery.trim().split(/\s+/);
@@ -2793,6 +2830,7 @@ async function applyFilters() {
     dateWithKids: getVal('f-date-with-kids'),
     relocationIn: getVal('f-relocation-in'),
     relocationOut: getVal('f-relocation-out'),
+    lastActive: getVal('f-last-active'),
   };
 
   // Geocode distance zip if provided
@@ -3216,7 +3254,7 @@ async function autoBuildPoolForSubject(subject, zip, miles, includeTravel) {
   }
 
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&order=created_at.desc&limit=500`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&order=created_at.desc&limit=5000`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
     const data = await r.json();
@@ -3349,7 +3387,7 @@ async function buildPoolFromAnchor(anchor) {
     params.push(`date_of_birth=gte.${new Date(new Date().setFullYear(new Date().getFullYear() - buffered)).toISOString().split('T')[0]}`);
   }
 
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&limit=500`, {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&limit=5000`, {
     headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
   });
   const data = await r.json();
@@ -3574,13 +3612,13 @@ async function buildPool() {
   try {
     let data = [];
     if (eventId) {
-      const r2 = await fetch(`${SUPABASE_URL}/rest/v1/event_invites?event_id=eq.${eventId}&select=profiles(id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies)&limit=500`, {
+      const r2 = await fetch(`${SUPABASE_URL}/rest/v1/event_invites?event_id=eq.${eventId}&select=profiles(id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies)&limit=5000`, {
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
       });
       const invites = await r2.json();
       data = Array.isArray(invites) ? invites.map(i => i.profiles).filter(Boolean) : [];
     } else {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies&order=created_at.desc&limit=500`, {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude,activities_hobbies&order=created_at.desc&limit=5000`, {
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
       });
       data = await r.json();
@@ -4086,6 +4124,13 @@ async function generateGroups() {
   } else if (!matchPool.length) {
     alert('Build a pool first, or select an anchor person.');
     btn.disabled = false; btn.textContent = 'Generate Groups';
+    return;
+  }
+
+  // Pool size guard — prompt to narrow filters if too large
+  if (matchPool.length > 350) {
+    statusEl.innerHTML = `<span style="color:var(--red)">⚠️ Pool has ${matchPool.length} people — please narrow your filters to 350 or fewer for best results. Use sidebar filters and click Build Pool again.</span>`;
+    btn.disabled = false; btn.textContent = "Generate Groups";
     return;
   }
 
