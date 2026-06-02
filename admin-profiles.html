@@ -780,7 +780,7 @@
                 <button type="button" class="last-active-preset" onclick="setLastActive(180)" data-days="180">6mo</button>
                 <button type="button" class="last-active-preset" onclick="setLastActive(null)" data-days="">Any</button>
               </div>
-              <input type="date" id="f-last-active" placeholder="Active since…" style="width:100%;font-size:12px">
+              <input type="date" id="f-last-active" style="width:100%;font-size:12px">
             </div>
           </div>
         </div>
@@ -1624,8 +1624,7 @@ function setLastActive(days) {
   }
   const d = new Date();
   d.setDate(d.getDate() - days);
-  const iso = d.toISOString().split("T")[0];
-  if (input) input.value = iso;
+  if (input) input.value = d.toISOString().split("T")[0];
   const btn = document.querySelector(`.last-active-preset[data-days="${days}"]`);
   if (btn) btn.classList.add("active");
 }
@@ -3334,7 +3333,7 @@ function searchGroupAnchor() {
     let orClause = words.length === 1
       ? `or=(first_name.ilike.*${encodeURIComponent(words[0])}*,last_name.ilike.*${encodeURIComponent(words[0])}*)`
       : `or=(and(first_name.ilike.*${encodeURIComponent(words[0])}*,last_name.ilike.*${encodeURIComponent(words.slice(1).join(' '))}*),and(first_name.ilike.*${encodeURIComponent(words.slice(1).join(' '))}*,last_name.ilike.*${encodeURIComponent(words[0])}*))`;
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&${orClause}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,religion,politics,education,income_level,body_type,kids,want_kids,smoking,drinking,min_age,max_age&limit=8`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?deleted_at=is.null&${orClause}&select=id,first_name,last_name,gender,date_of_birth,city,state,postal_code,image_url,religion,politics,education,income_level,body_type,kids,want_kids,smoking,drinking,min_age,max_age,seeking,preferred_religion,preferred_politics,preferred_body_type,preferred_education,preferred_smoking,preferred_alcohol&limit=8`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
     const results = await r.json();
@@ -3357,6 +3356,36 @@ function selectGroupAnchor(p) {
   const selectedEl = document.getElementById('mg-anchor-selected');
   document.getElementById('mg-anchor-name').textContent = `${p.first_name} ${p.last_name} · ${p.gender||''} · ${p.city||''}`;
   selectedEl.style.display = 'flex';
+
+  // Pre-fill sidebar with anchor's PREFERENCES (what they want in matches)
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  const ageBuffer = parseInt(document.getElementById('mg-anchor-age-buffer').value) || 5;
+
+  // Age range from anchor's stated preferences ± buffer
+  if (p.min_age) setVal('f-age-min', Math.max(18, p.min_age - ageBuffer));
+  if (p.max_age) setVal('f-age-max', p.max_age + ageBuffer);
+
+  // Zip
+  if (p.postal_code) setVal('f-zip', p.postal_code);
+
+  // Seeking → Gender filter (who they're looking for)
+  if (p.seeking && p.seeking.length) {
+    const seekVal = Array.isArray(p.seeking) ? p.seeking[0] : p.seeking;
+    const genderMap = { 'Date Men': 'Male', 'Date Women': 'Female', 'Date Everyone': '' };
+    const mappedGender = genderMap[seekVal];
+    if (mappedGender !== undefined) setVal('f-gender', mappedGender);
+  }
+
+  // Anchor's preferred lifestyle filters → sidebar preference filters
+  if (p.preferred_religion && p.preferred_religion.length) msSetValues('f-pref-religion', Array.isArray(p.preferred_religion) ? p.preferred_religion : [p.preferred_religion]);
+  if (p.preferred_politics && p.preferred_politics.length) msSetValues('f-pref-politics', Array.isArray(p.preferred_politics) ? p.preferred_politics : [p.preferred_politics]);
+  if (p.preferred_body_type && p.preferred_body_type.length) msSetValues('f-pref-body-type', Array.isArray(p.preferred_body_type) ? p.preferred_body_type : [p.preferred_body_type]);
+  if (p.preferred_education && p.preferred_education.length) msSetValues('f-pref-education', Array.isArray(p.preferred_education) ? p.preferred_education : [p.preferred_education]);
+  if (p.preferred_smoking && p.preferred_smoking.length) msSetValues('f-pref-smoking', Array.isArray(p.preferred_smoking) ? p.preferred_smoking : [p.preferred_smoking]);
+  if (p.preferred_alcohol && p.preferred_alcohol.length) msSetValues('f-pref-drinking', Array.isArray(p.preferred_alcohol) ? p.preferred_alcohol : [p.preferred_alcohol]);
+
+  // Auto-build pool so count is visible immediately
+  buildPool();
 }
 
 function clearGroupAnchor() {
@@ -3366,33 +3395,14 @@ function clearGroupAnchor() {
 }
 
 async function buildPoolFromAnchor(anchor) {
-  // Build pool from anchor's preferences — no gender filter, loosened age
+  // Pool is now driven entirely by sidebar filters (pre-filled from anchor's prefs)
+  // so we just use the same buildPool path — this function is kept as fallback
   const token = supabaseSession || SUPABASE_ANON;
-  const ageBuffer = parseInt(document.getElementById('mg-anchor-age-buffer').value) || 5;
-  let params = ['deleted_at=is.null','is_active=eq.true','invite_paused=eq.false',`id=neq.${anchor.id}`];
-
-  // Apply anchor's lifestyle preferences loosely
-  if (anchor.religion) params.push(`religion=eq.${encodeURIComponent(anchor.religion)}`);
-  if (anchor.politics) params.push(`politics=eq.${encodeURIComponent(anchor.politics)}`);
-  if (anchor.education) params.push(`education=eq.${encodeURIComponent(anchor.education)}`);
-  if (anchor.income_level) params.push(`income_level=eq.${encodeURIComponent(anchor.income_level)}`);
-
-  // Loosened age — use anchor's min/max ± buffer
-  if (anchor.min_age) {
-    const buffered = Math.max(18, anchor.min_age - ageBuffer);
-    params.push(`date_of_birth=lte.${new Date(new Date().setFullYear(new Date().getFullYear() - buffered)).toISOString().split('T')[0]}`);
-  }
-  if (anchor.max_age) {
-    const buffered = anchor.max_age + ageBuffer;
-    params.push(`date_of_birth=gte.${new Date(new Date().setFullYear(new Date().getFullYear() - buffered)).toISOString().split('T')[0]}`);
-  }
-
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}&select=id,first_name,last_name,gender,date_of_birth,city,state,image_url,income_level,religion,politics,education,seeking,min_age,max_age,body_type,kids,want_kids,preferred_body_type,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,relocation_in,relocation_out,latitude,longitude&limit=5000`, {
-    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
-  });
+  const url = buildProfilesUrl() + '&limit=5000';
+  const r = await fetch(url, { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` } });
   const data = await r.json();
-  // Ensure anchor is in the pool
   let pool = Array.isArray(data) ? data : [];
+  // Ensure anchor is always in pool
   if (!pool.find(p => p.id === anchor.id)) pool.unshift(anchor);
   return pool;
 }
@@ -4110,27 +4120,25 @@ async function generateGroups() {
   btn.disabled = true; btn.textContent = 'Generating...';
   statusEl.textContent = '';
 
-  // If anchor set, build pool from anchor's preferences
+  // If anchor set, pool was already built via buildPool() on selection — just ensure anchor is present
   if (groupAnchor) {
-    statusEl.textContent = 'Building anchor pool...';
-    const anchorPool = await buildPoolFromAnchor(groupAnchor);
-    if (!anchorPool.length) {
-      statusEl.textContent = 'No profiles found for anchor criteria.';
+    if (!matchPool.length) {
+      statusEl.innerHTML = `<span style="color:var(--red)">No pool built yet. Select the anchor again or click Build Pool.</span>`;
       btn.disabled = false; btn.textContent = 'Generate Groups';
       return;
     }
-    matchPool = anchorPool;
+    if (!matchPool.find(p => p.id === groupAnchor.id)) matchPool.unshift(groupAnchor);
     document.getElementById('pool-count-badge').textContent = `${matchPool.length} in pool`;
   } else if (!matchPool.length) {
-    alert('Build a pool first, or select an anchor person.');
+    statusEl.innerHTML = `<span style="color:var(--red)">Build a pool first using the sidebar filters.</span>`;
     btn.disabled = false; btn.textContent = 'Generate Groups';
     return;
   }
 
-  // Pool size guard — prompt to narrow filters if too large
+  // Pool size guard — prompt to narrow if too large
   if (matchPool.length > 350) {
-    statusEl.innerHTML = `<span style="color:var(--red)">⚠️ Pool has ${matchPool.length} people — please narrow your filters to 350 or fewer for best results. Use sidebar filters and click Build Pool again.</span>`;
-    btn.disabled = false; btn.textContent = "Generate Groups";
+    statusEl.innerHTML = `<span style="color:var(--red)">⚠️ Pool has ${matchPool.length} people — please narrow your filters to 350 or fewer for best results, then click Build Pool again.</span>`;
+    btn.disabled = false; btn.textContent = 'Generate Groups';
     return;
   }
 
@@ -4158,6 +4166,17 @@ async function generateGroups() {
     });
     const results = await r.json();
     if (!Array.isArray(results)) throw new Error('Unexpected response');
+
+    // If anchor set, inject anchor into every group that doesn't already have them
+    if (groupAnchor) {
+      results.forEach(group => {
+        if (!group.members) group.members = [];
+        if (!group.members.find(m => m.profile_id === groupAnchor.id || m.id === groupAnchor.id)) {
+          group.members.unshift({ profile_id: groupAnchor.id, ...groupAnchor, _anchorInjected: true });
+        }
+      });
+    }
+
     renderGroupResults(results);
     loadSavedGroups();
     statusEl.textContent = `Generated ${results.length} groups`;
