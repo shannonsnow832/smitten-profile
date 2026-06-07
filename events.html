@@ -291,19 +291,22 @@ async function refreshSes(){
 async function loadEventPicker(){
   sv('vc');
   var events=[];
+  var seen={};
   // Check if user is a host/admin — if so, load their assigned events
   var sr=await fetch(S+'/rest/v1/staff?user_id=eq.'+UID+'&is_active=eq.true&select=role&limit=1',{headers:hd()});
   var staffRows=sr.ok?await sr.json():[];
   if(staffRows&&staffRows.length){
     // Staff member — load assigned events via event_hosts
     var hr=await api('/rest/v1/rpc/get_host_events',{method:'POST',body:JSON.stringify({p_user_id:UID})});
-    if(hr.ok)events=await hr.json();
-  } else {
-    // Regular participant — load via registrations
-    var r=await api('/rest/v1/registrations?profile_id=eq.'+UID+'&select=event_id,events(id,name,event_date,start_time,city,state,status)');
-    if(!r.ok){sv('vl');return;}
+    if(hr.ok){
+      var hostEvents=await hr.json();
+      hostEvents.forEach(function(ev){if(ev&&!seen[ev.id]){seen[ev.id]=true;events.push(ev);}});
+    }
+  }
+  // Always also check registrations (covers staff who are also registered as participants)
+  var r=await api('/rest/v1/registrations?profile_id=eq.'+UID+'&select=event_id,events(id,name,event_date,start_time,city,state,status)');
+  if(r.ok){
     var rows=await r.json();
-    var seen={};
     rows.forEach(function(row){
       var ev=row.events;
       if(!ev||seen[ev.id])return;
