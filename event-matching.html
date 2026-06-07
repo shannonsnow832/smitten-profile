@@ -325,13 +325,13 @@ async function init(){
   await loadOrgConfig();
   var st=localStorage.getItem('ss_s');
   if(st){try{var d=JSON.parse(st);SES={t:d.t,r:d.r};}catch(e){}}
-  if(!SES){sv('vl');return;}
+  if(!SES){sv('vl');updateLoginScreen();return;}
   var ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
   if(!ur.ok){
     var ok=await refreshSes();
-    if(!ok){localStorage.removeItem('ss_s');SES=null;sv('vl');return;}
+    if(!ok){localStorage.removeItem('ss_s');SES=null;sv('vl');updateLoginScreen();return;}
     ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
-    if(!ur.ok){localStorage.removeItem('ss_s');SES=null;sv('vl');return;}
+    if(!ur.ok){localStorage.removeItem('ss_s');SES=null;sv('vl');updateLoginScreen();return;}
   }
   UID=(await ur.json()).id;
   loadEventPicker();
@@ -606,11 +606,31 @@ function signOut(){
   localStorage.removeItem('ss_s');
   SES=null;UID=null;EV=null;PRF=null;PX={};ACH=null;
   if(window._cp)clearInterval(window._cp);
-  showEmailCard();
+  document.getElementById('ei').value='';
+  document.getElementById('em').innerHTML='';
+  updateLoginScreen();
   sv('vl');
 }
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js');}
+function updateLoginScreen(){
+  var existing=document.getElementById('session-banner');
+  if(existing)existing.remove();
+  var st=localStorage.getItem('ss_s');
+  if(st){
+    try{
+      var d=JSON.parse(st);
+      if(d.t){
+        var banner=document.createElement('div');
+        banner.id='session-banner';
+        banner.className='al inf';
+        banner.style.marginBottom='10px';
+        banner.innerHTML='You\'re already signed in. <button class="tlink" style="display:inline;margin:0" onclick="signOut()">Sign out</button> to switch accounts.';
+        document.getElementById('vl').querySelector('.card').insertBefore(banner,document.getElementById('vl').querySelector('.card').firstChild);
+      }
+    }catch(e){}
+  }
+}
+
 init();
 </script>
 </body>
