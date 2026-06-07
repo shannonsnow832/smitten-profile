@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Smitten Singles</title>
 <meta name="theme-color" content="#C6302C">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Smitten Singles">
-<link rel="manifest" href="/manifest.json">
+
+
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f7f7f7;color:#1a1a1a;min-height:100vh}
@@ -147,10 +147,6 @@ input:focus,select:focus{border-color:#C6302C}
     </div>
     <div class="card">
       <p class="sl">My info</p>
-      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">First name</label>
-      <input type="text" id="pfn" placeholder="First name" style="margin-bottom:12px">
-      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Last name</label>
-      <input type="text" id="pln" placeholder="Last name" style="margin-bottom:12px">
       <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Date of birth</label>
       <input type="date" id="pdob" style="margin-bottom:12px">
       <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Gender</label>
@@ -495,7 +491,7 @@ async function loadMatches(){
   var data=await r.json();
   if(!data||!data.length)return;
   var ids=data.map(function(m){return m.other_user_id;});
-  var pr=await api('/rest/v1/rpc/get_match_profiles',{method:'POST',body:JSON.stringify({p_event_id:EV,p_profile_ids:ids})});
+  var pr=await api('/rest/v1/profiles?id=in.('+ids.join(',')+')'+'&select=id,first_name,last_name,image_url');
   var ps=pr.ok?await pr.json():[];
   var bi={};ps.forEach(function(p){bi[p.id]=p;});
   mc.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
@@ -503,11 +499,8 @@ async function loadMatches(){
     var lastInit=p.last_name?(p.last_name[0].toUpperCase()+'.'):'';
     var displayName=(p.first_name||'Match')+(lastInit?' '+lastInit:'');
     var pl=m.match_kind==='date'?'<span class="pill pd">Date</span>':m.match_kind==='friend'?'<span class="pill pf">Friend</span>':'';
-    var av=p.image_url
-      ?'<img class="av" src="'+p.image_url+'" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0">'
-      :'<div class="av" style="width:48px;height:48px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#555;flex-shrink:0">'+(p.first_name||'?')[0].toUpperCase()+'</div>';
-    return '<div class="mrow"><div style="display:flex;align-items:center;gap:12px">'+av+'<div><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+pl+'<span style="font-size:15px;font-weight:600">'+displayName+'</span></div>'
-      +'<button class="cbtn" onclick="openChat(\''+m.other_user_id+'\',\''+encodeURIComponent(displayName)+'\')">&#128172; Chat</button></div></div></div>';
+    return '<div class="mrow"><div style="display:flex;align-items:center;gap:8px">'+pl+'<span style="font-size:15px;font-weight:600">'+displayName+'</span></div>'
+      +'<button class="cbtn" onclick="openChat(\''+m.other_user_id+'\',\''+encodeURIComponent(displayName)+'\')">&#128172; Chat</button></div>';
   }).join('')+'</div>';
 }
 
@@ -522,7 +515,7 @@ async function loadChats(){
   if(r.ok)data=await r.json();
   if(!data||!data.length){cl.innerHTML='<div class="empty">No matches yet.</div>';return;}
   var ids=data.map(function(m){return m.other_user_id;});
-  var pr=await api('/rest/v1/rpc/get_match_profiles',{method:'POST',body:JSON.stringify({p_event_id:EV,p_profile_ids:ids})});
+  var pr=await api('/rest/v1/profiles?id=in.('+ids.join(',')+')'+'&select=id,first_name,last_name,image_url');
   var ps=pr.ok?await pr.json():[];
   var bi={};ps.forEach(function(p){bi[p.id]=p;});
   cl.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
@@ -602,7 +595,7 @@ function tab(t){
 }
 
 async function loadMe(){
-  var r=await api('/rest/v1/profiles?id=eq.'+UID+'&select=id,first_name,last_name,image_url,photos,date_of_birth,gender');
+  var r=await api('/rest/v1/profiles?id=eq.'+UID+'&select=id,first_name,image_url,photos,date_of_birth,gender');
   if(!r.ok)return;
   var d=await r.json();
   if(!d||!d.length)return;
@@ -612,22 +605,15 @@ async function loadMe(){
   var w=document.getElementById('ppw');
   if(ph)w.innerHTML='<img class="pp" src="'+ph+'" alt="">';
   else document.getElementById('pph').textContent=init;
-  if(PRF.first_name)document.getElementById('pfn').value=PRF.first_name;
-  if(PRF.last_name)document.getElementById('pln').value=PRF.last_name;
   if(PRF.date_of_birth)document.getElementById('pdob').value=PRF.date_of_birth;
   if(PRF.gender)document.getElementById('pgender').value=PRF.gender;
 }
 
 async function saveProfile(){
-  var fn=document.getElementById('pfn').value.trim();
-  var ln=document.getElementById('pln').value.trim();
   var dob=document.getElementById('pdob').value;
   var gender=document.getElementById('pgender').value;
   var msg=document.getElementById('profmsg');
-  var update={date_of_birth:dob||null,gender:gender||null};
-  if(fn)update.first_name=fn;
-  if(ln)update.last_name=ln;
-  var r=await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(update)});
+  var r=await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({date_of_birth:dob||null,gender:gender||null})});
   if(r.ok){msg.innerHTML='<span style="color:#1b5e20">Saved!</span>';setTimeout(function(){msg.innerHTML='';},3000);}
   else{msg.innerHTML='<span style="color:#7f0000">Error saving.</span>';}
 }
