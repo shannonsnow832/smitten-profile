@@ -2,2034 +2,644 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Your Profile - Smitten Singles</title>
-<link rel="icon" type="image/png" href="Smitten_Icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Smitten Singles</title>
+<meta name="theme-color" content="#C6302C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Smitten Singles">
+<link rel="manifest" href="/manifest.json">
 <style>
-  :root {
-    --red: #C6302C;
-    --red-light: #DA5C58;
-    --pink: #FBB3B1;
-    --gray-light: #EFEFF1;
-    --gray-dark: #5A5353;
-    --gray-mid: #BFBFBF;
-    --white: #FFFFFF;
-    --black: #000000;
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 2px 12px rgba(90,83,83,0.10);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Montserrat', sans-serif;
-    background: var(--gray-light);
-    color: var(--gray-dark);
-    min-height: 100vh;
-  }
-
-  /* HEADER */
-  .header {
-    background: var(--white);
-    border-bottom: 1px solid #eee;
-    padding: 14px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .header-logo {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 20px;
-    color: var(--red);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-  .header-sub {
-    font-size: 13px;
-    color: var(--gray-dark);
-    margin-left: 4px;
-  }
-
-  /* FLOW SCREENS */
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  /* STEP 1 - Identity gate */
-  .gate-wrap {
-    max-width: 480px;
-    margin: 60px auto;
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 48px 40px;
-  }
-  .gate-wrap h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 28px;
-    color: var(--black);
-    margin-bottom: 8px;
-  }
-  .gate-wrap p {
-    font-size: 14px;
-    color: var(--gray-dark);
-    margin-bottom: 32px;
-    line-height: 1.6;
-  }
-
-  /* OTP screen */
-  .otp-wrap {
-    max-width: 480px;
-    margin: 60px auto;
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 48px 40px;
-    text-align: center;
-  }
-  .otp-wrap h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-  .otp-wrap p { font-size: 14px; color: var(--gray-dark); margin-bottom: 28px; line-height: 1.6; }
-  .otp-inputs {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
-  .otp-inputs input {
-    width: 40px;
-    height: 50px;
-    border: 2px solid var(--gray-light);
-    border-radius: var(--radius-sm);
-    text-align: center;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--black);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .otp-inputs input:focus { border-color: var(--red); }
-
-  /* MAIN PROFILE FORM */
-  .profile-wrap {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 0 20px 60px;
-  }
-  .profile-header {
-    margin-bottom: 28px;
-  }
-  .profile-header h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 30px;
-    color: var(--black);
-  }
-  .profile-header p {
-    font-size: 14px;
-    color: var(--gray-dark);
-    margin-top: 4px;
-  }
-
-  .profile-grid {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 24px;
-    align-items: start;
-  }
-
-  /* LEFT COLUMN */
-  .left-col { display: flex; flex-direction: column; gap: 20px; }
-
-  .photo-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 24px;
-  }
-
-  /* ── PHOTO GRID (drag-to-reorder, 6 max) ── */
-  .photo-card h3 {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .photo-card .photo-hint {
-    font-size: 12px;
-    color: var(--gray-dark);
-    margin-bottom: 16px;
-    line-height: 1.5;
-  }
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .photo-slot {
-    aspect-ratio: 1;
-    border-radius: var(--radius-sm);
-    background: var(--gray-light);
-    border: 2px dashed var(--gray-mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    position: relative;
-    transition: border-color 0.2s, opacity 0.15s;
-  }
-  .photo-slot:hover { border-color: var(--red); }
-  .photo-slot.has-photo { border-style: solid; border-color: transparent; }
-  .photo-slot.is-main { border-color: var(--red); border-style: solid; }
-  .photo-slot.drag-over { border-color: var(--red); opacity: 0.7; }
-  .photo-slot.dragging { opacity: 0.4; }
-  .photo-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; pointer-events: none; }
-  .photo-slot .cam { font-size: 22px; color: var(--gray-dark); pointer-events: none; }
-  .photo-slot .main-badge {
-    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-    background: var(--red); color: white; font-size: 9px; font-weight: 700;
-    padding: 2px 6px; border-radius: 10px; white-space: nowrap; pointer-events: none; z-index: 5;
-  }
-  .photo-delete-btn {
-    position: absolute; top: 6px; right: 6px;
-    width: 26px; height: 26px;
-    background: rgba(0,0,0,0.55); border: none; border-radius: 50%;
-    color: white; font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 10; opacity: 0;
-    transition: opacity 0.2s, background 0.2s;
-    padding: 0; line-height: 1;
-  }
-  .photo-delete-btn:hover { background: rgba(198,48,44,0.9); }
-  .photo-slot:hover .photo-delete-btn { opacity: 1; }
-  .photo-upload-note {
-    font-size: 11px;
-    color: var(--gray-dark);
-    text-align: center;
-    margin-top: 6px;
-    line-height: 1.5;
-  }
-
-  .privacy-card {
-    background: #FFF5F5;
-    border: 1px solid var(--pink);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .privacy-card .privacy-icon { color: var(--red); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  .privacy-card strong { font-size: 13px; display: block; margin-bottom: 4px; color: var(--gray-dark); }
-  .privacy-card p { font-size: 12px; color: var(--gray-dark); line-height: 1.5; }
-
-  /* RIGHT COLUMN */
-  .right-col { display: flex; flex-direction: column; gap: 0; }
-
-  /* TABS */
-  .tabs {
-    display: flex;
-    background: var(--white);
-    border-radius: var(--radius) var(--radius) 0 0;
-    border-bottom: 2px solid var(--gray-light);
-    overflow: hidden;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 16px 8px;
-    border: none;
-    background: var(--gray-light);
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.2s;
-    border-right: 1px solid #e0e0e0;
-  }
-  .tab-btn:last-child { border-right: none; }
-  .tab-btn.active {
-    color: var(--red);
-    border-bottom-color: var(--red);
-    background: var(--white);
-  }
-  .tab-btn:hover:not(.active) {
-    background: #e8e8e8;
-    color: var(--gray-dark);
-  }
-
-  .tab-content {
-    background: var(--white);
-    border-radius: 0 0 var(--radius) var(--radius);
-    box-shadow: var(--shadow);
-    padding: 28px;
-    display: none;
-  }
-  .tab-content.active { display: block; }
-
-  /* FORM ELEMENTS */
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--black);
-    margin-bottom: 20px;
-    margin-top: 8px;
-  }
-  .section-title:not(:first-child) { margin-top: 32px; }
-  .section-title .icon { color: var(--red); }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  .form-row.full { grid-template-columns: 1fr; }
-  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
-
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--gray-dark);
-  }
-  .field .hint {
-    font-size: 11px;
-    color: #333;
-    margin-top: -2px;
-  }
-  .field input,
-  .field select,
-  .field textarea {
-    border: 1.5px solid #E8E8E8;
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
-    color: var(--gray-dark);
-    outline: none;
-    transition: border-color 0.2s;
-    background: var(--white);
-    width: 100%;
-  }
-  .field input:focus,
-  .field select:focus,
-  .field textarea:focus { border-color: var(--red); }
-  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
-
-  /* SEEKING CHECKBOXES */
-  .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
-  .check-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--gray-dark);
-  }
-  .check-item input[type=checkbox],
-  .check-item input[type=radio] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--red);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .check-item.with-desc { align-items: flex-start; }
-  .check-item.with-desc .check-text strong { display: block; font-size: 14px; }
-  .check-item.with-desc .check-text span { font-size: 12px; color: var(--gray-dark); line-height: 1.5; display: block; margin-top: 2px; }
-
-  /* SAVE BAR */
-  .save-bar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--white);
-    border-bottom: 1px solid #eee;
-    padding: 14px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .save-bar-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--black);
-  }
-
-  /* BUTTONS */
-  .btn {
-    padding: 11px 24px;
-    border-radius: var(--radius-sm);
-    border: none;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-primary {
-    background: var(--red);
-    color: var(--white);
-  }
-  .btn-primary:hover { background: var(--red-light); }
-  .btn-primary:disabled { background: var(--gray-mid); cursor: not-allowed; }
-  .btn-outline {
-    background: transparent;
-    color: var(--red);
-    border: 1.5px solid var(--red);
-  }
-  .btn-outline:hover { background: #FFF5F5; }
-  .btn-ghost {
-    background: transparent;
-    color: var(--gray-dark);
-    border: 1.5px solid var(--gray-mid);
-  }
-
-  /* FORM ROW - full width fields */
-  .form-full { margin-bottom: 16px; }
-
-  /* ALERTS */
-  .alert {
-    padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    margin-bottom: 20px;
-    display: none;
-  }
-  .alert.error { background: #FFF0F0; border: 1px solid var(--pink); color: var(--red); }
-  .alert.success { background: #F0FFF4; border: 1px solid #86efac; color: #166534; }
-  .alert.show { display: block; }
-
-  /* DUPLICATE FOUND */
-  .duplicate-msg {
-    text-align: center;
-    padding: 16px;
-    background: #FFF5F5;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--pink);
-    display: none;
-  }
-  .duplicate-msg.show { display: block; }
-  .duplicate-msg p { font-size: 14px; color: var(--gray-dark); margin-bottom: 12px; }
-  .duplicate-msg a { color: var(--red); font-weight: 600; text-decoration: none; }
-
-  /* PROGRESS */
-  .progress-bar {
-    height: 4px;
-    background: var(--gray-light);
-    border-radius: 2px;
-    margin-bottom: 28px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--red);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
-
-  /* FOOTER */
-  .footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 12px;
-    color: var(--gray-dark);
-  }
-  .footer a { color: var(--red); text-decoration: none; }
-  .footer a:hover { text-decoration: underline; }
-
-  /* DIVIDER */
-  .divider {
-    height: 1px;
-    background: var(--gray-light);
-    margin: 24px 0;
-  }
-
-  /* SUCCESS */
-  .success-wrap {
-    max-width: 480px;
-    margin: 80px auto;
-    text-align: center;
-    background: var(--white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 48px 40px;
-  }
-  .success-wrap .success-icon { font-size: 48px; margin-bottom: 16px; }
-  .success-wrap h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 26px;
-    margin-bottom: 12px;
-  }
-  .success-wrap p { font-size: 14px; color: var(--gray-dark); line-height: 1.6; }
-
-  /* SPINNER */
-  .spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  ::placeholder { color: #888; }
-
-  @media (max-width: 768px) {
-    .profile-grid { grid-template-columns: 1fr; }
-    .form-row { grid-template-columns: 1fr; }
-    .form-row.three { grid-template-columns: 1fr 1fr; }
-    .gate-wrap, .otp-wrap { margin: 20px; padding: 28px 20px; }
-    .profile-wrap { padding: 0 12px 40px; }
-    .save-bar { padding: 12px 16px; }
-  }
-
-  /* ── PHOTO LIGHTBOX ──────────────────────────────────────────── */
-  #photo-lightbox { position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column; }
-  #photo-lightbox.open { display:flex; }
-  #photo-lightbox img { max-width:88vw;max-height:82vh;object-fit:contain;border-radius:8px;user-select:none; }
-  #photo-lightbox .lb-counter { color:rgba(255,255,255,0.7);font-size:13px;margin-top:12px;font-family:Montserrat,sans-serif; }
-  #photo-lightbox .lb-close { position:absolute;top:20px;right:24px;color:white;font-size:28px;cursor:pointer;opacity:0.8;line-height:1; }
-  #photo-lightbox .lb-close:hover { opacity:1; }
-  #photo-lightbox .lb-arrow { position:absolute;top:50%;transform:translateY(-50%);color:white;font-size:36px;cursor:pointer;opacity:0.7;padding:0 20px;user-select:none; }
-  #photo-lightbox .lb-arrow:hover { opacity:1; }
-  #photo-lightbox .lb-prev { left:0; }
-  #photo-lightbox .lb-next { right:0; }
-
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f7f7f7;color:#1a1a1a;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:1.5rem 1rem}
+.logo{text-align:center;margin-bottom:1.5rem}
+.logo h1{font-size:22px;font-weight:700;color:#C6302C}
+.logo p{font-size:13px;color:#333;margin-top:4px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;color:#1a1a1a;outline:none;margin-bottom:10px}
+input:focus,select:focus{border-color:#C6302C}
+.btn{display:block;width:100%;padding:12px;background:#C6302C;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center}
+.btn:hover{background:#a8231f}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.btn-gray{background:#888}.btn-gray:hover{background:#555}
+.nav{display:flex;border-bottom:1px solid #e8e8e8;margin-bottom:1rem;background:#fff;position:sticky;top:0;z-index:10}
+.nt{flex:1;padding:11px 4px;background:transparent;border:none;font-size:13px;cursor:pointer;color:#555;border-bottom:2px solid transparent;white-space:nowrap}
+.nt.on{color:#C6302C;border-bottom-color:#C6302C;font-weight:600}
+.nt-so{flex:none;padding:11px 10px;background:transparent;border:none;font-size:13px;cursor:pointer;color:#555}
+.row{padding:12px 0;border-bottom:1px solid #f2f2f2}.row:last-child{border-bottom:none}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;color:#555}
+.opts{display:flex;gap:5px;padding-left:56px}
+.opt{flex:1;padding:6px 2px;border-radius:8px;border:1px solid #ddd;background:transparent;font-size:11px;font-weight:600;cursor:pointer;color:#555;text-align:center}
+.opt.sd{background:#C6302C;border-color:#C6302C;color:#fff}
+.opt.sf{background:#185FA5;border-color:#185FA5;color:#fff}
+.opt.sn{background:#555;border-color:#555;color:#fff}
+.al{padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:10px}
+.ok{background:#e8f5e9;color:#1b5e20}.er{background:#fdecea;color:#7f0000}.inf{background:#e3f2fd;color:#0d47a1}
+.mrow{padding:12px 0;border-bottom:1px solid #f2f2f2}.mrow:last-child{border-bottom:none}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.pd{background:#fdecea;color:#7f0000}.pf{background:#e3f2fd;color:#0d47a1}
+.cbtn{margin-top:8px;padding:6px 14px;border-radius:8px;border:1px solid #C6302C;background:transparent;color:#C6302C;font-size:13px;cursor:pointer}
+.cbtn:hover{background:#C6302C;color:#fff}
+.bbl{padding:8px 12px;border-radius:16px;font-size:14px;max-width:78%;line-height:1.4;margin-bottom:4px}
+.bm{background:#C6302C;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bt{background:#efefef;color:#1a1a1a;align-self:flex-start;border-bottom-left-radius:4px}
+.ts{font-size:11px;color:#555;text-align:center;margin:2px 0 8px}
+.ci{display:flex;gap:8px;margin-top:8px}.ci input{flex:1;margin:0}
+.sb2{padding:10px 14px;background:#C6302C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:15px}
+.empty{text-align:center;padding:2rem 1rem;color:#333;font-size:14px}
+.sp{display:inline-block;width:16px;height:16px;border:2px solid rgba(198,48,44,.2);border-top-color:#C6302C;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.leg{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:#333}
+.ld{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
+.pp{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #eee}
+.upbtn{margin-top:8px;padding:7px 14px;border:1px solid #C6302C;background:transparent;color:#C6302C;border-radius:8px;font-size:13px;cursor:pointer}
+.sl{font-size:12px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.tlink{background:none;border:none;color:#C6302C;font-size:13px;cursor:pointer;text-decoration:underline;display:block;text-align:center;margin-top:12px}
+.tlink-gray{color:#333}
+.otp-wrap{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.otp-wrap input{width:36px;height:44px;text-align:center;font-size:20px;font-weight:700;padding:0;margin:0;border:1.5px solid #ddd;border-radius:8px}
+.otp-wrap input:focus{border-color:#C6302C}
+.ev-card{background:#fff;border:2px solid #e8e8e8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.ev-card:hover{border-color:#C6302C}
+.ev-name{font-size:16px;font-weight:600;color:#1a1a1a}
+.ev-meta{font-size:13px;color:#333;margin-top:3px}
 </style>
 </head>
 <body>
+<div class="app">
+<div class="logo"><h1>Smitten Singles</h1><p id="logo-sub">Speed Dating Events</p></div>
 
-<div class="header">
-  <img src="Singles Red Background.png" alt="Smitten Singles" style="height:44px;width:44px;border-radius:50%;">
-  <span class="header-logo">Smitten Singles</span>
-  <span class="header-sub">Profile Setup</span>
+<!-- LOGIN VIEW -->
+<div id="vl">
+  <div class="card" id="card-email">
+    <p class="sl">Sign in</p>
+    <p style="font-size:14px;color:#333;margin-bottom:12px">Enter your email to receive an 8-digit code.</p>
+    <input type="email" id="ei" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doSendOtp()">
+    <button class="btn" id="otpb" onclick="doSendOtp()">Send code</button>
+    <div id="em" style="margin-top:10px"></div>
+  </div>
+  <div class="card" id="card-otp" style="display:none">
+    <p class="sl">Enter your code</p>
+    <p style="font-size:14px;color:#333;margin-bottom:14px">We sent an 8-digit code to <strong id="otp-email-label"></strong></p>
+    <div class="otp-wrap" id="otp-boxes"></div>
+    <button class="btn" id="verifb" onclick="doVerifyOtp()">Verify</button>
+    <div id="vm2" style="margin-top:10px"></div>
+    <button class="tlink tlink-gray" onclick="showEmailCard()">Use a different email</button>
+    <button class="tlink" onclick="doSendOtp(true)" style="margin-top:6px">Resend code</button>
+  </div>
+  <p style="font-size:12px;color:#333;text-align:center;margin-top:8px">Don't have an account? One will be created for you automatically.</p>
 </div>
 
-<!-- SCREEN 1: Identity Gate -->
-<div id="screen-gate" class="screen active">
-  <div class="gate-wrap">
-    <h1>Create or Update Your Profile</h1>
-    <p>Enter your information below. We'll send a quick verification code to your email — new singles will be guided through setup, and returning singles will be taken straight to their profile.</p>
-
-    <div id="gate-alert" class="alert error"></div>
-    <div class="form-row">
-      <div class="field">
-        <label>First Name *</label>
-        <input type="text" id="g-first" placeholder="Sarah" autocomplete="given-name">
-      </div>
-      <div class="field">
-        <label>Last Name *</label>
-        <input type="text" id="g-last" placeholder="Jenkins" autocomplete="family-name">
-      </div>
-    </div>
-    <div class="form-row full form-full">
-      <div class="field">
-        <label>Email Address *</label>
-        <input type="email" id="g-email" placeholder="sarah@example.com" autocomplete="email">
-      </div>
-    </div>
-    <div class="form-row full form-full">
-      <div class="field">
-        <label>Phone Number *</label>
-        <input type="tel" id="g-phone" placeholder="(402) 555-0100" autocomplete="tel">
-      </div>
-    </div>
-
-    <div class="form-row full form-full">
-      <div class="field">
-        <label style="text-transform:none;font-size:13px;font-weight:400;">
-          <label class="check-item" style="gap:8px;">
-            <input type="checkbox" id="g-consent">
-            <span>By continuing, I acknowledge that submitting this form creates a Smitten Singles account and profile.</span>
-          </label>
-        </label>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" id="btn-check" onclick="checkDuplicate()" style="width:100%;margin-top:8px;">
-      Continue
-    </button>
-    <p style="margin-top:16px;font-size:12px;color:var(--gray-mid);text-align:center;">
-      Having trouble signing in? <a href="mailto:info@thesmittenproject.com" style="color:var(--red);font-weight:600;text-decoration:none;">Contact us</a>
-    </p>
+<!-- LOADING VIEW -->
+<div id="vc" style="display:none">
+  <div class="card" style="text-align:center;padding:2.5rem">
+    <span class="sp" style="width:24px;height:24px"></span>
+    <p style="margin-top:1rem;color:#333;font-size:14px">Loading&hellip;</p>
   </div>
 </div>
 
-<!-- SCREEN 2: OTP Verification -->
-<div id="screen-otp" class="screen">
-  <div class="otp-wrap">
-    <img src="Singles Red Background.png" alt="Smitten Singles" style="height:60px;width:60px;border-radius:50%;margin-bottom:12px;">
-    <h2>Check Your Email</h2>
-    <p id="otp-desc">We sent an 8-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
-    <div id="otp-alert" class="alert error"></div>
-    <div class="otp-inputs">
-      <input type="text" maxlength="1" class="otp-digit" id="otp0">
-      <input type="text" maxlength="1" class="otp-digit" id="otp1">
-      <input type="text" maxlength="1" class="otp-digit" id="otp2">
-      <input type="text" maxlength="1" class="otp-digit" id="otp3">
-      <input type="text" maxlength="1" class="otp-digit" id="otp4">
-      <input type="text" maxlength="1" class="otp-digit" id="otp5">
-      <input type="text" maxlength="1" class="otp-digit" id="otp6">
-      <input type="text" maxlength="1" class="otp-digit" id="otp7">
-    </div>
-    <button class="btn btn-primary" id="btn-verify" onclick="verifyOtp()" style="width:100%;margin-bottom:16px;">Verify Code</button>
-    <p style="font-size:13px;color:var(--gray-mid);">Didn't get it? <a href="#" onclick="resendOtp()" style="color:var(--red);font-weight:600;">Resend code</a></p>
+<!-- EVENT PICKER VIEW -->
+<div id="ve" style="display:none">
+  <div class="card" style="margin-bottom:1rem">
+    <p class="sl">Your events</p>
+    <p style="font-size:14px;color:#333;margin-bottom:0">Tap an event to enter.</p>
   </div>
+  <div id="ev-list"></div>
+  <button class="btn btn-gray" style="margin-top:8px" onclick="signOut()">Sign out</button>
 </div>
 
-<!-- SCREEN 3: Full Profile Form -->
-<div id="screen-profile" class="screen">
-  <div class="save-bar">
-    <span class="save-bar-title">Complete Your Profile</span>
-    <button class="btn btn-primary" id="btn-save" onclick="saveProfile()">Save Profile</button>
+<!-- MAIN APP VIEW -->
+<div id="vm" style="display:none">
+  <div class="nav">
+    <button class="nt on" id="tp" onclick="tab('p')">&#10084; Pick</button>
+    <button class="nt" id="tm" onclick="tab('m')">&#10024; Matches</button>
+    <button class="nt" id="tc" onclick="tab('c')">&#128172; Chat</button>
+    <button class="nt" id="tpr" onclick="tab('pr')">&#128100; Me</button>
+    <button class="nt-so" onclick="goPickEvent()">&#8592; Events</button>
   </div>
-
-  <div class="profile-wrap">
-    <div class="profile-header">
-      <h1>Submit or Update Profile</h1>
-      <p>View and update your personal information, lifestyle details, and match preferences.</p>
-      <div class="progress-bar" style="margin-top:16px;">
-        <div class="progress-fill" id="progress-fill" style="width:10%"></div>
+  <div id="pp">
+    <div id="pa"></div>
+    <div class="leg">
+      <span><span class="ld" style="background:#C6302C"></span>Date</span>
+      <span><span class="ld" style="background:#185FA5"></span>Friend</span>
+      <span><span class="ld" style="background:#555"></span>Not again</span>
+    </div>
+    <input type="text" id="search-att" placeholder="Search..." oninput="renderAttendees(this.value)" style="margin-bottom:8px">
+    <div class="card" style="padding:.75rem 1.25rem"><div id="al"><div class="empty"><span class="sp"></span></div></div></div>
+    <button class="btn" id="sb" onclick="savePicks()">Save my picks</button>
+    <p style="font-size:12px;color:#333;text-align:center;margin-top:8px">You can update your picks until the event ends.</p>
+  </div>
+  <div id="pm" style="display:none"><div id="mc"></div></div>
+  <div id="pcc" style="display:none">
+    <div id="ch-list"></div>
+    <div id="ch" style="display:none"></div>
+  </div>
+  <div id="ppr" style="display:none">
+    <div class="card">
+      <p class="sl">My photo</p>
+      <div id="ppw"><div class="av" id="pph" style="width:80px;height:80px;font-size:28px">?</div></div>
+      <div style="margin-top:10px">
+        <input type="file" id="pf" accept="image/*" style="display:none;margin:0" onchange="upPhoto(this)">
+        <button class="upbtn" onclick="document.getElementById('pf').click()">&#128247; Upload photo</button>
+        <div id="phm" style="margin-top:8px;font-size:13px"></div>
       </div>
     </div>
-
-    <div id="profile-alert" class="alert error"></div>
-    <div id="profile-success" class="alert success"></div>
-
-    <div class="profile-grid">
-      <!-- LEFT -->
-      <div class="left-col">
-        <div class="photo-card">
-          <h3>Profile Photos</h3>
-          <p class="photo-hint">Drag photos to reorder. First photo is your profile picture.</p>
-          <div class="photo-grid" id="photo-grid"></div>
-          <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="handlePhotoFileInput(this)">
-          <p class="photo-upload-note">Up to 6 photos · Clear, recent photos only<br>No sunglasses or group shots for your first photo</p>
-        </div>
-
-        <div class="privacy-card">
-          <span class="privacy-icon"></span>
-          <div>
-            <strong>Privacy Guaranteed</strong>
-            <p>Your profile is only visible to Smitten Singles staff and matchmakers — never to other participants.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT -->
-      <div class="right-col">
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchTab('basic',this)">Basic Info</button>
-          <button class="tab-btn" onclick="switchTab('lifestyle',this)">Lifestyle</button>
-          <button class="tab-btn" onclick="switchTab('preferences',this)">Preferences</button>
-        </div>
-
-        <!-- TAB: BASIC INFO -->
-        <div id="tab-basic" class="tab-content active">
-
-          <div class="section-title">Personal Details</div>
-
-          <div class="form-full">
-            <div class="form-row">
-              <div class="field">
-                <label>First Name *</label>
-                <input type="text" id="p-first" placeholder="Sarah">
-              </div>
-              <div class="field">
-                <label>Last Name *</label>
-                <input type="text" id="p-last" placeholder="Jenkins">
-                <span class="hint">Kept private</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-full">
-            <div class="form-row">
-              <div class="field">
-                <label>Email Address *</label>
-                <input type="email" id="p-email" placeholder="sarah@example.com" readonly style="background:#f9f9f9;color:var(--gray-mid);">
-              </div>
-              <div class="field">
-                <label>Phone Number</label>
-                <input type="tel" id="p-phone" placeholder="(402) 555-0100">
-                <span class="hint">Kept private</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-full">
-            <div class="form-row">
-              <div class="field">
-                <label>Date of Birth <span style="color:#C6302C">*</span></label>
-                <input type="date" id="p-dob">
-              </div>
-              <div class="field">
-                <label>Gender <span style="color:#C6302C">*</span></label>
-                <select id="p-gender" data-category="gender"><option value="">Select...</option></select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-full">
-            <div class="field">
-              <label>Street Address</label>
-              <input type="text" id="p-address" placeholder="123 Main St">
-            </div>
-          </div>
-
-          <div class="form-full">
-            <div class="form-row three">
-              <div class="field">
-                <label>City <span style="color:#C6302C">*</span></label>
-                <input type="text" id="p-city" placeholder="Omaha">
-              </div>
-              <div class="field">
-                <label>State <span style="color:#C6302C">*</span></label>
-                <input type="text" id="p-state" placeholder="NE">
-              </div>
-              <div class="field">
-                <label>Postal Code</label>
-                <input type="text" id="p-zip" placeholder="68102">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-full">
-            <div class="form-row">
-              <div class="field">
-                <!-- Country hidden — hardcoded US -->
-                <select id="p-country" style="display:none"><option value="US" selected>United States</option></select>
-              </div>
-              <div class="field">
-                <label>Closest Major City</label>
-                <input type="text" id="p-closest-city" placeholder="Omaha">
-              </div>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="section-title">Seeking <span style="color:#C6302C">*</span></div>
-
-          <div class="form-full">
-            <div class="checkbox-group">
-              <label class="check-item"><input type="checkbox" value="Date Men" class="seeking-cb"> Date Men</label>
-              <label class="check-item"><input type="checkbox" value="Date Women" class="seeking-cb"> Date Women</label>
-              <label class="check-item"><input type="checkbox" value="Date Any/Other Gender" class="seeking-cb"> Date Any/Other Gender</label>
-              <label class="check-item"><input type="checkbox" value="Friendship" class="seeking-cb"> Friendship</label>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="section-title">About Me</div>
-
-          <div class="form-full">
-            <div class="field">
-              <textarea id="p-bio" placeholder="Write a short bio about yourself..." rows="4"></textarea>
-              <span class="hint">This will be visible to your matchmaker.</span>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="section-title">Consent &amp; Communication</div>
-
-          <div class="form-full">
-            <div class="checkbox-group">
-              <label class="check-item with-desc">
-                <input type="checkbox" id="p-share-matchmakers">
-                <div class="check-text">
-                  <strong>Share my profile with matchmakers</strong>
-                  <span>By checking this box, you give permission for your information to be shared with trusted matchmakers for the purpose of potential matchmaking. You acknowledge that Smitten may receive a referral fee if a matchmaker chooses to work with you or facilitates a match.</span>
-                </div>
-              </label>
-              <label class="check-item with-desc">
-                <input type="checkbox" id="p-interested-matchmaking">
-                <div class="check-text">
-                  <strong>I am interested in learning more about matchmaking services</strong>
-                </div>
-              </label>
-              <label class="check-item with-desc">
-                <input type="checkbox" id="p-email-opt">
-                <div class="check-text">
-                  <strong>Email Opt-In</strong>
-                  <span>By checking this box, you agree to receive occasional emails from Smitten about groups, events, and opportunities. You can unsubscribe at any time.</span>
-                </div>
-              </label>
-              <label class="check-item with-desc">
-                <input type="checkbox" id="p-services-text">
-                <div class="check-text">
-                  <strong>Services Text Opt-In</strong>
-                  <span>By checking this box, I consent to receive transactional messages related to my account, orders, or services I have requested. These messages may include appointment reminders, order confirmations, and account notifications. Message frequency may vary. Message &amp; Data rates may apply. Reply HELP for help or STOP to opt-out.</span>
-                </div>
-              </label>
-              <label class="check-item with-desc">
-                <input type="checkbox" id="p-marketing-text">
-                <div class="check-text">
-                  <strong>Marketing Text Opt-Ins</strong>
-                  <span>By checking this box, I consent to receive marketing and promotional messages, including special offers, discounts, and new product updates. Message frequency may vary. Message &amp; Data rates may apply. Reply HELP for help or STOP to opt-out.</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:flex-end;">
-            <button class="btn btn-outline" onclick="switchTab('lifestyle', document.querySelectorAll('.tab-btn')[1])">Next: Lifestyle &rarr;</button>
-          </div>
-        </div>
-
-        <!-- TAB: LIFESTYLE -->
-        <div id="tab-lifestyle" class="tab-content">
-          <div class="section-title">Background &amp; Lifestyle</div>
-          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">This helps our algorithm find better matches for you.</p>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Height</label>
-              <div style="display:flex;gap:8px;">
-                <select id="p-height-ft" style="flex:1;">
-                  <option value="">Feet</option>
-                  <option value="4">4 ft</option>
-                  <option value="5">5 ft</option>
-                  <option value="6">6 ft</option>
-                  <option value="7">7 ft</option>
-                </select>
-                <select id="p-height-in" style="flex:1;">
-                  <option value="">Inches</option>
-                  <option value="0">0 in</option>
-                  <option value="1">1 in</option>
-                  <option value="2">2 in</option>
-                  <option value="3">3 in</option>
-                  <option value="4">4 in</option>
-                  <option value="5">5 in</option>
-                  <option value="6">6 in</option>
-                  <option value="7">7 in</option>
-                  <option value="8">8 in</option>
-                  <option value="9">9 in</option>
-                  <option value="10">10 in</option>
-                  <option value="11">11 in</option>
-                </select>
-              </div>
-              <input type="hidden" id="p-height">
-            </div>
-            <div class="field">
-              <label>Education</label>
-              <select id="p-education" data-category="education"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Occupation / Industry</label>
-              <input type="text" id="p-occupation" placeholder="e.g. Software Engineer, Healthcare">
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Employer</label>
-              <input type="text" id="p-employer" placeholder="Company name">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Do you have kids?</label>
-              <select id="p-kids" data-category="kids"><option value="">Select...</option></select>
-            </div>
-            <div class="field">
-              <label>Do you want kids?</label>
-              <select id="p-want-kids" data-category="want_kids"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Smoking</label>
-              <select id="p-smoking" data-category="smoking"><option value="">Select...</option></select>
-            </div>
-            <div class="field">
-              <label>Drinking</label>
-              <select id="p-drinking" data-category="drinking"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Religion</label>
-              <select id="p-religion" data-category="religion"><option value="">Select...</option></select>
-            </div>
-            <div class="field">
-              <label>Politics</label>
-              <select id="p-politics" data-category="politics"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Income Level</label>
-              <select id="p-income" data-category="income_level"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Ethnicity</label>
-              <select id="p-ethnicity" data-category="ethnicity"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Body Type</label>
-              <select id="p-body-type" data-category="body_type"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Hair Color</label>
-              <select id="p-hair" data-category="hair_color"><option value="">Select...</option></select>
-            </div>
-            <div class="field">
-              <label>Eye Color</label>
-              <select id="p-eyes" data-category="eye_color"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Pets</label>
-              <input type="text" id="p-pets" placeholder="e.g. Dog, Cat, None">
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Languages Spoken</label>
-              <input type="text" id="p-languages" placeholder="e.g. English, Spanish">
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Activities &amp; Hobbies</label>
-              <div class="checkbox-group" id="activities-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Relationship Status</label>
-              <select id="p-rel-status" data-category="relationship_status"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Ideal Match Description</label>
-              <textarea id="p-ideal-match" placeholder="Describe who you're looking for..." rows="3"></textarea>
-            </div>
-          </div>
-
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:space-between;">
-            <button class="btn btn-ghost" onclick="switchTab('basic', document.querySelectorAll('.tab-btn')[0])">&larr; Basic Info</button>
-            <button class="btn btn-outline" onclick="switchTab('preferences', document.querySelectorAll('.tab-btn')[2])">Next: Preferences &rarr;</button>
-          </div>
-        </div>
-
-        <!-- TAB: PREFERENCES -->
-        <div id="tab-preferences" class="tab-content">
-          <div class="section-title">Match Preferences</div>
-          <p style="font-size:13px;color:var(--gray-mid);margin-bottom:20px;">Who are you looking to meet?</p>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Minimum Age</label>
-              <input type="number" id="p-min-age" placeholder="e.g. 28" min="18" max="99">
-            </div>
-            <div class="field">
-              <label>Maximum Age</label>
-              <input type="number" id="p-max-age" placeholder="e.g. 45" min="18" max="99">
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Maximum Distance (miles)</label>
-              <select id="p-max-distance" data-category="max_distance"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Preferred Height Min</label>
-              <input type="text" id="p-pref-height-min" placeholder="e.g. 5'4&quot;">
-            </div>
-            <div class="field">
-              <label>Preferred Height Max</label>
-              <input type="text" id="p-pref-height-max" placeholder="e.g. 6'2&quot;">
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Body Type</label>
-              <div class="checkbox-group" id="pref-body-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Ethnicity</label>
-              <div class="checkbox-group" id="pref-ethnicity-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Religion</label>
-              <div class="checkbox-group" id="pref-religion-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Politics</label>
-              <div class="checkbox-group" id="pref-politics-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Education</label>
-              <div class="checkbox-group" id="pref-education-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Preferred Income Level</label>
-              <select id="p-pref-income" data-category="preferred_income"><option value="">Any</option></select>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Smoking</label>
-              <div class="checkbox-group" id="pref-smoking-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Drinking</label>
-              <div class="checkbox-group" id="pref-alcohol-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row full">
-            <div class="field">
-              <label>Preferred Relationship Status</label>
-              <div class="checkbox-group" id="pref-rel-status-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="section-title">Lifestyle Compatibility</div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Open to dating someone with kids?</label>
-              <select id="p-date-with-kids" data-category="date_with_kids"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label>Willing to relocate (In State)?</label>
-              <select id="p-relocation-in" data-category="relocation"><option value="">Select...</option></select>
-            </div>
-            <div class="field">
-              <label>Willing to relocate (Out of State)?</label>
-              <select id="p-relocation-out" data-category="relocation"><option value="">Select...</option></select>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="section-title">Dealbreakers</div>
-
-          <div class="form-row full">
-            <div class="field">
-              <div class="checkbox-group" id="dealbreakers-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-              <textarea id="p-dealbreakers-other" placeholder="Describe any other dealbreakers..." rows="2" style="margin-top:12px;display:none;"></textarea>
-              <span class="hint">Any strict dealbreakers our matchmakers should know about?</span>
-            </div>
-          </div>
-
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-light);display:flex;justify-content:space-between;align-items:center;">
-            <button class="btn btn-ghost" onclick="switchTab('lifestyle', document.querySelectorAll('.tab-btn')[1])">&larr; Lifestyle</button>
-            <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
-          </div>
-        </div>
-      </div>
+    <div class="card">
+      <p class="sl">My info</p>
+      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Date of birth</label>
+      <input type="date" id="pdob" style="margin-bottom:12px">
+      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Gender</label>
+      <select id="pgender" style="margin-bottom:12px">
+        <option value="">Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Non-binary">Non-binary</option>
+        <option value="Prefer not to say">Prefer not to say</option>
+      </select>
+      <button class="btn" onclick="saveProfile()">Save</button>
+      <div id="profmsg" style="margin-top:8px;font-size:13px"></div>
     </div>
+    <button class="btn btn-gray" onclick="signOut()">Sign out of event</button>
   </div>
 </div>
-
-<!-- SCREEN 4: Success -->
-<div id="screen-success" class="screen">
-  <div class="success-wrap">
-    <h2>Profile Saved!</h2>
-    <p id="success-msg">Thank you! Your profile has been submitted. Our team will be in touch soon. Keep an eye on your email for updates about upcoming events and matches.</p>
-    <br>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-outline" onclick="returnToProfile()">Update my profile</button>
-      <a href="https://smittensingles.com" class="btn btn-primary">Visit Smitten Singles</a>
-    </div>
-  </div>
-</div>
-
-<div class="footer">
-  &copy; 2026 Smitten Singles. All rights reserved. &nbsp;|&nbsp;
-  <a href="https://thesmittenproject.com/privacy-policy/">Privacy Policy</a> &nbsp;|&nbsp;
-  <a href="https://thesmittenproject.com/terms-of-service/">Terms of Service</a> &nbsp;|&nbsp;
-  <a href="https://thesmittenproject.com/code-of-conduct/">Code of Conduct</a>
-</div>
-
-
-<!-- PHOTO LIGHTBOX -->
-<div id="photo-lightbox" onclick="lbClose()">
-  <span class="lb-close" onclick="lbClose()">×</span>
-  <span class="lb-arrow lb-prev" onclick="event.stopPropagation();lbNav(-1)">&#8249;</span>
-  <img id="lb-img" src="" alt="photo" onclick="event.stopPropagation()">
-  <span class="lb-arrow lb-next" onclick="event.stopPropagation();lbNav(1)">&#8250;</span>
-  <div class="lb-counter" id="lb-counter"></div>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://qgctltxcgsnbrdtbhmay.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+var S='https://qgctltxcgsnbrdtbhmay.supabase.co';
+var AN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+var SES=null,UID=null,PRF=null,EV=null,PX={},ACH=null,MATCHES_RELEASED=false,ALL_ATTENDEES=[],OTP_EMAIL='';
+var ORG={brand_name:'Smitten Singles',brand_primary_color:'#C6302C',website_url:'https://smittensingles.com',admin_secret:'smitten2026'};
 
-let currentEmail = '';
-let currentPhone = '';
-let currentFirstName = '';
-let currentLastName = '';
-let currentProfileId = null;
-let supabaseSession = null;
-let isExistingUser = false;
-const orgSlug = new URLSearchParams(window.location.search).get('org') || 'smitten-singles';
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-// ── PHOTO LIGHTBOX ────────────────────────────────────────────────────────
-let lbPhotos = [];
-let lbIndex = 0;
-
-function lbOpen(photos, startIndex) {
-  lbPhotos = Array.isArray(photos) ? photos.filter(Boolean) : [photos];
-  lbIndex = startIndex || 0;
-  lbShow();
-  document.getElementById('photo-lightbox').classList.add('open');
-  document.addEventListener('keydown', lbKeydown);
+async function loadOrgConfig(){
+  try{
+    var r=await fetch(S+'/rest/v1/rpc/get_org_config',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({p_domain:window.location.hostname})});
+    if(r.ok){var d=await r.json();if(d&&d.brand_name)ORG=d;}
+  }catch(e){}
+  // Apply branding
+  document.title=ORG.brand_name;
+  document.querySelector('h1').textContent=ORG.brand_name;
+  var color=ORG.brand_primary_color||'#C6302C';
+  document.documentElement.style.setProperty('--brand',color);
+  // Apply color to all hardcoded red elements via style tag
+  var st=document.createElement('style');
+  st.textContent='.btn{background:'+color+'} .btn:hover{background:'+color+'dd} .logo h1{color:'+color+'} .nav .nt.on{color:'+color+';border-bottom-color:'+color+'} .opt.sd{background:'+color+';border-color:'+color+'} .cbtn{border-color:'+color+';color:'+color+'} .cbtn:hover{background:'+color+'} .otp-wrap input:focus{border-color:'+color+'} input:focus,select:focus{border-color:'+color+'} .sp{border-top-color:'+color+'} .tlink{color:'+color+'} .ev-card:hover{border-color:'+color+'} .sb2{background:'+color+'} .upbtn{border-color:'+color+';color:'+color+'} .bm{background:'+color+'} .pd{color:'+color+'}';
+  document.head.appendChild(st);
 }
 
-function lbShow() {
-  const img = document.getElementById('lb-img');
-  const counter = document.getElementById('lb-counter');
-  img.src = lbPhotos[lbIndex];
-  counter.textContent = lbPhotos.length > 1 ? (lbIndex + 1) + ' of ' + lbPhotos.length : '';
-  document.querySelectorAll('.lb-arrow').forEach(a => a.style.display = lbPhotos.length > 1 ? '' : 'none');
+function hd(x){return Object.assign({'Content-Type':'application/json',apikey:AN,Authorization:'Bearer '+(SES&&SES.t||AN)},x||{});}
+function api(p,o){return fetch(S+p,Object.assign({headers:hd()},o||{}));}
+function sv(v){['vl','vc','ve','vm'].forEach(function(n){document.getElementById(n).style.display=n===v?'':'none';});}
+
+// OTP
+function buildOtpBoxes(){
+  var w=document.getElementById('otp-boxes');
+  w.innerHTML='';
+  for(var i=0;i<8;i++){
+    var inp=document.createElement('input');
+    inp.type='text';inp.inputMode='numeric';inp.maxLength=1;inp.dataset.idx=i;
+    inp.addEventListener('input',otpInput);
+    inp.addEventListener('keydown',otpKeydown);
+    inp.addEventListener('paste',otpPaste);
+    w.appendChild(inp);
+  }
+}
+function otpInput(e){
+  var boxes=document.querySelectorAll('#otp-boxes input');
+  var i=parseInt(e.target.dataset.idx);
+  e.target.value=e.target.value.replace(/\D/g,'').slice(-1);
+  if(e.target.value&&i<7)boxes[i+1].focus();
+}
+function otpKeydown(e){
+  var boxes=document.querySelectorAll('#otp-boxes input');
+  var i=parseInt(e.target.dataset.idx);
+  if(e.key==='Backspace'&&!e.target.value&&i>0)boxes[i-1].focus();
+  if(e.key==='Enter')doVerifyOtp();
+}
+function otpPaste(e){
+  e.preventDefault();
+  var txt=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,8);
+  var boxes=document.querySelectorAll('#otp-boxes input');
+  for(var i=0;i<txt.length&&i<8;i++)boxes[i].value=txt[i];
+  if(txt.length>0)boxes[Math.min(txt.length,7)].focus();
+}
+function getOtpValue(){
+  return Array.from(document.querySelectorAll('#otp-boxes input')).map(function(b){return b.value;}).join('');
+}
+function showEmailCard(){
+  document.getElementById('card-email').style.display='';
+  document.getElementById('card-otp').style.display='none';
+  document.getElementById('em').innerHTML='';
 }
 
-function lbNav(dir) {
-  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
-  lbShow();
+async function doSendOtp(resend){
+  var e=resend?OTP_EMAIL:document.getElementById('ei').value.trim().toLowerCase();
+  if(!e){document.getElementById('em').innerHTML='<div class="al er">Please enter your email.</div>';return;}
+  OTP_EMAIL=e;
+  var b=document.getElementById('otpb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Sending&hellip;';
+  var r=await fetch(S+'/auth/v1/otp',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({email:e})});
+  b.disabled=false;b.textContent='Send code';
+  if(!r.ok){
+    var err=await r.json();
+    document.getElementById('em').innerHTML='<div class="al er">'+(err.msg||err.error_description||'Something went wrong. Please try again.')+'</div>';
+    return;
+  }
+  document.getElementById('em').innerHTML='';
+  buildOtpBoxes();
+  document.getElementById('otp-email-label').textContent=e;
+  document.getElementById('card-email').style.display='none';
+  document.getElementById('card-otp').style.display='';
+  if(resend)document.getElementById('vm2').innerHTML='<div class="al ok">New code sent!</div>';
+  setTimeout(function(){document.getElementById('otp-boxes').querySelectorAll('input')[0].focus();},100);
 }
 
-function lbClose() {
-  document.getElementById('photo-lightbox').classList.remove('open');
-  document.removeEventListener('keydown', lbKeydown);
+async function doVerifyOtp(){
+  var token=getOtpValue();
+  if(token.length!==8){document.getElementById('vm2').innerHTML='<div class="al er">Enter all 8 digits.</div>';return;}
+  var b=document.getElementById('verifb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Verifying&hellip;';
+  var r=await fetch(S+'/auth/v1/verify',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({email:OTP_EMAIL,token:token,type:'email'})});
+  var d=await r.json();
+  b.disabled=false;b.textContent='Verify';
+  if(!r.ok||!d.access_token){
+    document.getElementById('vm2').innerHTML='<div class="al er">Invalid or expired code. Try again or request a new one.</div>';
+    return;
+  }
+  SES={t:d.access_token,r:d.refresh_token};
+  UID=d.user.id;
+  saveSes();
+  sv('vc');
+  loadEventPicker();
 }
 
-function lbKeydown(e) {
-  if (e.key === 'ArrowLeft') lbNav(-1);
-  else if (e.key === 'ArrowRight') lbNav(1);
-  else if (e.key === 'Escape') lbClose();
+// Session
+function saveSes(){localStorage.setItem('ss_s',JSON.stringify({t:SES.t,r:SES.r}));}
+async function refreshSes(){
+  if(!SES||!SES.r)return false;
+  var r=await fetch(S+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({refresh_token:SES.r})});
+  if(!r.ok)return false;
+  var d=await r.json();
+  if(!d.access_token)return false;
+  SES={t:d.access_token,r:d.refresh_token};
+  UID=d.user.id;
+  saveSes();
+  return true;
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
-  window.scrollTo(0, 0);
+// Event picker
+async function loadEventPicker(){
+  sv('vc');
+  var events=[];
+  // Check if user is a host/admin — if so, load their assigned events
+  var sr=await fetch(S+'/rest/v1/staff?user_id=eq.'+UID+'&is_active=eq.true&select=role&limit=1',{headers:hd()});
+  var staffRows=sr.ok?await sr.json():[];
+  if(staffRows&&staffRows.length){
+    // Staff member — load assigned events via event_hosts
+    var hr=await api('/rest/v1/rpc/get_host_events',{method:'POST',body:JSON.stringify({p_user_id:UID})});
+    if(hr.ok)events=await hr.json();
+  } else {
+    // Regular participant — load via registrations
+    var r=await api('/rest/v1/registrations?profile_id=eq.'+UID+'&select=event_id,events(id,name,event_date,start_time,city,state,status)');
+    if(!r.ok){sv('vl');return;}
+    var rows=await r.json();
+    var seen={};
+    rows.forEach(function(row){
+      var ev=row.events;
+      if(!ev||seen[ev.id])return;
+      seen[ev.id]=true;
+      events.push(ev);
+    });
+  }
+  events.sort(function(a,b){return (a.event_date||'').localeCompare(b.event_date||'');});
+  var el=document.getElementById('ev-list');
+  if(!events.length){
+    el.innerHTML='<div class="card"><div class="empty">No upcoming events found for your account.<br><br><a href="'+(ORG.website_url||'#')+'" style="color:'+(ORG.brand_primary_color||'#C6302C')+';font-weight:600">View upcoming events at '+(ORG.brand_name||'our website')+'</a></div></div>';
+    sv('ve');
+    return;
+  }
+  el.innerHTML=events.map(function(ev){
+    var dt=ev.event_date?new Date(ev.event_date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'}):'';
+    var loc=[ev.city,ev.state].filter(Boolean).join(', ');
+    var time=ev.start_time?ev.start_time.slice(0,5):'';
+    var meta=[dt,time,loc].filter(Boolean).join(' \u00b7 ');
+    var id=ev.id;
+    var name=encodeURIComponent(ev.name||'Event');
+    return '<div class="ev-card" onclick="enterEvent(\''+id+'\',\''+name+'\')">'
+      +'<div class="ev-name">'+(ev.name||'Event')+'</div>'
+      +(meta?'<div class="ev-meta">'+meta+'</div>':'')
+      +'</div>';
+  }).join('');
+  sv('ve');
 }
 
-function setLoading(btnId, loading, text) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  btn.disabled = loading;
-  btn.innerHTML = loading ? `<span class="spinner"></span>${text}` : text;
+function enterEvent(evId,evName){
+  EV=evId;
+  document.getElementById('logo-sub').textContent=decodeURIComponent(evName);
+  PX={};ACH=null;MATCHES_RELEASED=false;ALL_ATTENDEES=[];
+  document.getElementById('search-att').value='';
+  document.getElementById('al').innerHTML='<div class="empty"><span class="sp"></span></div>';
+  document.getElementById('mc').innerHTML='';
+  document.getElementById('ch-list').innerHTML='';
+  document.getElementById('pa').innerHTML='';
+  document.getElementById('sb').disabled=false;
+  document.getElementById('sb').textContent='Save my picks';
+  tab('p');
+  sv('vm');
+  checkMatchesReleased();
+  loadAtt();loadPicks();loadMe();
 }
 
-function showAlert(id, msg, type) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.className = `alert ${type} show`;
+function goPickEvent(){
+  EV=null;ACH=null;
+  if(window._cp)clearInterval(window._cp);
+  loadEventPicker();
 }
 
-function hideAlert(id) {
-  const el = document.getElementById(id);
-  if (el) { el.className = 'alert'; el.textContent = ''; }
+// Init
+async function init(){
+  sv('vc');
+  await loadOrgConfig();
+  var st=localStorage.getItem('ss_s');
+  if(st){try{var d=JSON.parse(st);SES={t:d.t,r:d.r};}catch(e){}}
+  if(!SES){sv('vl');return;}
+  var ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+  if(!ur.ok){
+    var ok=await refreshSes();
+    if(!ok){localStorage.removeItem('ss_s');SES=null;sv('vl');return;}
+    ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+    if(!ur.ok){localStorage.removeItem('ss_s');SES=null;sv('vl');return;}
+  }
+  UID=(await ur.json()).id;
+  loadEventPicker();
 }
 
-function cleanPhone(raw) {
-  const digits = raw.replace(/\D/g, '');
-  if (digits.length === 10) return '+1' + digits;
-  if (digits.length === 11 && digits[0] === '1') return '+' + digits;
-  return raw;
+// Attendees
+function renderAttendees(filter){
+  var el=document.getElementById('al');
+  var d=filter?ALL_ATTENDEES.filter(function(a){return (a.first_name||'').toLowerCase().indexOf(filter.toLowerCase())>-1;}):ALL_ATTENDEES;
+  if(!d||!d.length){el.innerHTML='<div class="empty">No attendees found.</div>';return;}
+  var men=d.filter(function(a){return a.gender==='Male';}).sort(function(a,b){return (a.first_name||'').localeCompare(b.first_name||'');});
+  var women=d.filter(function(a){return a.gender==='Female';}).sort(function(a,b){return (a.first_name||'').localeCompare(b.first_name||'');});
+  var other=d.filter(function(a){return a.gender!=='Male'&&a.gender!=='Female';}).sort(function(a,b){return (a.first_name||'').localeCompare(b.first_name||'');});
+  function renderGroup(group,label){
+    if(!group.length)return '';
+    return '<div style="font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.05em;padding:10px 0 4px">'+label+'</div>'
+      +group.map(function(a){
+        var ph=a.image_url||(a.photos&&a.photos[0])||'';
+        var init=(a.first_name||'?')[0].toUpperCase();
+        var av=ph?'<img class="av" src="'+ph+'" alt="">':'<div class="av">'+init+'</div>';
+        return '<div class="row"><div class="top">'+av+'<div><div style="font-size:15px;font-weight:600">'+(a.first_name||'Guest')+'</div></div></div>'
+          +'<div class="opts">'
+          +'<button class="opt" data-i="'+a.id+'" data-t="d" onclick="pk(\''+a.id+'\',\'d\')">&#10084; Date</button>'
+          +'<button class="opt" data-i="'+a.id+'" data-t="f" onclick="pk(\''+a.id+'\',\'f\')">&#128075; Friend</button>'
+          +'<button class="opt" data-i="'+a.id+'" data-t="n" onclick="pk(\''+a.id+'\',\'n\')">&#128683; Not again</button>'
+          +'</div></div>';
+      }).join('');
+  }
+  el.innerHTML=renderGroup(men,'Men')+renderGroup(women,'Women')+(other.length?renderGroup(other,'Other'):'');
+  rfr();
 }
 
-async function rpc(fn, params) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_ANON,
-      'Authorization': `Bearer ${supabaseSession || SUPABASE_ANON}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(params)
+async function loadAtt(){
+  var r=await api('/rest/v1/rpc/event_attendees_for_caller',{method:'POST',body:JSON.stringify({p_event_id:EV})});
+  var el=document.getElementById('al');
+  if(!r.ok){el.innerHTML='<div class="empty">Could not load attendees.<br>Are you checked in?</div>';return;}
+  var d=await r.json();
+  if(!d||!d.length){el.innerHTML='<div class="empty">No other checked-in attendees yet.</div>';return;}
+  ALL_ATTENDEES=d;
+  renderAttendees('');
+}
+
+async function loadPicks(){
+  var r=await api('/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID+'&select=picked_id,pick_type');
+  if(!r.ok)return;
+  var d=await r.json();
+  PX={};
+  d.forEach(function(p){
+    if(!PX[p.picked_id])PX[p.picked_id]={};
+    if(p.pick_type==='date')PX[p.picked_id].d=true;
+    else if(p.pick_type==='friend')PX[p.picked_id].f=true;
+    else if(p.pick_type==='not_again')PX[p.picked_id].n=true;
   });
-  if (!r.ok) {
-    const err = await r.json().catch(() => ({}));
-    throw new Error(err.message || err.hint || 'Request failed');
+  rfr();
+}
+
+function pk(id,t){
+  if(MATCHES_RELEASED)return;
+  if(!PX[id])PX[id]={};
+  if(t==='n'){
+    if(PX[id].n){delete PX[id].n;}else{PX[id]={n:true};}
+  } else if(t==='d'||t==='f'){
+    delete PX[id].n;
+    if(PX[id][t]){delete PX[id][t];}else{PX[id][t]=true;}
   }
-  return r.json();
+  if(!Object.keys(PX[id]).length)delete PX[id];
+  rfr();
 }
 
-// ── STEP 1: Duplicate check ───────────────────────────────────────────────────
-async function checkDuplicate() {
-  hideAlert('gate-alert');
-
-  const first   = document.getElementById('g-first').value.trim();
-  const last    = document.getElementById('g-last').value.trim();
-  const email   = document.getElementById('g-email').value.trim().toLowerCase();
-  const phone   = cleanPhone(document.getElementById('g-phone').value.trim());
-  const consent = document.getElementById('g-consent').checked;
-
-  if (!first || !last || !email) {
-    showAlert('gate-alert', 'Please fill in your name and email address.', 'error'); return;
-  }
-  if (!consent) {
-    showAlert('gate-alert', 'Please acknowledge that submitting this form creates a Smitten Singles account.', 'error'); return;
-  }
-
-  currentEmail     = email;
-  currentPhone     = phone;
-  currentFirstName = first;
-  currentLastName  = last;
-
-  setLoading('btn-check', true, 'Sending code...');
-  await proceedToOtp();
-  setLoading('btn-check', false, 'Continue');
-}
-
-async function proceedToOtp() {
-  document.getElementById('otp-email-display').textContent = currentEmail;
-
-  // Pre-fill form fields from gate
-  document.getElementById('p-first').value = currentFirstName;
-  document.getElementById('p-last').value  = currentLastName;
-  document.getElementById('p-email').value = currentEmail;
-  document.getElementById('p-phone').value = currentPhone;
-
-  // Detect existing user BEFORE sending OTP so verifyType is correct at verify time
-  try {
-    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
-    isExistingUser = !!(profile && profile.id);
-  } catch (e) {
-    isExistingUser = false;
-  }
-
-  try {
-    await sendOtp(currentEmail, isExistingUser);
-    showScreen('otp');
-  } catch (e) {
-    let msg = 'Could not send verification code. Please try again.';
-    if (e.message && e.message.includes('429')) msg = 'Please wait 60 seconds before requesting another code.';
-    else if (e.message) msg = e.message;
-    showAlert('gate-alert', msg, 'error');
-  }
-}
-
-async function sendOtp(email, existingUser) {
-  // Use recovery for existing auth users, signup for new ones
-  const body = existingUser
-    ? { email }
-    : { email, create_user: true };
-
-  const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-    method: 'POST',
-    headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) {
-    const err = await r.json().catch(() => ({}));
-    if (r.status === 429) throw new Error('429: Please wait 60 seconds before requesting another code.');
-    throw new Error(err.msg || err.message || 'Failed to send verification code.');
-  }
-}
-
-// ── OTP digits ────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const digits = document.querySelectorAll('.otp-digit');
-  digits.forEach((inp, i) => {
-    inp.addEventListener('input', () => {
-      inp.value = inp.value.replace(/\D/, '');
-      if (inp.value && i < digits.length - 1) digits[i + 1].focus();
-    });
-    inp.addEventListener('keydown', e => {
-      if (e.key === 'Backspace' && !inp.value && i > 0) digits[i - 1].focus();
-    });
-    inp.addEventListener('paste', e => {
-      e.preventDefault();
-      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-      [...paste].slice(0, digits.length).forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
-      const last = Math.min(paste.length, digits.length) - 1;
-      if (digits[last]) digits[last].focus();
-    });
-  });
-
-  loadOptions();
-  updateProgress();
-  document.querySelectorAll('#screen-profile input:not([readonly]):not([type=hidden]), #screen-profile select, #screen-profile textarea')
-    .forEach(el => {
-      el.addEventListener('change', updateProgress);
-      el.addEventListener('blur', autosave);
-    });
-});
-
-// ── STEP 2: Verify OTP ────────────────────────────────────────────────────────
-async function verifyOtp() {
-  hideAlert('otp-alert');
-  const token = [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
-  if (token.length !== 8) {
-    showAlert('otp-alert', 'Please enter all 8 digits.', 'error'); return;
-  }
-  setLoading('btn-verify', true, 'Verifying...');
-  try {
-    const verifyType = isExistingUser ? 'recovery' : 'email';
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: verifyType, email: currentEmail, token })
-    });
-    const data = await r.json();
-    if (!r.ok || !data.access_token) {
-      showAlert('otp-alert', 'Invalid or expired code. Please try again.', 'error');
-      setLoading('btn-verify', false, 'Verify Code'); return;
-    }
-    supabaseSession = data.access_token;
-
-    // Detect existing vs new by checking for a profile — no duplicate check needed
-    try {
-      const profile = await rpc('intake_load_profile', { p_email: currentEmail });
-      if (profile && profile.id) {
-        // Existing user — load their profile
-        isExistingUser = true;
-        await loadExistingProfile();
-        document.getElementById('btn-save').textContent = 'Update Profile';
-        document.querySelector('.save-bar-title').textContent = 'Update Your Profile';
-        document.querySelector('.profile-header h1').textContent = 'Update Your Profile';
-      } else {
-        // New user — create stub row
-        isExistingUser = false;
-        try {
-          const pid = await rpc('intake_create_incomplete', {
-            p_email:      currentEmail,
-            p_first_name: currentFirstName,
-            p_last_name:  currentLastName,
-            p_phone:      currentPhone || null,
-            p_org_slug:   orgSlug
-          });
-          currentProfileId = pid;
-        } catch (e) {
-          console.warn('Could not create incomplete profile:', e);
-        }
-      }
-    } catch (e) {
-      console.warn('Could not check for existing profile:', e);
-    }
-
-    showScreen('profile');
-  } catch (e) {
-    showAlert('otp-alert', 'Verification failed. Please try again.', 'error');
-    console.error(e);
-  }
-  setLoading('btn-verify', false, 'Verify Code');
-}
-
-async function resendOtp() {
-  const link = document.querySelector('#screen-otp a[onclick]');
-  try {
-    await sendOtp(currentEmail);
-    showAlert('otp-alert', 'Code resent! Check your email.', 'success');
-    document.getElementById('otp-alert').className = 'alert success show';
-    if (link) {
-      link.style.pointerEvents = 'none';
-      link.style.color = 'var(--gray-mid)';
-      let secs = 60;
-      link.textContent = `Resend code (${secs}s)`;
-      const interval = setInterval(() => {
-        secs--;
-        link.textContent = secs > 0 ? `Resend code (${secs}s)` : 'Resend code';
-        if (secs <= 0) {
-          clearInterval(interval);
-          link.style.pointerEvents = '';
-          link.style.color = 'var(--red)';
-        }
-      }, 1000);
-    }
-  } catch (e) {
-    showAlert('otp-alert', 'Could not resend. Please wait 60 seconds before trying again.', 'error');
-  }
-}
-
-// ── Load existing profile into form ──────────────────────────────────────────
-async function loadExistingProfile() {
-  try {
-    const profile = await rpc('intake_load_profile', { p_email: currentEmail });
-    if (!profile) return;
-
-    currentProfileId = profile.id;
-
-    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
-    const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
-    const setSelect = (id, val) => {
-      const el = document.getElementById(id);
-      if (!el || val == null) return;
-      [...el.options].forEach(o => { if (o.value === val || o.text === val) el.value = o.value; });
-    };
-
-    set('p-first', profile.first_name);
-    set('p-last', profile.last_name);
-    set('p-email', profile.email);
-    set('p-phone', profile.phone);
-    set('p-dob', profile.date_of_birth);
-    setSelect('p-gender', profile.gender);
-    set('p-address', profile.street_address);
-    set('p-city', profile.city);
-    set('p-state', profile.state);
-    set('p-zip', profile.postal_code);
-    setSelect('p-country', profile.country);
-    set('p-closest-city', profile.closest_major_city);
-    set('p-bio', profile.bio);
-    setCheck('p-share-matchmakers', profile.share_with_matchmakers);
-    setCheck('p-interested-matchmaking', profile.interested_in_matchmaking);
-    setCheck('p-email-opt', profile.email_opt_in);
-    setCheck('p-services-text', profile.services_text_opt_in);
-    setCheck('p-marketing-text', profile.marketing_text_opt_in);
-
-    // Seeking checkboxes
-    if (profile.seeking && Array.isArray(profile.seeking)) {
-      document.querySelectorAll('.seeking-cb').forEach(cb => {
-        cb.checked = profile.seeking.includes(cb.value);
-      });
-    }
-
-    // Lifestyle
-    if (profile.height_inches) {
-      const ft     = Math.floor(profile.height_inches / 12);
-      const inches = profile.height_inches % 12;
-      document.getElementById('p-height-ft').value = ft;
-      document.getElementById('p-height-in').value = inches;
-    }
-    setSelect('p-education', profile.education);
-    set('p-occupation', profile.occupation);
-    set('p-employer', profile.employer);
-    setSelect('p-kids', profile.kids);
-    setSelect('p-want-kids', profile.want_kids);
-    setSelect('p-smoking', profile.smoking);
-    setSelect('p-drinking', profile.drinking);
-    setSelect('p-religion', profile.religion);
-    setSelect('p-politics', profile.politics);
-    setSelect('p-income', profile.income_level);
-    setSelect('p-ethnicity', Array.isArray(profile.ethnicity) ? profile.ethnicity[0] : profile.ethnicity);
-    setSelect('p-body-type', profile.body_type);
-    setSelect('p-hair', profile.hair_color);
-    setSelect('p-eyes', profile.eye_color);
-    set('p-pets', profile.pets);
-    set('p-languages', profile.languages);
-    setChecked('activities-group', profile.activities_hobbies);
-    setSelect('p-rel-status', profile.relationship_status);
-    set('p-ideal-match', profile.ideal_match);
-
-    // Preferences
-    set('p-min-age', profile.min_age);
-    set('p-max-age', profile.max_age);
-    setSelect('p-max-distance', profile.max_distance ? String(profile.max_distance) : null);
-    set('p-pref-height-min', profile.preferred_height_min);
-    set('p-pref-height-max', profile.preferred_height_max);
-    setChecked('pref-body-group', profile.preferred_body_type);
-    setChecked('pref-ethnicity-group', profile.preferred_ethnicities);
-    setChecked('pref-religion-group', profile.preferred_religion);
-    setChecked('pref-politics-group', profile.preferred_politics);
-    setChecked('pref-education-group', profile.preferred_education);
-    setSelect('p-pref-income', profile.preferred_income);
-    setChecked('pref-smoking-group', profile.preferred_smoking);
-    setChecked('pref-alcohol-group', profile.preferred_alcohol);
-    setChecked('pref-rel-status-group', profile.preferred_relationship_status);
-    setSelect('p-date-with-kids', profile.date_with_kids);
-    setSelect('p-relocation-in', profile.relocation_in);
-    setSelect('p-relocation-out', profile.relocation_out);
-    setChecked('dealbreakers-group', Array.isArray(profile.dealbreakers) ? profile.dealbreakers.filter(d => d !== 'Other' && !document.querySelector('#dealbreakers-group input[value="' + d + '"]')?.value) : null);
-    // Handle "Other" text
-    if (Array.isArray(profile.dealbreakers)) {
-      const knownVals = [...document.querySelectorAll('#dealbreakers-group input[type=checkbox]')].map(b => b.value);
-      const otherText = profile.dealbreakers.filter(d => !knownVals.includes(d)).join(', ');
-      if (otherText) {
-        document.getElementById('p-dealbreakers-other').value = otherText;
-        document.getElementById('p-dealbreakers-other').style.display = 'block';
-        const otherBox = document.querySelector('#dealbreakers-group input[value="Other"]');
-        if (otherBox) otherBox.checked = true;
-      }
-      setChecked('dealbreakers-group', profile.dealbreakers);
-    }
-
-    // Load photos into grid
-    allProfilePhotos = [];
-    if (profile.image_url) allProfilePhotos.push(profile.image_url);
-    if (profile.photos && profile.photos.length) {
-      profile.photos.forEach(u => { if (u && !allProfilePhotos.includes(u)) allProfilePhotos.push(u); });
-    }
-    renderPhotoGrid();
-
-    updateProgress();
-  } catch (e) {
-    console.error('Could not load profile:', e);
-  }
-}
-
-// ── STEP 3: Save / Update Profile ────────────────────────────────────────────
-async function saveProfile(silent = false) {
-  if (!silent) { hideAlert('profile-alert'); hideAlert('profile-success'); }
-
-  const seeking = [...document.querySelectorAll('.seeking-cb:checked')].map(c => c.value);
-
-  // Required field validation
-  if (!silent) {
-    const dob = document.getElementById('p-dob').value;
-    const gender = document.getElementById('p-gender').value;
-    const city = document.getElementById('p-city').value.trim();
-    const state = document.getElementById('p-state').value.trim();
-    const errors = [];
-    if (!dob) errors.push('Date of birth is required');
-    if (!gender) errors.push('Gender is required');
-    if (!seeking.length) errors.push('Please select at least one option for Seeking');
-    if (!city) errors.push('City is required');
-    if (!state) errors.push('State is required');
-    if (errors.length) {
-      showAlert('profile-alert', errors.join(' · '), 'error');
-      // Scroll to top of form so they see the error
-      document.getElementById('profile-alert').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-  }
-
-  if (!silent) setLoading('btn-save', true, 'Saving...');
-
-  // Build params — matches every argument intake_create_profile and intake_update_profile expect
-  const params = {
-    p_email:               currentEmail,
-    p_first_name:          document.getElementById('p-first').value.trim() || null,
-    p_last_name:           document.getElementById('p-last').value.trim() || null,
-    p_middle_name:         null,   // not collected in this form
-    p_phone:               currentPhone || document.getElementById('p-phone').value.trim() || null,
-    p_date_of_birth:       document.getElementById('p-dob').value || null,
-    p_gender:              document.getElementById('p-gender').value || null,
-    p_gender_identity:     null,   // not collected in this form
-    p_street_address:      document.getElementById('p-address').value.trim() || null,
-    p_city:                document.getElementById('p-city').value.trim() || null,
-    p_state:               document.getElementById('p-state').value.trim() || null,
-    p_postal_code:         document.getElementById('p-zip').value.trim() || null,
-    p_country:             'US',
-    p_closest_major_city:  document.getElementById('p-closest-city').value.trim() || null,
-    p_timezone:            Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-    p_seeking:             seeking.length ? seeking : null,
-    p_bio:                 document.getElementById('p-bio').value.trim() || null,
-    p_share_with_matchmakers:    document.getElementById('p-share-matchmakers').checked,
-    p_interested_in_matchmaking: document.getElementById('p-interested-matchmaking').checked,
-    p_email_opt_in:              document.getElementById('p-email-opt').checked,
-    p_services_text_opt_in:      document.getElementById('p-services-text').checked,
-    p_marketing_text_opt_in:     document.getElementById('p-marketing-text').checked,
-    p_height_inches: (() => {
-      const ft     = parseInt(document.getElementById('p-height-ft').value);
-      const inches = parseInt(document.getElementById('p-height-in').value);
-      if (!isNaN(ft) && !isNaN(inches)) return ft * 12 + inches;
-      return null;
-    })(),
-    p_body_type:           document.getElementById('p-body-type').value || null,
-    p_hair_color:          document.getElementById('p-hair').value || null,
-    p_eye_color:           document.getElementById('p-eyes').value || null,
-    p_ethnicity:           document.getElementById('p-ethnicity').value ? [document.getElementById('p-ethnicity').value] : null,
-    p_occupation:          document.getElementById('p-occupation').value.trim() || null,
-    p_employer:            document.getElementById('p-employer').value.trim() || null,
-    p_education:           document.getElementById('p-education').value || null,
-    p_university:          null,   // not collected in this form
-    p_relationship_status: document.getElementById('p-rel-status').value || null,
-    p_kids:                document.getElementById('p-kids').value || null,
-    p_want_kids:           document.getElementById('p-want-kids').value || null,
-    p_pets:                document.getElementById('p-pets').value.trim() || null,
-    p_smoking:             document.getElementById('p-smoking').value || null,
-    p_drinking:            document.getElementById('p-drinking').value || null,
-    p_religion:            document.getElementById('p-religion').value || null,
-    p_politics:            document.getElementById('p-politics').value || null,
-    p_income_level:        document.getElementById('p-income').value || null,
-    p_activities_hobbies:  getChecked('activities-group'),
-    p_languages:           document.getElementById('p-languages').value.trim() || null,
-    p_ideal_match:         document.getElementById('p-ideal-match').value.trim() || null,
-    p_dealbreakers:        (() => {
-      const checked = getChecked('dealbreakers-group');
-      const other = document.getElementById('p-dealbreakers-other').value.trim();
-      if (!checked && !other) return null;
-      const arr = checked || [];
-      if (other) arr.push(other);
-      return arr.length ? arr : null;
-    })(),
-    p_date_with_kids:      document.getElementById('p-date-with-kids').value || null,
-    p_relocation_in:       document.getElementById('p-relocation-in').value || null,
-    p_relocation_out:      document.getElementById('p-relocation-out').value || null,
-    p_min_age:             document.getElementById('p-min-age').value ? parseInt(document.getElementById('p-min-age').value) : null,
-    p_max_age:             document.getElementById('p-max-age').value ? parseInt(document.getElementById('p-max-age').value) : null,
-    p_max_distance:        document.getElementById('p-max-distance').value ? parseInt(document.getElementById('p-max-distance').value) : null,
-    p_preferred_height_min:         document.getElementById('p-pref-height-min').value.trim() || null,
-    p_preferred_height_max:         document.getElementById('p-pref-height-max').value.trim() || null,
-    p_preferred_body_type:           getChecked('pref-body-group'),
-    p_preferred_ethnicities:         getChecked('pref-ethnicity-group'),
-    p_preferred_religion:            getChecked('pref-religion-group'),
-    p_preferred_politics:            getChecked('pref-politics-group'),
-    p_preferred_education:           getChecked('pref-education-group'),
-    p_preferred_income:              document.getElementById('p-pref-income').value || null,
-    p_preferred_smoking:             getChecked('pref-smoking-group'),
-    p_preferred_alcohol:             getChecked('pref-alcohol-group'),
-    p_preferred_relationship_status: getChecked('pref-rel-status-group'),
-    // Required by intake_create_profile only — org resolved server-side from slug
-    p_organization_id: null,
-    p_org_slug:        orgSlug,
-  };
-
-  try {
-    let profileId;
-    // If we already have a stub row (new user post-OTP) OR existing user — always update.
-    // Only create a brand-new full profile if somehow no stub exists yet.
-    if (isExistingUser || currentProfileId) {
-      // intake_update_profile does not accept p_org_slug or p_organization_id
-      const { p_org_slug, p_organization_id, ...updateParams } = params;
-      profileId = await rpc('intake_update_profile', updateParams);
-    } else {
-      profileId = await rpc('intake_create_profile', params);
-    }
-    currentProfileId = profileId;
-    await uploadPhotos(profileId);
-    if (!silent) {
-      if (isExistingUser) {
-        document.getElementById('success-msg').textContent = 'Your profile has been updated successfully. Our team will be in touch soon.';
-      }
-      showScreen('success');
-    } else {
-      // Show a subtle autosave indicator
-      showAutosaveIndicator();
-    }
-  } catch (e) {
-    if (!silent) {
-      showAlert('profile-alert', 'There was a problem saving your profile. Please try again. If this keeps happening, contact us at hello@smittensingles.com.', 'error');
-      document.getElementById('profile-alert').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    console.error('saveProfile error:', e);
-  }
-
-  if (!silent) setLoading('btn-save', false, isExistingUser ? 'Update Profile' : 'Save Profile');
-}
-
-// ── Autosave indicator ────────────────────────────────────────────────────────
-function showAutosaveIndicator() {
-  let indicator = document.getElementById('autosave-indicator');
-  if (!indicator) {
-    indicator = document.createElement('div');
-    indicator.id = 'autosave-indicator';
-    indicator.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px; z-index: 999;
-      background: #166534; color: white; font-family: 'Montserrat', sans-serif;
-      font-size: 12px; font-weight: 600; padding: 8px 14px;
-      border-radius: 8px; opacity: 0; transition: opacity 0.3s ease;
-      pointer-events: none;
-    `;
-    indicator.textContent = '✓ Draft saved';
-    document.body.appendChild(indicator);
-  }
-  indicator.style.opacity = '1';
-  clearTimeout(indicator._hideTimer);
-  indicator._hideTimer = setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
-}
-
-// ── Photo system (drag-to-reorder, 6 max) ────────────────────────────────────
-const MAX_PHOTOS = 6;
-let allProfilePhotos = []; // [image_url, ...photos] flat array
-let _photoUploadTargetSlot = null;
-
-function renderPhotoGrid() {
-  const grid = document.getElementById('photo-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  // Always render all MAX_PHOTOS slots so grid is always full
-  for (let i = 0; i < MAX_PHOTOS; i++) {
-    const url = allProfilePhotos[i] || null;
-    const slot = document.createElement('div');
-    const slotIndex = i; // capture for closures
-
-    if (url) {
-      // Filled slot
-      slot.className = 'photo-slot has-photo' + (slotIndex === 0 ? ' is-main' : '');
-      slot.draggable = true;
-      slot.dataset.index = slotIndex;
-
-      const img = document.createElement('img');
-      img.src = url;
-      slot.appendChild(img);
-
-      if (slotIndex === 0) {
-        const badge = document.createElement('div');
-        badge.className = 'main-badge';
-        badge.textContent = 'MAIN';
-        slot.appendChild(badge);
-      }
-
-      const del = document.createElement('button');
-      del.className = 'photo-delete-btn';
-      del.innerHTML = '×';
-      slot.appendChild(del);
-
-      // Click img → lightbox; click delete → delete; click slot background → replace
-      img.addEventListener('click', (e) => { e.stopPropagation(); lbOpen(allProfilePhotos.filter(Boolean), slotIndex); });
-      del.addEventListener('click', (e) => { e.stopPropagation(); confirmDeletePhoto(slotIndex); });
-      slot.addEventListener('click', (e) => {
-        if (e.target === img || e.target === del || e.target.classList.contains('main-badge')) return;
-        _photoUploadTargetSlot = slotIndex;
-        document.getElementById('photo-file-input').click();
-      });
-
-      // Drag events
-      slot.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', String(slotIndex));
-        e.dataTransfer.effectAllowed = 'move';
-        setTimeout(() => slot.classList.add('dragging'), 0);
-      });
-      slot.addEventListener('dragend', () => slot.classList.remove('dragging'));
-
-    } else {
-      // Empty slot
-      slot.className = 'photo-slot';
-      slot.innerHTML = '<span class="cam">+</span>';
-      slot.addEventListener('click', () => {
-        _photoUploadTargetSlot = slotIndex;
-        document.getElementById('photo-file-input').click();
-      });
-    }
-
-    // Drop target on every slot
-    slot.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; slot.classList.add('drag-over'); });
-    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
-    slot.addEventListener('drop', (e) => {
-      e.preventDefault();
-      slot.classList.remove('drag-over');
-      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-      const toIdx = slotIndex;
-      if (isNaN(fromIdx) || fromIdx === toIdx) return;
-      if (toIdx >= allProfilePhotos.length) return; // can't drop onto empty
-      reorderPhotos(fromIdx, toIdx);
-    });
-
-    grid.appendChild(slot);
-  }
-}
-
-async function reorderPhotos(fromIdx, toIdx) {
-  const reordered = [...allProfilePhotos];
-  const [moved] = reordered.splice(fromIdx, 1);
-  reordered.splice(toIdx, 0, moved);
-  await savePhotos(reordered);
-}
-
-async function handlePhotoFileInput(input) {
-  if (!input.files[0]) return;
-  if (!supabaseSession) { console.warn('No session'); return; }
-  if (!currentProfileId) { console.warn('No profile ID'); return; }
-  const file = input.files[0];
-  try {
-    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
-    const ext = file.name.split('.').pop();
-    const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}`, 'Content-Type': file.type },
-      body: file
-    });
-    if (!r.ok) { console.warn('Upload failed'); return; }
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
-    const newAll = [...allProfilePhotos];
-    const slot = _photoUploadTargetSlot;
-    if (slot !== null && slot < newAll.length) {
-      newAll[slot] = publicUrl;
-    } else {
-      if (newAll.length >= MAX_PHOTOS) { alert(`Maximum ${MAX_PHOTOS} photos allowed.`); return; }
-      newAll.push(publicUrl);
-    }
-    _photoUploadTargetSlot = null;
-    await savePhotos(newAll);
-  } catch(e) { console.warn('Photo upload failed:', e); }
-  input.value = '';
-}
-
-async function savePhotos(newAll) {
-  const newImageUrl = newAll[0] || null;
-  const newPhotos = newAll.slice(1);
-  await rpc('intake_update_profile', {
-    p_email: currentEmail,
-    p_image_url: newImageUrl,
-    p_photos: newPhotos.length ? newPhotos : null
-  });
-  allProfilePhotos = newAll;
-  renderPhotoGrid();
-  showAutosaveIndicator();
-}
-
-// ── Photo delete confirmation ─────────────────────────────────────────────────
-let _pendingDeleteSlot = null;
-
-function confirmDeletePhoto(slot) {
-  _pendingDeleteSlot = slot;
-  const overlay = document.getElementById('photo-confirm-overlay');
-  if (overlay) overlay.style.display = 'flex';
-}
-
-function closePhotoConfirm() {
-  _pendingDeleteSlot = null;
-  const overlay = document.getElementById('photo-confirm-overlay');
-  if (overlay) overlay.style.display = 'none';
-}
-
-async function executeDeletePhoto() {
-  const slot = _pendingDeleteSlot;
-  closePhotoConfirm();
-  if (slot === null || slot === undefined) return;
-  const newAll = allProfilePhotos.filter((_, i) => i !== slot);
-  await savePhotos(newAll);
-}
-
-// Legacy stubs — kept so any existing call sites don't break
-function previewMainPhoto() {}
-function previewExtra() {}
-function mainPhotoClick() {}
-function extraPhotoClick() {}
-async function autoUploadPhoto() {}
-async function uploadPhotos() {}
-async function deletePhoto() {}
-
-// ── Tab switching ─────────────────────────────────────────────────────────────
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
-}
-
-// ── Progress bar ──────────────────────────────────────────────────────────────
-function updateProgress() {
-  const fields = document.querySelectorAll('#screen-profile input:not([readonly]):not([type=hidden]), #screen-profile select, #screen-profile textarea');
-  let filled = 0;
-  fields.forEach(f => {
-    if (f.type === 'checkbox') { if (f.checked) filled++; }
-    else if (f.value && f.value.trim()) filled++;
-  });
-  const pct = Math.min(10 + Math.round((filled / fields.length) * 90), 100);
-  document.getElementById('progress-fill').style.width = pct + '%';
-}
-
-// ── Checkbox group helpers ────────────────────────────────────────────────────
-function getChecked(groupId) {
-  const boxes = document.querySelectorAll(`#${groupId} input[type=checkbox]:checked`);
-  const vals = [...boxes].map(b => b.value);
-  return vals.length ? vals : null;
-}
-
-function setChecked(groupId, values) {
-  if (!values || !Array.isArray(values)) return;
-  document.querySelectorAll(`#${groupId} input[type=checkbox]`).forEach(cb => {
-    cb.checked = values.includes(cb.value);
+function rfr(){
+  document.querySelectorAll('.opt').forEach(function(b){
+    var i=b.dataset.i,t=b.dataset.t;
+    b.className='opt';
+    var picks=PX[i]||{};
+    if(picks[t])b.classList.add('s'+t);
+    if(MATCHES_RELEASED){b.disabled=true;b.style.opacity='0.4';b.style.cursor='not-allowed';}
+    else{b.disabled=false;b.style.opacity='';b.style.cursor='';}
   });
 }
 
-function buildCheckboxGroup(containerId, options, onchange) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = options.map(o =>
-    `<label class="check-item" style="font-size:13px;">
-      <input type="checkbox" value="${o.value}" ${onchange ? `onchange="${onchange}"` : ''}>
-      ${o.label}
-    </label>`
-  ).join('');
+async function savePicks(){
+  if(MATCHES_RELEASED)return;
+  var b=document.getElementById('sb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Saving&hellip;';
+  var ae=document.getElementById('pa');
+  try{
+    await fetch(S+'/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID,{method:'DELETE',headers:hd()});
+    var rows=[];
+    Object.entries(PX).forEach(function(e){
+      var id=e[0],picks=e[1];
+      if(picks.d)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'date'});
+      if(picks.f)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'friend'});
+      if(picks.n)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'not_again'});
+    });
+    if(rows.length)await fetch(S+'/rest/v1/event_picks',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(rows)});
+    ae.innerHTML='<div class="al ok">Picks saved!</div>';
+    setTimeout(function(){ae.innerHTML='';},3000);
+  }catch(ex){ae.innerHTML='<div class="al er">Error. Try again.</div>';}
+  b.disabled=false;b.textContent='Save my picks';
 }
 
-// When "All" is checked, uncheck others; when any other is checked, uncheck "All"
-// Lifestyle groups (ethnicity, activities, dealbreakers):
-// Checking "All" unchecks everything else. Checking anything else unchecks "All".
-function handleAllCheckbox(groupId) {
-  const allBox = document.querySelector(`#${groupId} input[value="All"]`);
-  if (!allBox) return;
-  const others = [...document.querySelectorAll(`#${groupId} input[type=checkbox]`)].filter(b => b.value !== 'All');
-  allBox.addEventListener('change', () => {
-    if (allBox.checked) others.forEach(b => b.checked = false);
-  });
-  others.forEach(b => b.addEventListener('change', () => {
-    if (b.checked) allBox.checked = false;
-  }));
-}
-
-// Preference groups (pref-*):
-// Checking "Any" checks ALL options. Unchecking any individual option unchecks "Any".
-function handleAnyCheckbox(groupId) {
-  const anyBox = document.querySelector(`#${groupId} input[value="Any"]`);
-  if (!anyBox) return;
-  const others = [...document.querySelectorAll(`#${groupId} input[type=checkbox]`)].filter(b => b.value !== 'Any');
-  anyBox.addEventListener('change', () => {
-    others.forEach(b => b.checked = anyBox.checked);
-  });
-  others.forEach(b => b.addEventListener('change', () => {
-    if (!b.checked) anyBox.checked = false;
-    if (others.every(o => o.checked)) anyBox.checked = true;
-  }));
-}
-
-// Show/hide "Other" textarea for dealbreakers
-function handleDealbreakerOther() {
-  const otherBox = document.querySelector('#dealbreakers-group input[value="Other"]');
-  const otherText = document.getElementById('p-dealbreakers-other');
-  if (!otherBox || !otherText) return;
-  otherBox.addEventListener('change', () => {
-    otherText.style.display = otherBox.checked ? 'block' : 'none';
-  });
-}
-
-// ── Load dropdown options from Supabase ───────────────────────────────────────
-// Checkbox group definitions: [groupId, category]
-const CHECKBOX_GROUPS = [
-  ['activities-group',      'activities'],
-  ['dealbreakers-group',    'dealbreakers'],
-  ['pref-body-group',       'body_type'],
-  ['pref-ethnicity-group',  'ethnicity'],
-  ['pref-religion-group',   'religion'],
-  ['pref-politics-group',   'politics'],
-  ['pref-education-group',  'education'],
-  ['pref-smoking-group',    'smoking'],
-  ['pref-alcohol-group',    'drinking'],
-  ['pref-rel-status-group', 'relationship_status'],
-];
-
-async function loadOptions() {
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profile_options?select=category,value,label,sort_order&is_active=eq.true&order=category,sort_order`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
-    });
-    const options = await r.json();
-
-    // Group by category
-    const grouped = {};
-    options.forEach(o => {
-      if (!grouped[o.category]) grouped[o.category] = [];
-      grouped[o.category].push(o);
-    });
-
-    // Populate dropdowns
-    document.querySelectorAll('select[data-category]').forEach(sel => {
-      const category = sel.getAttribute('data-category');
-      const opts = grouped[category] || [];
-      const isAny = sel.querySelector('option')?.value === '' && sel.querySelector('option')?.textContent === 'Any';
-      const placeholder = isAny ? '<option value="">Any</option>' : '<option value="">Select...</option>';
-      sel.innerHTML = placeholder + opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-    });
-
-    // Populate checkbox groups
-    // All checkbox groups use the same "Any/All checks everything" behavior
-    CHECKBOX_GROUPS.forEach(([groupId, category]) => {
-      const opts = grouped[category] || [];
-      buildCheckboxGroup(groupId, opts);
-      handleAnyCheckbox(groupId);
-    });
-
-    handleDealbreakerOther();
-
-    // Wire checkbox changes to autosave
-    document.querySelectorAll('#screen-profile .checkbox-group input[type=checkbox]').forEach(cb => {
-      cb.addEventListener('change', () => { updateProgress(); if (currentEmail && supabaseSession) autosave(); });
-    });
-
-  } catch (e) {
-    console.error('Could not load profile options:', e);
+async function checkMatchesReleased(){
+  var r=await api('/rest/v1/rpc/event_matches_released',{method:'POST',body:JSON.stringify({p_event_id:EV})});
+  if(r.ok){var d=await r.json();MATCHES_RELEASED=!!d;}
+  if(MATCHES_RELEASED){
+    document.getElementById('sb').disabled=true;
+    document.getElementById('sb').textContent='Picks are closed';
+    document.getElementById('pa').innerHTML='<div class="al inf">Picks are closed. Check your Matches tab!</div>';
   }
 }
 
-function returnToProfile() {
-  showScreen('profile');
+async function loadMatches(){
+  var mc=document.getElementById('mc');
+  mc.innerHTML='<div class="card"><div class="empty" style="padding:2rem 0">&#10084;<br><br>Check back after the event for your matches!</div></div>';
+  var r=await api('/rest/v1/my_mutual_matches?event_id=eq.'+EV+'&select=other_user_id,match_kind,matched_at');
+  if(!r.ok)return;
+  var data=await r.json();
+  if(!data||!data.length)return;
+  var ids=data.map(function(m){return m.other_user_id;});
+  var pr=await api('/rest/v1/profiles?id=in.('+ids.join(',')+')'+'&select=id,first_name,last_name,image_url');
+  var ps=pr.ok?await pr.json():[];
+  var bi={};ps.forEach(function(p){bi[p.id]=p;});
+  mc.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
+    var p=bi[m.other_user_id]||{};
+    var lastInit=p.last_name?(p.last_name[0].toUpperCase()+'.'):'';
+    var displayName=(p.first_name||'Match')+(lastInit?' '+lastInit:'');
+    var pl=m.match_kind==='date'?'<span class="pill pd">Date</span>':m.match_kind==='friend'?'<span class="pill pf">Friend</span>':'';
+    return '<div class="mrow"><div style="display:flex;align-items:center;gap:8px">'+pl+'<span style="font-size:15px;font-weight:600">'+displayName+'</span></div>'
+      +'<button class="cbtn" onclick="openChat(\''+m.other_user_id+'\',\''+encodeURIComponent(displayName)+'\')">&#128172; Chat</button></div>';
+  }).join('')+'</div>';
 }
 
-// ── Autosave on blur ──────────────────────────────────────────────────────────
-let autosaveTimeout = null;
-let autosaveInProgress = false;
-
-function autosave() {
-  // Must have a session and either a stub row or be an existing user
-  if (!currentEmail || !supabaseSession) return;
-  if (!currentProfileId && !isExistingUser) return;
-
-  // Debounce — wait 800ms after last blur before firing
-  clearTimeout(autosaveTimeout);
-  autosaveTimeout = setTimeout(async () => {
-    if (autosaveInProgress) return;
-    autosaveInProgress = true;
-    try {
-      await saveProfile(true); // silent = true
-    } catch (e) {
-      console.warn('Autosave failed:', e);
-    } finally {
-      autosaveInProgress = false;
-    }
-  }, 800);
+async function loadChats(){
+  if(ACH)return;
+  var cl=document.getElementById('ch-list');
+  cl.innerHTML='<div class="empty"><span class="sp"></span></div>';
+  cl.style.display='';
+  document.getElementById('ch').style.display='none';
+  var r=await api('/rest/v1/my_mutual_matches?event_id=eq.'+EV+'&select=other_user_id,match_kind');
+  var data=[];
+  if(r.ok)data=await r.json();
+  if(!data||!data.length){cl.innerHTML='<div class="empty">No matches yet.</div>';return;}
+  var ids=data.map(function(m){return m.other_user_id;});
+  var pr=await api('/rest/v1/profiles?id=in.('+ids.join(',')+')'+'&select=id,first_name,last_name,image_url');
+  var ps=pr.ok?await pr.json():[];
+  var bi={};ps.forEach(function(p){bi[p.id]=p;});
+  cl.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
+    var p=bi[m.other_user_id]||{};
+    var lastInit=p.last_name?(p.last_name[0].toUpperCase()+'.') :'';
+    var displayName=(p.first_name||'Match')+(lastInit?' '+lastInit:'');
+    var ph=p.image_url?'<img class="av" src="'+p.image_url+'" alt="">':'<div class="av">'+(p.first_name||'?')[0].toUpperCase()+'</div>';
+    var pl=m.match_kind==='date'?'<span class="pill pd" style="font-size:10px">Date</span>':'<span class="pill pf" style="font-size:10px">Friend</span>';
+    return '<div class="row" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openChat(\''+m.other_user_id+'\',\''+encodeURIComponent(displayName)+'\')">'
+      +ph+'<div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:15px;font-weight:600">'+displayName+'</span>'+pl+'</div>'
+      +'<div style="font-size:13px;color:#333;margin-top:2px">Tap to chat</div></div>'
+      +'<span style="color:#555;font-size:18px">&#8250;</span></div>';
+  }).join('')+'</div>';
 }
+
+async function openChat(oid,name){
+  ACH=oid;
+  document.getElementById('ch-list').style.display='none';
+  document.getElementById('ch').style.display='';
+  document.getElementById('pcc').style.display='';
+  ['pp','pm','ppr'].forEach(function(id){document.getElementById(id).style.display='none';});
+  ['tp','tm','tpr'].forEach(function(id){document.getElementById(id).classList.remove('on');});
+  document.getElementById('tc').classList.add('on');
+  document.getElementById('ch').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">'
+    +'<button onclick="closeCh()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#333">&#8592;</button>'
+    +'<span style="font-size:16px;font-weight:600">'+decodeURIComponent(name)+'</span></div>'
+    +'<div id="ml" style="min-height:200px;max-height:320px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column"></div>'
+    +'<div class="ci"><input type="text" id="mi" placeholder="Type a message&hellip;" onkeydown="if(event.key===\'Enter\')sendM(\''+oid+'\')"><button class="sb2" onclick="sendM(\''+oid+'\')">&#10148;</button></div>';
+  loadMsgs(oid);
+  if(window._cp)clearInterval(window._cp);
+  window._cp=setInterval(function(){if(ACH===oid)loadMsgs(oid);},6000);
+}
+
+async function loadMsgs(oid){
+  var r=await api('/rest/v1/messages?event_id=eq.'+EV+'&or=(and(sender_id.eq.'+UID+',recipient_id.eq.'+oid+'),and(sender_id.eq.'+oid+',recipient_id.eq.'+UID+'))&order=created_at.asc&select=*');
+  var el=document.getElementById('ml');
+  if(!el)return;
+  if(!r.ok){el.innerHTML='<div class="empty">Could not load messages.</div>';return;}
+  var msgs=await r.json();
+  if(!msgs||!msgs.length){el.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
+  var atBot=el.scrollHeight-el.scrollTop<=el.clientHeight+50;
+  el.innerHTML=msgs.map(function(m){
+    var mine=m.sender_id===UID;
+    var t=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return '<div><div class="bbl '+(mine?'bm':'bt')+'">'+m.content+'</div><div class="ts">'+t+'</div></div>';
+  }).join('');
+  if(atBot)el.scrollTop=el.scrollHeight;
+}
+
+async function sendM(oid){
+  var inp=document.getElementById('mi');
+  var txt=inp&&inp.value&&inp.value.trim();
+  if(!txt)return;
+  inp.value='';
+  await fetch(S+'/rest/v1/messages',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({event_id:EV,sender_id:UID,recipient_id:oid,content:txt})});
+  loadMsgs(oid);
+}
+
+function closeCh(){
+  ACH=null;
+  if(window._cp)clearInterval(window._cp);
+  document.getElementById('ch').style.display='none';
+  document.getElementById('ch-list').style.display='';
+  loadChats();
+}
+
+function tab(t){
+  var panels={p:'pp',m:'pm',c:'pcc',pr:'ppr'};
+  var tabs={p:'tp',m:'tm',c:'tc',pr:'tpr'};
+  Object.keys(panels).forEach(function(n){
+    document.getElementById(panels[n]).style.display=n===t?'':'none';
+    document.getElementById(tabs[n]).classList.toggle('on',n===t);
+  });
+  if(t==='m')loadMatches();
+  if(t==='c'){ACH=null;loadChats();}
+}
+
+async function loadMe(){
+  var r=await api('/rest/v1/profiles?id=eq.'+UID+'&select=id,first_name,image_url,photos,date_of_birth,gender');
+  if(!r.ok)return;
+  var d=await r.json();
+  if(!d||!d.length)return;
+  PRF=d[0];
+  var ph=PRF.image_url||(PRF.photos&&PRF.photos[0])||'';
+  var init=(PRF.first_name||'?')[0].toUpperCase();
+  var w=document.getElementById('ppw');
+  if(ph)w.innerHTML='<img class="pp" src="'+ph+'" alt="">';
+  else document.getElementById('pph').textContent=init;
+  if(PRF.date_of_birth)document.getElementById('pdob').value=PRF.date_of_birth;
+  if(PRF.gender)document.getElementById('pgender').value=PRF.gender;
+}
+
+async function saveProfile(){
+  var dob=document.getElementById('pdob').value;
+  var gender=document.getElementById('pgender').value;
+  var msg=document.getElementById('profmsg');
+  var r=await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({date_of_birth:dob||null,gender:gender||null})});
+  if(r.ok){msg.innerHTML='<span style="color:#1b5e20">Saved!</span>';setTimeout(function(){msg.innerHTML='';},3000);}
+  else{msg.innerHTML='<span style="color:#7f0000">Error saving.</span>';}
+}
+
+async function upPhoto(inp){
+  var file=inp.files[0];if(!file)return;
+  var msg=document.getElementById('phm');
+  msg.innerHTML='<span class="sp"></span>Uploading&hellip;';
+  var fn=((PRF&&PRF.first_name)||'user').toLowerCase().replace(/\s+/g,'-');
+  var path=fn+'-'+UID.slice(0,8)+'/photo-1.jpeg';
+  var r=await fetch(S+'/storage/v1/object/profile-photos/'+path,{method:'POST',headers:{apikey:AN,Authorization:'Bearer '+SES.t,'Content-Type':file.type,'x-upsert':'true'},body:file});
+  if(!r.ok){msg.innerHTML='<span style="color:#7f0000">Upload failed.</span>';return;}
+  var url=S+'/storage/v1/object/public/profile-photos/'+path;
+  await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({image_url:url})});
+  document.getElementById('ppw').innerHTML='<img class="pp" src="'+url+'" alt="">';
+  msg.innerHTML='<span style="color:#1b5e20">Photo saved!</span>';
+  if(PRF)PRF.image_url=url;
+}
+
+function signOut(){
+  localStorage.removeItem('ss_s');
+  SES=null;UID=null;EV=null;PRF=null;PX={};ACH=null;
+  if(window._cp)clearInterval(window._cp);
+  showEmailCard();
+  sv('vl');
+}
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js');}
+init();
 </script>
-<!-- Photo delete confirmation modal -->
-<div id="photo-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;">
-  <div style="background:white;border-radius:12px;padding:32px 28px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;">
-    <div style="font-size:32px;margin-bottom:12px;">🗑️</div>
-    <h3 style="font-family:Montserrat,sans-serif;font-size:18px;color:#1A1414;margin-bottom:8px;">Remove Photo?</h3>
-    <p style="font-size:13px;color:#5A5353;margin-bottom:24px;line-height:1.5;">This will permanently remove the photo from your profile.</p>
-    <div style="display:flex;gap:12px;justify-content:center;">
-      <button onclick="closePhotoConfirm()" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E8E8E8;background:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#5A5353;">Cancel</button>
-      <button id="photo-confirm-btn" onclick="executeDeletePhoto()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#C6302C;color:white;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Remove</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
