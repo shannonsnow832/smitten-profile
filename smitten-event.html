@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Smitten Singles</title>
+<meta name="theme-color" content="#C6302C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Smitten Singles">
+<link rel="manifest" href="/manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f7f7f7;color:#1a1a1a;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:1.5rem 1rem}
+.logo{text-align:center;margin-bottom:1.5rem}
+.logo h1{font-size:22px;font-weight:700;color:#C6302C}
+.logo p{font-size:13px;color:#333;margin-top:4px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;color:#1a1a1a;outline:none;margin-bottom:10px}
+input:focus,select:focus{border-color:#C6302C}
+.btn{display:block;width:100%;padding:12px;background:#C6302C;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center}
+.btn:hover{background:#a8231f}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.btn-gray{background:#888}.btn-gray:hover{background:#555}
+.nav{display:flex;border-bottom:1px solid #e8e8e8;margin-bottom:1rem;background:#fff;position:sticky;top:0;z-index:10}
+.nt{flex:1;padding:11px 4px;background:transparent;border:none;font-size:13px;cursor:pointer;color:#555;border-bottom:2px solid transparent;white-space:nowrap}
+.nt.on{color:#C6302C;border-bottom-color:#C6302C;font-weight:600}
+.nt-so{flex:none;padding:11px 10px;background:transparent;border:none;font-size:13px;cursor:pointer;color:#555}
+.row{padding:12px 0;border-bottom:1px solid #f2f2f2}.row:last-child{border-bottom:none}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#eee;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;color:#555}
+.opts{display:flex;gap:5px;padding-left:56px}
+.opt{flex:1;padding:6px 2px;border-radius:8px;border:1px solid #ddd;background:transparent;font-size:11px;font-weight:600;cursor:pointer;color:#555;text-align:center}
+.opt.sd{background:#C6302C;border-color:#C6302C;color:#fff}
+.opt.sf{background:#185FA5;border-color:#185FA5;color:#fff}
+.opt.sn{background:#555;border-color:#555;color:#fff}
+.al{padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:10px}
+.ok{background:#e8f5e9;color:#1b5e20}.er{background:#fdecea;color:#7f0000}.inf{background:#e3f2fd;color:#0d47a1}
+.mrow{padding:12px 0;border-bottom:1px solid #f2f2f2}.mrow:last-child{border-bottom:none}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.pd{background:#fdecea;color:#7f0000}.pf{background:#e3f2fd;color:#0d47a1}
+.cbtn{margin-top:8px;padding:6px 14px;border-radius:8px;border:1px solid #C6302C;background:transparent;color:#C6302C;font-size:13px;cursor:pointer}
+.cbtn:hover{background:#C6302C;color:#fff}
+.bbl{padding:8px 12px;border-radius:16px;font-size:14px;max-width:78%;line-height:1.4;margin-bottom:4px}
+.bm{background:#C6302C;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bt{background:#efefef;color:#1a1a1a;align-self:flex-start;border-bottom-left-radius:4px}
+.ts{font-size:11px;color:#555;text-align:center;margin:2px 0 8px}
+.ci{display:flex;gap:8px;margin-top:8px}.ci input{flex:1;margin:0}
+.sb2{padding:10px 14px;background:#C6302C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:15px}
+.empty{text-align:center;padding:2rem 1rem;color:#333;font-size:14px}
+.sp{display:inline-block;width:16px;height:16px;border:2px solid rgba(198,48,44,.2);border-top-color:#C6302C;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.leg{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:#333}
+.ld{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
+.pp{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #eee}
+.upbtn{margin-top:8px;padding:7px 14px;border:1px solid #C6302C;background:transparent;color:#C6302C;border-radius:8px;font-size:13px;cursor:pointer}
+.sl{font-size:12px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.tlink{background:none;border:none;color:#C6302C;font-size:13px;cursor:pointer;text-decoration:underline;display:block;text-align:center;margin-top:12px}
+.tlink-gray{color:#333}
+.otp-wrap{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.otp-wrap input{width:36px;height:44px;text-align:center;font-size:20px;font-weight:700;padding:0;margin:0;border:1.5px solid #ddd;border-radius:8px}
+.otp-wrap input:focus{border-color:#C6302C}
+.ev-card{background:#fff;border:2px solid #e8e8e8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.ev-card:hover{border-color:#C6302C}
+.ev-name{font-size:16px;font-weight:600;color:#1a1a1a}
+.ev-meta{font-size:13px;color:#333;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="logo"><h1>Smitten Singles</h1><p id="logo-sub">Speed Dating Events</p></div>
+
+<!-- LOGIN VIEW -->
+<div id="vl">
+  <div class="card">
+    <p class="sl">Sign in</p>
+    <p style="font-size:14px;color:#333;margin-bottom:12px">Enter the email address you registered with.</p>
+    <input type="email" id="ei" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doEmailLogin()">
+    <button class="btn" id="loginb" onclick="doEmailLogin()">Enter event</button>
+    <div id="em" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- LOADING VIEW -->
+<div id="vc" style="display:none">
+  <div class="card" style="text-align:center;padding:2.5rem">
+    <span class="sp" style="width:24px;height:24px"></span>
+    <p style="margin-top:1rem;color:#333;font-size:14px">Loading&hellip;</p>
+  </div>
+</div>
+
+<!-- EVENT PICKER VIEW -->
+<div id="ve" style="display:none">
+  <div class="card" style="margin-bottom:1rem">
+    <p class="sl">Your events</p>
+    <p style="font-size:14px;color:#333;margin-bottom:0">Tap an event to enter.</p>
+  </div>
+  <div id="ev-list"></div>
+  <button class="btn btn-gray" style="margin-top:8px" onclick="signOut()">Sign out</button>
+</div>
+
+<!-- MAIN APP VIEW -->
+<div id="vm" style="display:none">
+  <div class="nav">
+    <button class="nt on" id="tp" onclick="tab('p')">&#10084; Pick</button>
+    <button class="nt" id="tm" onclick="tab('m')">&#10024; Matches</button>
+    <button class="nt" id="tc" onclick="tab('c')">&#128172; Chat</button>
+    <button class="nt" id="tpr" onclick="tab('pr')">&#128100; Me</button>
+    <button class="nt-so" onclick="goPickEvent()">&#8592; Events</button>
+  </div>
+  <div id="pp">
+    <div id="pa"></div>
+    <div class="leg">
+      <span><span class="ld" style="background:#C6302C"></span>Date</span>
+      <span><span class="ld" style="background:#185FA5"></span>Friend</span>
+      <span><span class="ld" style="background:#555"></span>Not again</span>
+    </div>
+    <input type="text" id="search-att" placeholder="Search..." oninput="renderAttendees(this.value)" style="margin-bottom:8px">
+    <div class="card" style="padding:.75rem 1.25rem"><div id="al"><div class="empty"><span class="sp"></span></div></div></div>
+    <button class="btn" id="sb" onclick="savePicks()">Save my picks</button>
+    <p style="font-size:12px;color:#333;text-align:center;margin-top:8px">You can update your picks until the event ends.</p>
+  </div>
+  <div id="pm" style="display:none"><div id="mc"></div></div>
+  <div id="pcc" style="display:none">
+    <div id="ch-list"></div>
+    <div id="ch" style="display:none"></div>
+  </div>
+  <div id="ppr" style="display:none">
+    <div class="card">
+      <p class="sl">My photo</p>
+      <div id="ppw"><div class="av" id="pph" style="width:80px;height:80px;font-size:28px">?</div></div>
+      <div style="margin-top:10px">
+        <input type="file" id="pf" accept="image/*" style="display:none;margin:0" onchange="upPhoto(this)">
+        <button class="upbtn" onclick="document.getElementById('pf').click()">&#128247; Upload photo</button>
+        <div id="phm" style="margin-top:8px;font-size:13px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="sl">My info</p>
+      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">First name</label>
+      <input type="text" id="pfn" placeholder="First name" style="margin-bottom:12px">
+      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Last name</label>
+      <input type="text" id="pln" placeholder="Last name" style="margin-bottom:12px">
+      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Date of birth</label>
+      <input type="date" id="pdob" style="margin-bottom:12px">
+      <label style="font-size:13px;color:#333;display:block;margin-bottom:4px">Gender</label>
+      <select id="pgender" style="margin-bottom:12px">
+        <option value="">Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Non-binary">Non-binary</option>
+        <option value="Prefer not to say">Prefer not to say</option>
+      </select>
+      <button class="btn" onclick="saveProfile()">Save</button>
+      <div id="profmsg" style="margin-top:8px;font-size:13px"></div>
+    </div>
+    <button class="btn btn-gray" onclick="signOut()">Sign out of event</button>
+  </div>
+</div>
+</div>
+
+<script>
+var S='https://qgctltxcgsnbrdtbhmay.supabase.co';
+var AN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+var SES=null,UID=null,PRF=null,EV=null,PX={},ACH=null,MATCHES_RELEASED=false,ALL_ATTENDEES=[];
+var ORG={brand_name:'Smitten Singles',brand_primary_color:'#C6302C',website_url:'https://smittensingles.com',admin_secret:'smitten2026'};
+
+async function loadOrgConfig(){
+  try{
+    var r=await fetch(S+'/rest/v1/rpc/get_org_config',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({p_domain:window.location.hostname})});
+    if(r.ok){var d=await r.json();if(d&&d.brand_name)ORG=d;}
+  }catch(e){}
+  // Apply branding
+  document.title=ORG.brand_name;
+  document.querySelector('h1').textContent=ORG.brand_name;
+  var color=ORG.brand_primary_color||'#C6302C';
+  document.documentElement.style.setProperty('--brand',color);
+  // Apply color to all hardcoded red elements via style tag
+  var st=document.createElement('style');
+  st.textContent='.btn{background:'+color+'} .btn:hover{background:'+color+'dd} .logo h1{color:'+color+'} .nav .nt.on{color:'+color+';border-bottom-color:'+color+'} .opt.sd{background:'+color+';border-color:'+color+'} .cbtn{border-color:'+color+';color:'+color+'} .cbtn:hover{background:'+color+'} .otp-wrap input:focus{border-color:'+color+'} input:focus,select:focus{border-color:'+color+'} .sp{border-top-color:'+color+'} .tlink{color:'+color+'} .ev-card:hover{border-color:'+color+'} .sb2{background:'+color+'} .upbtn{border-color:'+color+';color:'+color+'} .bm{background:'+color+'} .pd{color:'+color+'}';
+  document.head.appendChild(st);
+}
+
+function hd(x){return Object.assign({'Content-Type':'application/json',apikey:AN,Authorization:'Bearer '+(SES&&SES.t||AN)},x||{});}
+function api(p,o){return fetch(S+p,Object.assign({headers:hd()},o||{}));}
+function sv(v){['vl','vc','ve','vm'].forEach(function(n){document.getElementById(n).style.display=n===v?'':'none';});}
+
+// Email login
+async function doEmailLogin(){
+  var e=document.getElementById('ei').value.trim().toLowerCase();
+  var em=document.getElementById('em');
+  if(!e){em.innerHTML='<div class="al er">Please enter your email.</div>';return;}
+  var b=document.getElementById('loginb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Checking&hellip;';
+  em.innerHTML='';
+  try{
+    var r=await fetch(S+'/functions/v1/event-login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',apikey:AN},
+      body:JSON.stringify({email:e})
+    });
+    var d=await r.json();
+    if(d.error==='not_checked_in'){
+      em.innerHTML='<div class="al er">We couldn\'t find a checked-in registration for that email. Please check with the host.</div>';
+      b.disabled=false;b.textContent='Enter event';
+      return;
+    }
+    if(d.error||!d.token_hash){
+      em.innerHTML='<div class="al er">Something went wrong. Please try again or see the host.</div>';
+      b.disabled=false;b.textContent='Enter event';
+      return;
+    }
+    // Verify the magic link token to establish a Supabase session
+    var vr=await fetch(S+'/auth/v1/verify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',apikey:AN},
+      body:JSON.stringify({token_hash:d.token_hash,type:'magiclink'})
+    });
+    var vd=await vr.json();
+    if(!vr.ok||!vd.access_token){
+      em.innerHTML='<div class="al er">Could not sign you in. Please try again.</div>';
+      b.disabled=false;b.textContent='Enter event';
+      return;
+    }
+    SES={t:vd.access_token,r:vd.refresh_token};
+    UID=vd.user.id;
+    saveSes();
+    sv('vc');
+    loadEventPicker();
+  }catch(err){
+    em.innerHTML='<div class="al er">Something went wrong. Please try again.</div>';
+    b.disabled=false;b.textContent='Enter event';
+  }
+}
+
+// Session
+function saveSes(){localStorage.setItem('ss_s',JSON.stringify({t:SES.t,r:SES.r}));}
+async function refreshSes(){
+  if(!SES||!SES.r)return false;
+  var r=await fetch(S+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json',apikey:AN},body:JSON.stringify({refresh_token:SES.r})});
+  if(!r.ok)return false;
+  var d=await r.json();
+  if(!d.access_token)return false;
+  SES={t:d.access_token,r:d.refresh_token};
+  UID=d.user.id;
+  saveSes();
+  return true;
+}
+
+// Event picker
+async function loadEventPicker(){
+  sv('vc');
+  var events=[];
+  var seen={};
+  // Check if user is a host/admin — if so, load their assigned events
+  var sr=await fetch(S+'/rest/v1/staff?user_id=eq.'+UID+'&is_active=eq.true&select=role&limit=1',{headers:hd()});
+  var staffRows=sr.ok?await sr.json():[];
+  if(staffRows&&staffRows.length){
+    // Staff member — load assigned events via event_hosts
+    var hr=await api('/rest/v1/rpc/get_host_events',{method:'POST',body:JSON.stringify({p_user_id:UID})});
+    if(hr.ok){
+      var hostEvents=await hr.json();
+      hostEvents.forEach(function(ev){if(ev&&!seen[ev.id]){seen[ev.id]=true;events.push(ev);}});
+    }
+  }
+  // Always also check registrations (covers staff who are also registered as participants)
+  var r=await api('/rest/v1/registrations?profile_id=eq.'+UID+'&select=event_id,events(id,name,event_date,start_time,city,state,status)');
+  if(r.ok){
+    var rows=await r.json();
+    rows.forEach(function(row){
+      var ev=row.events;
+      if(!ev||seen[ev.id])return;
+      seen[ev.id]=true;
+      events.push(ev);
+    });
+  }
+  events.sort(function(a,b){return (a.event_date||'').localeCompare(b.event_date||'');});
+  var el=document.getElementById('ev-list');
+  if(!events.length){
+    el.innerHTML='<div class="card"><div class="empty">No upcoming events found for your account.<br><br><a href="'+(ORG.website_url||'#')+'" style="color:'+(ORG.brand_primary_color||'#C6302C')+';font-weight:600">View upcoming events at '+(ORG.brand_name||'our website')+'</a></div></div>';
+    sv('ve');
+    return;
+  }
+  el.innerHTML=events.map(function(ev){
+    var dt=ev.event_date?new Date(ev.event_date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'}):'';
+    var loc=[ev.city,ev.state].filter(Boolean).join(', ');
+    var time=ev.start_time?ev.start_time.slice(0,5):'';
+    var meta=[dt,time,loc].filter(Boolean).join(' \u00b7 ');
+    var id=ev.id;
+    var name=encodeURIComponent(ev.name||'Event');
+    return '<div class="ev-card" onclick="enterEvent(\''+id+'\',\''+name+'\')">'
+      +'<div class="ev-name">'+(ev.name||'Event')+'</div>'
+      +(meta?'<div class="ev-meta">'+meta+'</div>':'')
+      +'</div>';
+  }).join('');
+  sv('ve');
+}
+
+function enterEvent(evId,evName){
+  EV=evId;
+  document.getElementById('logo-sub').textContent=decodeURIComponent(evName);
+  PX={};ACH=null;MATCHES_RELEASED=false;ALL_ATTENDEES=[];
+  document.getElementById('search-att').value='';
+  document.getElementById('al').innerHTML='<div class="empty"><span class="sp"></span></div>';
+  document.getElementById('mc').innerHTML='';
+  document.getElementById('ch-list').innerHTML='';
+  document.getElementById('pa').innerHTML='';
+  document.getElementById('sb').disabled=false;
+  document.getElementById('sb').textContent='Save my picks';
+  tab('p');
+  sv('vm');
+  checkMatchesReleased();
+  loadAtt();loadPicks();loadMe();
+}
+
+function goPickEvent(){
+  EV=null;ACH=null;
+  if(window._cp)clearInterval(window._cp);
+  loadEventPicker();
+}
+
+// Init
+async function init(){
+  sv('vc');
+  await loadOrgConfig();
+  var st=localStorage.getItem('ss_s');
+  if(st){try{var d=JSON.parse(st);SES={t:d.t,r:d.r};}catch(e){}}
+  if(!SES){sv('vl');return;}
+  var ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+  if(!ur.ok){
+    var ok=await refreshSes();
+    if(!ok){localStorage.removeItem('ss_s');SES=null;sv('vl');return;}
+    ur=await fetch(S+'/auth/v1/user',{headers:{apikey:AN,Authorization:'Bearer '+SES.t}});
+    if(!ur.ok){localStorage.removeItem('ss_s');SES=null;sv('vl');return;}
+  }
+  UID=(await ur.json()).id;
+  loadEventPicker();
+}
+
+// Attendees
+function renderAttendees(filter){
+  var el=document.getElementById('al');
+  var d=filter?ALL_ATTENDEES.filter(function(a){return (a.first_name||'').toLowerCase().indexOf(filter.toLowerCase())>-1;}):ALL_ATTENDEES;
+  if(!d||!d.length){el.innerHTML='<div class="empty">No attendees found.</div>';return;}
+  var men=d.filter(function(a){return a.gender==='Male';}).sort(function(a,b){return (a.first_name||'').localeCompare(b.first_name||'');});
+  var women=d.filter(function(a){return a.gender==='Female';}).sort(function(a,b){return (a.first_name||'').localeCompare(b.first_name||'');});
+  var other=d.filter(function(a){return a.gender!=='Male'&&a.gender!=='Female';}).sort(function(a,b){return (a.first_name||'').localeCompare(b.first_name||'');});
+  function renderGroup(group,label){
+    if(!group.length)return '';
+    return '<div style="font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.05em;padding:10px 0 4px">'+label+'</div>'
+      +group.map(function(a){
+        var ph=a.image_url||(a.photos&&a.photos[0])||'';
+        var init=(a.first_name||'?')[0].toUpperCase();
+        var av=ph?'<img class="av" src="'+ph+'" alt="">':'<div class="av">'+init+'</div>';
+        return '<div class="row"><div class="top">'+av+'<div><div style="font-size:15px;font-weight:600">'+(a.first_name||'Guest')+'</div></div></div>'
+          +'<div class="opts">'
+          +'<button class="opt" data-i="'+a.id+'" data-t="d" onclick="pk(\''+a.id+'\',\'d\')">&#10084; Date</button>'
+          +'<button class="opt" data-i="'+a.id+'" data-t="f" onclick="pk(\''+a.id+'\',\'f\')">&#128075; Friend</button>'
+          +'<button class="opt" data-i="'+a.id+'" data-t="n" onclick="pk(\''+a.id+'\',\'n\')">&#128683; Not again</button>'
+          +'</div></div>';
+      }).join('');
+  }
+  el.innerHTML=renderGroup(men,'Men')+renderGroup(women,'Women')+(other.length?renderGroup(other,'Other'):'');
+  rfr();
+}
+
+async function loadAtt(){
+  var r=await api('/rest/v1/rpc/event_attendees_for_caller',{method:'POST',body:JSON.stringify({p_event_id:EV})});
+  var el=document.getElementById('al');
+  if(!r.ok){el.innerHTML='<div class="empty">Could not load attendees.<br>Are you checked in?</div>';return;}
+  var d=await r.json();
+  if(!d||!d.length){el.innerHTML='<div class="empty">No other checked-in attendees yet.</div>';return;}
+  ALL_ATTENDEES=d;
+  renderAttendees('');
+}
+
+async function loadPicks(){
+  var r=await api('/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID+'&select=picked_id,pick_type');
+  if(!r.ok)return;
+  var d=await r.json();
+  PX={};
+  d.forEach(function(p){
+    if(!PX[p.picked_id])PX[p.picked_id]={};
+    if(p.pick_type==='date')PX[p.picked_id].d=true;
+    else if(p.pick_type==='friend')PX[p.picked_id].f=true;
+    else if(p.pick_type==='not_again')PX[p.picked_id].n=true;
+  });
+  rfr();
+}
+
+function pk(id,t){
+  if(MATCHES_RELEASED)return;
+  if(!PX[id])PX[id]={};
+  if(t==='n'){
+    if(PX[id].n){delete PX[id].n;}else{PX[id]={n:true};}
+  } else if(t==='d'||t==='f'){
+    delete PX[id].n;
+    if(PX[id][t]){delete PX[id][t];}else{PX[id][t]=true;}
+  }
+  if(!Object.keys(PX[id]).length)delete PX[id];
+  rfr();
+}
+
+function rfr(){
+  document.querySelectorAll('.opt').forEach(function(b){
+    var i=b.dataset.i,t=b.dataset.t;
+    b.className='opt';
+    var picks=PX[i]||{};
+    if(picks[t])b.classList.add('s'+t);
+    if(MATCHES_RELEASED){b.disabled=true;b.style.opacity='0.4';b.style.cursor='not-allowed';}
+    else{b.disabled=false;b.style.opacity='';b.style.cursor='';}
+  });
+}
+
+async function savePicks(){
+  if(MATCHES_RELEASED)return;
+  var b=document.getElementById('sb');
+  b.disabled=true;b.innerHTML='<span class="sp"></span>Saving&hellip;';
+  var ae=document.getElementById('pa');
+  try{
+    await fetch(S+'/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID,{method:'DELETE',headers:hd()});
+    var rows=[];
+    Object.entries(PX).forEach(function(e){
+      var id=e[0],picks=e[1];
+      if(picks.d)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'date'});
+      if(picks.f)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'friend'});
+      if(picks.n)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'not_again'});
+    });
+    if(rows.length)await fetch(S+'/rest/v1/event_picks',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(rows)});
+    ae.innerHTML='<div class="al ok">Picks saved!</div>';
+    setTimeout(function(){ae.innerHTML='';},3000);
+  }catch(ex){ae.innerHTML='<div class="al er">Error. Try again.</div>';}
+  b.disabled=false;b.textContent='Save my picks';
+}
+
+async function checkMatchesReleased(){
+  var r=await api('/rest/v1/rpc/event_matches_released',{method:'POST',body:JSON.stringify({p_event_id:EV})});
+  if(r.ok){var d=await r.json();MATCHES_RELEASED=!!d;}
+  if(MATCHES_RELEASED){
+    document.getElementById('sb').disabled=true;
+    document.getElementById('sb').textContent='Picks are closed';
+    document.getElementById('pa').innerHTML='<div class="al inf">Picks are closed. Check your Matches tab!</div>';
+  }
+}
+
+async function loadMatches(){
+  var mc=document.getElementById('mc');
+  mc.innerHTML='<div class="card"><div class="empty" style="padding:2rem 0">&#10084;<br><br>Check back after the event for your matches!</div></div>';
+  var r=await api('/rest/v1/my_mutual_matches?event_id=eq.'+EV+'&select=other_user_id,match_kind,matched_at');
+  if(!r.ok)return;
+  var data=await r.json();
+  if(!data||!data.length)return;
+  var ids=data.map(function(m){return m.other_user_id;});
+  var pr=await api('/rest/v1/rpc/get_match_profiles',{method:'POST',body:JSON.stringify({p_event_id:EV,p_profile_ids:ids})});
+  var ps=pr.ok?await pr.json():[];
+  var bi={};ps.forEach(function(p){bi[p.id]=p;});
+  mc.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
+    var p=bi[m.other_user_id]||{};
+    var lastInit=p.last_name?(p.last_name[0].toUpperCase()+'.'):'';
+    var displayName=(p.first_name||'Match')+(lastInit?' '+lastInit:'');
+    var pl=m.match_kind==='date'?'<span class="pill pd">Date</span>':m.match_kind==='friend'?'<span class="pill pf">Friend</span>':'';
+    var av=p.image_url
+      ?'<img class="av" src="'+p.image_url+'" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0">'
+      :'<div class="av" style="width:48px;height:48px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#555;flex-shrink:0">'+(p.first_name||'?')[0].toUpperCase()+'</div>';
+    return '<div class="mrow"><div style="display:flex;align-items:center;gap:12px">'+av+'<div><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+pl+'<span style="font-size:15px;font-weight:600">'+displayName+'</span></div>'
+      +'<button class="cbtn" onclick="openChat(\''+m.other_user_id+'\',\''+encodeURIComponent(displayName)+'\')">&#128172; Chat</button></div></div></div>';
+  }).join('')+'</div>';
+}
+
+async function loadChats(){
+  if(ACH)return;
+  var cl=document.getElementById('ch-list');
+  cl.innerHTML='<div class="empty"><span class="sp"></span></div>';
+  cl.style.display='';
+  document.getElementById('ch').style.display='none';
+  var r=await api('/rest/v1/my_mutual_matches?event_id=eq.'+EV+'&select=other_user_id,match_kind');
+  var data=[];
+  if(r.ok)data=await r.json();
+  if(!data||!data.length){cl.innerHTML='<div class="empty">No matches yet.</div>';return;}
+  var ids=data.map(function(m){return m.other_user_id;});
+  var pr=await api('/rest/v1/rpc/get_match_profiles',{method:'POST',body:JSON.stringify({p_event_id:EV,p_profile_ids:ids})});
+  var ps=pr.ok?await pr.json():[];
+  var bi={};ps.forEach(function(p){bi[p.id]=p;});
+  cl.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
+    var p=bi[m.other_user_id]||{};
+    var lastInit=p.last_name?(p.last_name[0].toUpperCase()+'.') :'';
+    var displayName=(p.first_name||'Match')+(lastInit?' '+lastInit:'');
+    var ph=p.image_url?'<img class="av" src="'+p.image_url+'" alt="">':'<div class="av">'+(p.first_name||'?')[0].toUpperCase()+'</div>';
+    var pl=m.match_kind==='date'?'<span class="pill pd" style="font-size:10px">Date</span>':'<span class="pill pf" style="font-size:10px">Friend</span>';
+    return '<div class="row" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openChat(\''+m.other_user_id+'\',\''+encodeURIComponent(displayName)+'\')">'
+      +ph+'<div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:15px;font-weight:600">'+displayName+'</span>'+pl+'</div>'
+      +'<div style="font-size:13px;color:#333;margin-top:2px">Tap to chat</div></div>'
+      +'<span style="color:#555;font-size:18px">&#8250;</span></div>';
+  }).join('')+'</div>';
+}
+
+async function openChat(oid,name){
+  ACH=oid;
+  document.getElementById('ch-list').style.display='none';
+  document.getElementById('ch').style.display='';
+  document.getElementById('pcc').style.display='';
+  ['pp','pm','ppr'].forEach(function(id){document.getElementById(id).style.display='none';});
+  ['tp','tm','tpr'].forEach(function(id){document.getElementById(id).classList.remove('on');});
+  document.getElementById('tc').classList.add('on');
+  document.getElementById('ch').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">'
+    +'<button onclick="closeCh()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#333">&#8592;</button>'
+    +'<span style="font-size:16px;font-weight:600">'+decodeURIComponent(name)+'</span></div>'
+    +'<div id="ml" style="min-height:200px;max-height:320px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column"></div>'
+    +'<div class="ci"><input type="text" id="mi" placeholder="Type a message&hellip;" onkeydown="if(event.key===\'Enter\')sendM(\''+oid+'\')"><button class="sb2" onclick="sendM(\''+oid+'\')">&#10148;</button></div>';
+  loadMsgs(oid);
+  if(window._cp)clearInterval(window._cp);
+  window._cp=setInterval(function(){if(ACH===oid)loadMsgs(oid);},6000);
+}
+
+async function loadMsgs(oid){
+  var r=await api('/rest/v1/messages?event_id=eq.'+EV+'&or=(and(sender_id.eq.'+UID+',recipient_id.eq.'+oid+'),and(sender_id.eq.'+oid+',recipient_id.eq.'+UID+'))&order=created_at.asc&select=*');
+  var el=document.getElementById('ml');
+  if(!el)return;
+  if(!r.ok){el.innerHTML='<div class="empty">Could not load messages.</div>';return;}
+  var msgs=await r.json();
+  if(!msgs||!msgs.length){el.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
+  var atBot=el.scrollHeight-el.scrollTop<=el.clientHeight+50;
+  el.innerHTML=msgs.map(function(m){
+    var mine=m.sender_id===UID;
+    var t=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return '<div><div class="bbl '+(mine?'bm':'bt')+'">'+m.content+'</div><div class="ts">'+t+'</div></div>';
+  }).join('');
+  if(atBot)el.scrollTop=el.scrollHeight;
+}
+
+async function sendM(oid){
+  var inp=document.getElementById('mi');
+  var txt=inp&&inp.value&&inp.value.trim();
+  if(!txt)return;
+  inp.value='';
+  await fetch(S+'/rest/v1/messages',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({event_id:EV,sender_id:UID,recipient_id:oid,content:txt})});
+  loadMsgs(oid);
+}
+
+function closeCh(){
+  ACH=null;
+  if(window._cp)clearInterval(window._cp);
+  document.getElementById('ch').style.display='none';
+  document.getElementById('ch-list').style.display='';
+  loadChats();
+}
+
+function tab(t){
+  var panels={p:'pp',m:'pm',c:'pcc',pr:'ppr'};
+  var tabs={p:'tp',m:'tm',c:'tc',pr:'tpr'};
+  Object.keys(panels).forEach(function(n){
+    document.getElementById(panels[n]).style.display=n===t?'':'none';
+    document.getElementById(tabs[n]).classList.toggle('on',n===t);
+  });
+  if(t==='m')loadMatches();
+  if(t==='c'){ACH=null;loadChats();}
+}
+
+async function loadMe(){
+  var r=await api('/rest/v1/profiles?id=eq.'+UID+'&select=id,first_name,last_name,image_url,photos,date_of_birth,gender');
+  if(!r.ok)return;
+  var d=await r.json();
+  if(!d||!d.length)return;
+  PRF=d[0];
+  var ph=PRF.image_url||(PRF.photos&&PRF.photos[0])||'';
+  var init=(PRF.first_name||'?')[0].toUpperCase();
+  var w=document.getElementById('ppw');
+  if(ph)w.innerHTML='<img class="pp" src="'+ph+'" alt="">';
+  else document.getElementById('pph').textContent=init;
+  if(PRF.first_name)document.getElementById('pfn').value=PRF.first_name;
+  if(PRF.last_name)document.getElementById('pln').value=PRF.last_name;
+  if(PRF.date_of_birth)document.getElementById('pdob').value=PRF.date_of_birth;
+  if(PRF.gender)document.getElementById('pgender').value=PRF.gender;
+}
+
+async function saveProfile(){
+  var fn=document.getElementById('pfn').value.trim();
+  var ln=document.getElementById('pln').value.trim();
+  var dob=document.getElementById('pdob').value;
+  var gender=document.getElementById('pgender').value;
+  var msg=document.getElementById('profmsg');
+  var update={date_of_birth:dob||null,gender:gender||null};
+  if(fn)update.first_name=fn;
+  if(ln)update.last_name=ln;
+  var r=await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(update)});
+  if(r.ok){msg.innerHTML='<span style="color:#1b5e20">Saved!</span>';setTimeout(function(){msg.innerHTML='';},3000);}
+  else{msg.innerHTML='<span style="color:#7f0000">Error saving.</span>';}
+}
+
+async function upPhoto(inp){
+  var file=inp.files[0];if(!file)return;
+  var msg=document.getElementById('phm');
+  msg.innerHTML='<span class="sp"></span>Uploading&hellip;';
+  var path=UID+'/event-photo-'+Date.now()+'.jpeg';
+  var r=await fetch(S+'/storage/v1/object/profile-photos/'+path,{method:'POST',headers:{apikey:AN,Authorization:'Bearer '+SES.t,'Content-Type':file.type,'x-upsert':'true'},body:file});
+  if(!r.ok){msg.innerHTML='<span style="color:#7f0000">Upload failed.</span>';return;}
+  var url=S+'/storage/v1/object/public/profile-photos/'+path;
+  await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({image_url:url})});
+  document.getElementById('ppw').innerHTML='<img class="pp" src="'+url+'" alt="">';
+  msg.innerHTML='<span style="color:#1b5e20">Photo saved!</span>';
+  if(PRF)PRF.image_url=url;
+}
+
+function signOut(){
+  localStorage.removeItem('ss_s');
+  SES=null;UID=null;EV=null;PRF=null;PX={};ACH=null;
+  if(window._cp)clearInterval(window._cp);
+  showEmailCard();
+  sv('vl');
+}
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js');}
+init();
+</script>
+</body>
+</html>
