@@ -622,8 +622,7 @@ async function upPhoto(inp){
   var file=inp.files[0];if(!file)return;
   var msg=document.getElementById('phm');
   msg.innerHTML='<span class="sp"></span>Uploading&hellip;';
-  var fn=((PRF&&PRF.first_name)||'user').toLowerCase().replace(/\s+/g,'-');
-  var path=fn+'-'+UID.slice(0,8)+'/photo-1.jpeg';
+  var path=UID+'/event-photo-'+Date.now()+'.jpeg';
   var r=await fetch(S+'/storage/v1/object/profile-photos/'+path,{method:'POST',headers:{apikey:AN,Authorization:'Bearer '+SES.t,'Content-Type':file.type,'x-upsert':'true'},body:file});
   if(!r.ok){msg.innerHTML='<span style="color:#7f0000">Upload failed.</span>';return;}
   var url=S+'/storage/v1/object/public/profile-photos/'+path;
