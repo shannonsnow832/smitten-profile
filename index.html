@@ -1923,8 +1923,8 @@ async function reorderPhotos(fromIdx, toIdx) {
 
 async function handlePhotoFileInput(input) {
   if (!input.files[0]) return;
-  if (!supabaseSession) { console.warn('No session'); return; }
-  if (!currentProfileId) { console.warn('No profile ID'); return; }
+  if (!supabaseSession) { showPhotoToast('Unable to upload — please refresh and try again.', true); return; }
+  if (!currentProfileId) { showPhotoToast('Unable to upload — please refresh and try again.', true); return; }
   const file = input.files[0];
   try {
     const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
@@ -1935,7 +1935,14 @@ async function handlePhotoFileInput(input) {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}`, 'Content-Type': file.type },
       body: file
     });
-    if (!r.ok) { console.warn('Upload failed'); return; }
+    if (!r.ok) {
+      let errDetail = '';
+      try { const errBody = await r.json(); errDetail = errBody.error || errBody.message || ''; } catch {}
+      console.error(`Photo upload failed — status: ${r.status}, detail: ${errDetail}, authUid: ${authUid}, path: ${path}`);
+      showPhotoToast('We couldn\'t upload your photo. Please try again or contact us at info@thesmittenproject.com.', true);
+      input.value = '';
+      return;
+    }
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
     const newAll = [...allProfilePhotos];
     const slot = _photoUploadTargetSlot;
@@ -1947,22 +1954,51 @@ async function handlePhotoFileInput(input) {
     }
     _photoUploadTargetSlot = null;
     await savePhotos(newAll);
-  } catch(e) { console.warn('Photo upload failed:', e); }
+  } catch(e) {
+    console.error('Photo upload exception:', e);
+    showPhotoToast('Photo upload failed. Please check your connection and try again.', true);
+  }
   input.value = '';
+}
+
+function showPhotoToast(msg, isError) {
+  let toast = document.getElementById('photo-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'photo-toast';
+    toast.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 999;
+      color: white; font-family: 'Montserrat', sans-serif;
+      font-size: 12px; font-weight: 600; padding: 8px 14px;
+      border-radius: 8px; opacity: 0; transition: opacity 0.3s ease;
+      pointer-events: none; max-width: 320px; line-height: 1.4;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = (isError ? '⚠ ' : '✓ ') + msg;
+  toast.style.background = isError ? '#C6302C' : '#166534';
+  toast.style.opacity = '1';
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => { toast.style.opacity = '0'; }, isError ? 5000 : 2000);
 }
 
 async function savePhotos(newAll) {
   const newImageUrl = newAll[0] || null;
   const newPhotos = newAll.slice(1);
-  await rpc('intake_update_profile', {
-    p_email: currentEmail,
-    p_image_url: newImageUrl,
-    p_photos: newPhotos.length ? newPhotos : null
-  });
-  allProfilePhotos = newAll;
-  renderPhotoGrid();
-  showAutosaveIndicator();
-  refreshCompletenessChecklist();
+  try {
+    await rpc('intake_update_profile', {
+      p_email: currentEmail,
+      p_image_url: newImageUrl,
+      p_photos: newPhotos.length ? newPhotos : null
+    });
+    allProfilePhotos = newAll;
+    renderPhotoGrid();
+    showAutosaveIndicator();
+    refreshCompletenessChecklist();
+  } catch(e) {
+    console.error('savePhotos failed:', e);
+    showPhotoToast('We couldn\'t save your photo. Please try again or contact us at info@thesmittenproject.com.', true);
+  }
 }
 
 // ── Photo delete confirmation ─────────────────────────────────────────────────
