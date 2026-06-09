@@ -1420,8 +1420,8 @@ async function proceedToOtp() {
 async function sendOtp(email, existingUser) {
   // Use recovery for existing auth users, signup for new ones
   const body = existingUser
-    ? { email }
-    : { email, create_user: true };
+    ? { email, type: 'recovery' }
+    : { email, type: 'email', create_user: true };
 
   const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
     method: 'POST',
