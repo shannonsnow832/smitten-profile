@@ -515,7 +515,7 @@ async function loadChats(){
   if(r.ok)data=await r.json();
   if(!data||!data.length){cl.innerHTML='<div class="empty">No matches yet.</div>';return;}
   var ids=data.map(function(m){return m.other_user_id;});
-  var pr=await api('/rest/v1/profiles?id=in.('+ids.join(',')+')'+'&select=id,first_name,last_name,image_url');
+  var pr=await api('/rest/v1/rpc/get_match_profiles',{method:'POST',body:JSON.stringify({p_event_id:EV,p_profile_ids:ids})});
   var ps=pr.ok?await pr.json():[];
   var bi={};ps.forEach(function(p){bi[p.id]=p;});
   cl.innerHTML='<div class="card" style="padding:.75rem 1.25rem">'+data.map(function(m){
