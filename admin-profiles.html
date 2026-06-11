@@ -1345,7 +1345,7 @@ async function doRequestOtp() {
 
   // Check staff table first - only super_admin and matchmaker allowed
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(email)}&is_active=eq.true&role=in.(super_admin,matchmaker)&select=id,email,first_name,last_name,role`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(email)}&is_active=eq.true&role=in.(super_admin,matchmaker,smitten_matchmaker)&select=id,email,first_name,last_name,role`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
     });
     const data = await r.json();
@@ -1488,7 +1488,7 @@ function doLogout() {
 function launchApp() {
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-app').style.display = 'block';
-  const isMatchmaker = adminUser.role === 'matchmaker';
+  const isMatchmaker = ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
   document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
   // Show staff + matching tabs
   const staffTab = document.getElementById('nav-tab-staff');
@@ -1647,7 +1647,7 @@ function buildProfilesUrl(forCount = false) {
   // Always exclude deleted and sample data
   params.push('deleted_at=is.null');
   params.push('or=(import_batch.is.null,import_batch.neq.sample_data)');
-  // Matchmakers only see opted-in profiles
+  // Standard matchmakers only see opted-in profiles; smitten_matchmaker sees all org profiles
   if (adminUser && adminUser.role === 'matchmaker') {
     params.push('share_with_matchmakers=eq.true');
   }
@@ -1856,7 +1856,7 @@ function renderProfiles(profiles) {
       </div>
       <div class="profile-card-right">
         <div class="date">Joined ${date}</div>
-        ${adminUser && adminUser.role !== 'matchmaker' ? '<div class="email">' + (p.email || '') + '</div>' : ''}
+        ${adminUser && !['matchmaker','smitten_matchmaker'].includes(adminUser.role) ? '<div class="email">' + (p.email || '') + '</div>' : ''}
         ${(function(){
           const fields = ['seeking','kids','want_kids','religion','politics','body_type','min_age','max_age','preferred_body_type','income_level','gender'];
           const filled = fields.filter(f => p[f] !== null && p[f] !== undefined && p[f] !== '' && !(Array.isArray(p[f]) && p[f].length === 0)).length;
@@ -1903,7 +1903,7 @@ let currentModalProfile = null;
 
 function openProfile(p) {
   currentModalProfile = p;
-  const isMatchmaker = adminUser && adminUser.role === 'matchmaker';
+  const isMatchmaker = adminUser && ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
   const age = calcAge(p.date_of_birth);
   const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
   const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
@@ -2894,7 +2894,7 @@ async function exportCSV() {
     }
 
     // Build CSV
-    const isMatchmaker = adminUser.role === 'matchmaker';
+    const isMatchmaker = ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
     const headers = isMatchmaker
       ? ['First Name','Last Name','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Bio']
       : ['First Name','Last Name','Email','Phone','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Kids','Want Kids','Smoking','Drinking','Share w/ Matchmakers','Joined','Import Batch'];
@@ -3277,7 +3277,7 @@ function clearPoolFilters() {
 
 function exportPoolCSV(mode) {
   if (!matchPool.length) { alert('Build a pool first.'); return; }
-  const isMatchmaker = adminUser && adminUser.role === 'matchmaker';
+  const isMatchmaker = adminUser && ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
   const userOrgId = adminUser && adminUser.organization_id;
 
   let profiles = matchPool;
@@ -3741,7 +3741,7 @@ function selectMatchSubject(p) {
         </div>
       </div>
       <div class="profile-card-right">
-        ${adminUser && adminUser.role !== 'matchmaker' ? `<div class="email">${p.email || ''}</div>` : ''}
+        ${adminUser && !['matchmaker','smitten_matchmaker'].includes(adminUser.role) ? `<div class="email">${p.email || ''}</div>` : ''}
         <div style="display:flex;gap:8px;margin-top:8px">
           <button onclick="clearMatchSubject()" style="font-size:12px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:white;color:var(--gray-dark);cursor:pointer">✕ Clear</button>
         </div>
@@ -4047,7 +4047,7 @@ function renderMatchResults(results, el) {
           ${warnings ? `<div style="font-size:11px;color:var(--red);margin-top:4px">⚠ Missing: ${warnings}</div>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0">
-          ${adminUser && adminUser.role !== 'matchmaker' ? `<div style="font-size:11px;color:var(--gray-mid);margin-bottom:4px">${email}</div>` : ''}
+          ${adminUser && !['matchmaker','smitten_matchmaker'].includes(adminUser.role) ? `<div style="font-size:11px;color:var(--gray-mid);margin-bottom:4px">${email}</div>` : ''}
           ${completeness !== null && completeness < 100 ? `<div style="font-size:11px;font-weight:700;color:${completeness < 50 ? '#C6302C' : '#92400e'};margin-bottom:4px">⚠ ${completeness}%</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">
