@@ -1420,8 +1420,8 @@ async function proceedToOtp() {
 async function sendOtp(email, existingUser) {
   // Use recovery for existing auth users, signup for new ones
   const body = existingUser
-    ? { email, type: 'recovery' }
-    : { email, type: 'email', create_user: true };
+    ? { email }
+    : { email, create_user: true };
 
   const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
     method: 'POST',
@@ -1679,16 +1679,16 @@ async function saveProfile(silent = false) {
     const city = document.getElementById('p-city').value.trim();
     const state = document.getElementById('p-state').value.trim();
     const errors = [];
-    if (!dob) errors.push('Date of birth is required');
-    if (!gender) errors.push('Gender is required');
-    if (!seeking.length) errors.push('Please select at least one option for Seeking');
-    if (!city) errors.push('City is required');
-    if (!state) errors.push('State is required');
-    if (!allProfilePhotos.length) errors.push('At least one photo is required');
+    if (!dob) errors.push('Date of birth');
+    if (!gender) errors.push('Gender');
+    if (!seeking.length) errors.push('Seeking');
+    if (!city) errors.push('City');
+    if (!state) errors.push('State');
+    if (!allProfilePhotos.length) errors.push('at least one photo');
     const zip = document.getElementById('p-zip').value.trim();
-    if (!zip) errors.push('Postal code is required');
+    if (!zip) errors.push('Postal code');
     if (errors.length) {
-      showAlert('profile-alert', errors.join(' · '), 'error');
+      showAlert('profile-alert', 'Your profile has been saved. To be eligible for matching, please complete: ' + errors.join(', ') + '.', 'error');
       // Scroll to top of form so they see the error
       document.getElementById('profile-alert').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
