@@ -525,6 +525,7 @@
     </div>
     <h2>Check Your Email</h2>
     <p id="otp-sent-msg">We sent an 8-digit code to your email.</p>
+    <p style="font-size:12px;color:var(--gray-mid);margin-top:-6px;">Only your most recently sent code will work. Requesting a new code cancels any earlier one.</p>
     <div id="login-error-otp" class="login-error" style="text-align:left"></div>
     <div class="otp-inputs" id="otp-inputs">
       <input type="text" maxlength="1" class="otp-box" inputmode="numeric" pattern="[0-9]">
@@ -538,6 +539,8 @@
     </div>
     <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doVerifyOtp()" id="btn-verify-otp">Verify</button>
     <p style="margin-top:14px;font-size:12px;color:var(--gray-mid)">
+      <a href="#" id="resend-otp-link" onclick="doResendOtp();return false;" style="color:var(--red);font-weight:600;text-decoration:none;">Resend code</a>
+      &nbsp;&middot;&nbsp;
       <a href="#" onclick="backToEmail();return false;" style="color:var(--red);font-weight:600;text-decoration:none;">Use a different email</a>
     </p>
   </div>
@@ -1373,8 +1376,59 @@ async function doRequestOtp() {
     document.getElementById('login-step-otp').style.display = 'block';
     setTimeout(() => document.querySelector('.otp-box').focus(), 100);
     initOtpInputs();
+    startResendCooldown();
   } catch(e) {
     showLoginError('Could not connect. Try again.');
+  }
+}
+
+let resendCooldownInterval = null;
+
+function startResendCooldown() {
+  const link = document.getElementById('resend-otp-link');
+  let secondsLeft = 30;
+  if (resendCooldownInterval) clearInterval(resendCooldownInterval);
+  const render = () => {
+    link.textContent = `Resend code (${secondsLeft}s)`;
+    link.style.opacity = '0.5';
+    link.style.pointerEvents = 'none';
+  };
+  render();
+  resendCooldownInterval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0) {
+      clearInterval(resendCooldownInterval);
+      link.textContent = 'Resend code';
+      link.style.opacity = '1';
+      link.style.pointerEvents = 'auto';
+    } else {
+      render();
+    }
+  }, 1000);
+}
+
+async function doResendOtp() {
+  const link = document.getElementById('resend-otp-link');
+  if (link.style.pointerEvents === 'none') return;
+  showLoginErrorOtp('');
+  try {
+    const otpRes = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: otpEmail, type: 'recovery', create_user: true })
+    });
+    if (!otpRes.ok) {
+      let errMsg = 'Could not resend code. Try again.';
+      try { const errData = await otpRes.json(); errMsg = errData.msg || errData.error_description || errMsg; } catch(e2) {}
+      showLoginErrorOtp(errMsg);
+      return;
+    }
+    document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+    document.querySelector('.otp-box').focus();
+    showLoginErrorOtp('A new code was sent. Your previous code no longer works.');
+    startResendCooldown();
+  } catch(e) {
+    showLoginErrorOtp('Could not connect. Try again.');
   }
 }
 
@@ -1457,6 +1511,7 @@ async function doVerifyOtp() {
 }
 
 function backToEmail() {
+  if (resendCooldownInterval) clearInterval(resendCooldownInterval);
   document.getElementById('login-step-otp').style.display = 'none';
   document.getElementById('login-step-email').style.display = 'block';
   showLoginError('');

@@ -662,6 +662,7 @@
     <img src="Singles Red Background.png" alt="Smitten Singles" style="height:60px;width:60px;border-radius:50%;margin-bottom:12px;">
     <h2>Check Your Email</h2>
     <p id="otp-desc">We sent an 8-digit code to <strong id="otp-email-display"></strong>. Enter it below to verify your email and continue.</p>
+    <p style="font-size:12px;color:var(--gray-mid);margin-top:-20px;margin-bottom:20px;">Only your most recently sent code will work.</p>
     <div id="otp-alert" class="alert error"></div>
     <div class="otp-inputs">
       <input type="text" maxlength="1" class="otp-digit" id="otp0">
@@ -1549,7 +1550,7 @@ async function resendOtp() {
   const link = document.querySelector('#screen-otp a[onclick]');
   try {
     await sendOtp(currentEmail);
-    showAlert('otp-alert', 'Code resent! Check your email.', 'success');
+    showAlert('otp-alert', 'A new code was sent. Your previous code no longer works.', 'success');
     document.getElementById('otp-alert').className = 'alert success show';
     if (link) {
       link.style.pointerEvents = 'none';
