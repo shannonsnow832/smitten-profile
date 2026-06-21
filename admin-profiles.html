@@ -1091,6 +1091,7 @@
       </div>
       <div class="modal-topbar-actions">
         <span id="modal-role-badge"></span>
+        <button class="btn" id="btn-modal-edit" onclick="toggleProfileEditMode()" style="background:transparent;color:white;border:1.5px solid rgba(255,255,255,0.5);font-size:12px;padding:6px 14px">Edit</button>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
     </div>
@@ -2002,6 +2003,26 @@ function switchModalTab(name, btn) {
 }
 
 let currentModalProfile = null;
+let profileEditUnlocked = false;
+
+function setProfileFieldsLocked(locked) {
+  profileEditUnlocked = !locked;
+  const content = document.querySelector('.modal-content');
+  if (!content) return;
+  content.querySelectorAll('input, select, textarea').forEach(el => {
+    // Email and timezone stay readonly regardless of edit mode — never editable
+    if (el.id === 'm-email' || el.id === 'm-timezone') return;
+    el.disabled = locked;
+  });
+  const editBtn = document.getElementById('btn-modal-edit');
+  const saveBtn = document.getElementById('btn-modal-save');
+  if (editBtn) editBtn.textContent = locked ? 'Edit' : 'Editing...';
+  if (saveBtn) saveBtn.disabled = locked;
+}
+
+function toggleProfileEditMode() {
+  setProfileFieldsLocked(profileEditUnlocked);
+}
 
 function openProfile(p) {
   currentModalProfile = p;
@@ -2029,6 +2050,11 @@ function openProfile(p) {
 
   // Hide save bar for matchmakers
   document.getElementById('modal-save-bar').style.display = isMatchmaker ? 'none' : '';
+
+  // Lock all editable fields until Edit is pressed
+  setProfileFieldsLocked(true);
+  const editBtn = document.getElementById('btn-modal-edit');
+  if (editBtn) editBtn.style.display = isMatchmaker ? 'none' : '';
 
   // Reset to first tab
   document.querySelectorAll('.modal-tab-btn')[0].click();
@@ -2688,6 +2714,7 @@ async function saveModalProfile() {
       city: params.p_city, state: params.p_state
     });
     loadProfiles(); // refresh list
+    setProfileFieldsLocked(true);
   } catch(e) {
     alertEl.textContent = 'Save failed. Please try again.';
     alertEl.className = 'modal-alert error';
@@ -2700,6 +2727,7 @@ function closeModal() {
   document.getElementById('modal-overlay').classList.remove('open');
   document.body.style.overflow = '';
   currentModalProfile = null;
+  setProfileFieldsLocked(true);
 }
 
 function closeModalOnBg(e) {
