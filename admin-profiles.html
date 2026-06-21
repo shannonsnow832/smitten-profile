@@ -1460,23 +1460,38 @@ function getOtpValue() {
   return [...document.querySelectorAll('.otp-box')].map(b => b.value).join('');
 }
 
+let verifyInFlight = false;
+
 async function doVerifyOtp() {
   const token = getOtpValue();
   showLoginErrorOtp('');
   if (token.length !== 8) { showLoginErrorOtp('Please enter all 8 digits.'); return; }
+  if (verifyInFlight) return;
+  verifyInFlight = true;
   const btn = document.getElementById('btn-verify-otp');
   btn.disabled = true; btn.textContent = 'Verifying...';
+  setResendLocked(true);
+
+  const slowNoticeTimer = setTimeout(() => {
+    showLoginErrorOtp('Still working, hang tight...');
+  }, 3000);
+
+  const controller = new AbortController();
+  const timeoutTimer = setTimeout(() => controller.abort(), 15000);
 
   try {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: otpEmail, token, type: 'recovery' })
+      body: JSON.stringify({ email: otpEmail, token, type: 'recovery' }),
+      signal: controller.signal
     });
+    clearTimeout(slowNoticeTimer);
     const data = await res.json();
     if (!res.ok || !data.access_token) {
       showLoginErrorOtp('Invalid or expired code. Please try again.');
       btn.disabled = false; btn.textContent = 'Verify';
+      verifyInFlight = false; setResendLocked(false);
       return;
     }
     supabaseSession = data.access_token;
@@ -1493,14 +1508,44 @@ async function doVerifyOtp() {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
     });
     const staffData = await staffRes.json();
-    if (!staffData.length) { showLoginErrorOtp('Staff record not found.'); btn.disabled = false; btn.textContent = 'Verify'; return; }
+    if (!staffData.length) {
+      showLoginErrorOtp('Staff record not found.');
+      btn.disabled = false; btn.textContent = 'Verify';
+      verifyInFlight = false; setResendLocked(false);
+      return;
+    }
     adminUser = staffData[0];
     sessionStorage.setItem('smitten_admin', JSON.stringify(adminUser));
     sessionStorage.setItem('smitten_session', supabaseSession);
     launchApp();
   } catch(e) {
-    showLoginErrorOtp('Could not verify. Try again.');
+    clearTimeout(slowNoticeTimer);
+    if (e.name === 'AbortError') {
+      showLoginErrorOtp('This is taking longer than expected. Please try again.');
+    } else {
+      showLoginErrorOtp('Could not verify. Try again.');
+    }
     btn.disabled = false; btn.textContent = 'Verify';
+    verifyInFlight = false; setResendLocked(false);
+  } finally {
+    clearTimeout(timeoutTimer);
+  }
+}
+
+function setResendLocked(locked) {
+  const link = document.getElementById('resend-otp-link');
+  if (!link) return;
+  if (locked) {
+    link.dataset.verifyLocked = 'true';
+    link.style.opacity = '0.5';
+    link.style.pointerEvents = 'none';
+  } else {
+    delete link.dataset.verifyLocked;
+    // Only restore interactivity if the resend cooldown itself isn't also active
+    if (!resendCooldownInterval) {
+      link.style.opacity = '1';
+      link.style.pointerEvents = 'auto';
+    }
   }
 }
 
