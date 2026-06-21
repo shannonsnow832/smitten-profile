@@ -1503,13 +1503,21 @@ async function doVerifyOtp() {
     // user_id linking is now handled automatically by database triggers
     // (trg_link_staff_on_auth_user_created and trg_link_staff_on_staff_created)
 
-    // Load staff record
-    const staffRes = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(otpEmail)}&is_active=eq.true&select=id,email,first_name,last_name,role`, {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` }
-    });
-    const staffData = await staffRes.json();
-    if (!staffData.length) {
-      showLoginErrorOtp('Staff record not found.');
+    // Load staff record (separate timeout — verify succeeded, this is a second independent call)
+    const staffController = new AbortController();
+    const staffTimeoutTimer = setTimeout(() => staffController.abort(), 15000);
+    let staffRes, staffData;
+    try {
+      staffRes = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(otpEmail)}&is_active=eq.true&select=id,email,first_name,last_name,role`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` },
+        signal: staffController.signal
+      });
+      staffData = await staffRes.json();
+    } finally {
+      clearTimeout(staffTimeoutTimer);
+    }
+    if (!staffRes.ok || !staffData.length) {
+      showLoginErrorOtp(!staffRes.ok ? 'Could not load your account. Please try again.' : 'Staff record not found.');
       btn.disabled = false; btn.textContent = 'Verify';
       verifyInFlight = false; setResendLocked(false);
       return;
