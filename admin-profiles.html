@@ -2994,13 +2994,19 @@ async function exportCSV() {
   btn.disabled = true;
 
   try {
-    // Fetch ALL matching profiles (no pagination)
+    const isMatchmaker = ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
     const token = supabaseSession || SUPABASE_ANON;
-    const url = buildProfilesUrl() + '&limit=5000';
+
+    // Admins export EVERY field (select=*); matchmakers keep the redacted column set.
+    let url = buildProfilesUrl() + '&limit=5000';
+    if (!isMatchmaker) {
+      url = url.replace(/&select=[^&]*/, '&select=*');
+    }
     const r = await fetch(url, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
     });
     let data = await r.json();
+    if (!Array.isArray(data)) { throw new Error('Unexpected response: ' + JSON.stringify(data).slice(0,300)); }
 
     // Apply age filter
     const f = activeFilters;
@@ -3023,31 +3029,45 @@ async function exportCSV() {
       });
     }
 
-    // Build CSV
-    const isMatchmaker = ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
-    const headers = isMatchmaker
-      ? ['First Name','Last Name','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Bio']
-      : ['First Name','Last Name','Email','Phone','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Kids','Want Kids','Smoking','Drinking','Share w/ Matchmakers','Joined','Import Batch'];
+    // CSV value escaper (handles arrays + objects safely)
+    const esc = (v) => {
+      if (v === null || v === undefined) return '""';
+      if (Array.isArray(v)) v = v.map(x => (x && typeof x === 'object') ? JSON.stringify(x) : x).join('; ');
+      else if (typeof v === 'object') v = JSON.stringify(v);
+      return `"${String(v).replace(/"/g, '""')}"`;
+    };
 
-    const rows = data.map(p => {
-      const age = calcAge(p.date_of_birth) || '';
-      const base = [
-        p.first_name || '', p.last_name || '',
-        ...(isMatchmaker ? [] : [p.email || '', p.phone || '']),
-        age, p.gender || '', p.city || '', p.state || '', p.postal_code || '',
-        (p.seeking || []).join('; '),
-        p.occupation || '', p.education || '', p.religion || '', p.politics || '',
-        ...(isMatchmaker
-          ? [p.bio || '']
-          : [p.kids || '', p.want_kids || '', p.smoking || '', p.drinking || '',
-             p.share_with_matchmakers ? 'Yes' : 'No',
-             p.created_at ? new Date(p.created_at).toLocaleDateString() : '',
-             p.import_batch || ''])
-      ];
-      return base.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-    });
+    let csv;
+    if (isMatchmaker) {
+      // Redacted export for matchmakers — unchanged (no email/phone/full PII)
+      const headers = ['First Name','Last Name','Age','Gender','City','State','Zip','Seeking','Occupation','Education','Religion','Politics','Bio'];
+      const rows = data.map(p => {
+        const age = calcAge(p.date_of_birth) || '';
+        const base = [
+          p.first_name || '', p.last_name || '', age, p.gender || '', p.city || '', p.state || '', p.postal_code || '',
+          (p.seeking || []).join('; '), p.occupation || '', p.education || '', p.religion || '', p.politics || '', p.bio || ''
+        ];
+        return base.map(esc).join(',');
+      });
+      csv = [headers.join(','), ...rows].join('\n');
+    } else {
+      // Admin export — every field, plus computed GHL-ready completeness_tag and age.
+      data.forEach(p => {
+        const band = p.pending_completeness_band || p.last_tagged_completeness_band || '';
+        p.completeness_tag = band ? String(band).toLowerCase() : '';
+        p.age = calcAge(p.date_of_birth) ?? '';
+      });
+      // Lead with the columns most useful for a GHL import, then every remaining field.
+      const lead = ['id','first_name','last_name','email','phone','age','completeness_tag',
+                    'completeness_pct','last_tagged_completeness_band','pending_completeness_band'];
+      const keySet = new Set();
+      data.forEach(p => Object.keys(p).forEach(k => keySet.add(k)));
+      const cols = [...lead.filter(k => keySet.has(k)),
+                    ...[...keySet].filter(k => !lead.includes(k)).sort()];
+      const rows = data.map(p => cols.map(k => esc(p[k])).join(','));
+      csv = [cols.join(','), ...rows].join('\n');
+    }
 
-    const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url2 = URL.createObjectURL(blob);
     const a = document.createElement('a');
