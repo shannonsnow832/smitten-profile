@@ -2030,7 +2030,8 @@ async function savePhotos(newAll) {
     await rpc('intake_update_profile', {
       p_email: currentEmail,
       p_image_url: newImageUrl,
-      p_photos: newPhotos.length ? newPhotos : null
+      p_photos: newPhotos,        // always the real array (may be []), never null
+      p_clear_photos: true        // savePhotos always sends the FULL intended photo set → assign exactly (no COALESCE), so deletes persist
     });
     allProfilePhotos = newAll;
     renderPhotoGrid();
