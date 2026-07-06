@@ -372,8 +372,8 @@ async function loadEvents(){
   sel.innerHTML='<option value="">Loading...</option>';
   var events=[];
   if(ROLE==='super_admin'){
-    var today=new Date().toISOString().slice(0,10);
-    var r=await fetch(S+'/rest/v1/events?select=id,name,event_date,start_time,city,state&event_date=gte.'+today+'&order=event_date.asc',{headers:hdrs()});
+    var cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);var cutoffStr=cutoff.toISOString().slice(0,10);
+    var r=await fetch(S+'/rest/v1/events?select=id,name,event_date,start_time,city,state&event_date=gte.'+cutoffStr+'&order=event_date.asc',{headers:hdrs()});
     if(r.ok)events=await r.json();
   } else {
     var r=await fetch(S+'/rest/v1/rpc/get_host_events',{method:'POST',headers:hdrs(),body:JSON.stringify({p_user_id:UID})});
