@@ -641,7 +641,7 @@
         <label style="text-transform:none;font-size:13px;font-weight:400;">
           <label class="check-item" style="gap:8px;">
             <input type="checkbox" id="g-consent">
-            <span>By continuing, I acknowledge that submitting this form creates a Smitten Singles account and profile.</span>
+            <span>I agree to the <a href="https://smittensingles.com/terms-of-service" target="_blank" rel="noopener" style="color:var(--red);font-weight:600;">Terms of Service</a> and <a href="https://smittensingles.com/privacy-policy" target="_blank" rel="noopener" style="color:var(--red);font-weight:600;">Privacy Policy</a>, and acknowledge that submitting this form creates a Smitten Singles account and profile.</span>
           </label>
         </label>
       </div>
@@ -1270,9 +1270,9 @@
 
 <div class="footer">
   &copy; 2026 Smitten Singles. All rights reserved. &nbsp;|&nbsp;
-  <a href="https://thesmittenproject.com/privacy-policy/">Privacy Policy</a> &nbsp;|&nbsp;
-  <a href="https://thesmittenproject.com/terms-of-service/">Terms of Service</a> &nbsp;|&nbsp;
-  <a href="https://thesmittenproject.com/code-of-conduct/">Code of Conduct</a>
+  <a href="https://smittensingles.com/privacy-policy">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="https://smittensingles.com/terms-of-service">Terms of Service</a> &nbsp;|&nbsp;
+  <a href="https://smittensingles.com/code-of-conduct">Code of Conduct</a>
 </div>
 
 
@@ -1294,6 +1294,8 @@ let currentPhone = '';
 let currentFirstName = '';
 let currentLastName = '';
 let currentProfileId = null;
+let termsAcceptedAt = null;
+let termsUrl = null;
 let supabaseSession = null;
 let isExistingUser = false;
 const orgSlug = new URLSearchParams(window.location.search).get('org') || 'smitten-singles';
@@ -1398,13 +1400,17 @@ async function checkDuplicate() {
     showAlert('gate-alert', 'Please fill in your name and email address.', 'error'); return;
   }
   if (!consent) {
-    showAlert('gate-alert', 'Please acknowledge that submitting this form creates a Smitten Singles account.', 'error'); return;
+    showAlert('gate-alert', 'Please agree to the Terms of Service and Privacy Policy to continue.', 'error'); return;
   }
 
   currentEmail     = email;
   currentPhone     = phone;
   currentFirstName = first;
   currentLastName  = last;
+
+  // Record terms acceptance at the moment consent is confirmed
+  termsAcceptedAt = new Date().toISOString();
+  termsUrl        = 'https://smittensingles.com/terms-of-service';
 
   setLoading('btn-check', true, 'Sending code...');
   await proceedToOtp();
@@ -1523,11 +1529,13 @@ async function verifyOtp() {
         isExistingUser = false;
         try {
           const pid = await rpc('intake_create_incomplete', {
-            p_email:      currentEmail,
-            p_first_name: currentFirstName,
-            p_last_name:  currentLastName,
-            p_phone:      currentPhone || null,
-            p_org_slug:   orgSlug
+            p_email:             currentEmail,
+            p_first_name:        currentFirstName,
+            p_last_name:         currentLastName,
+            p_phone:             currentPhone || null,
+            p_org_slug:          orgSlug,
+            p_terms_accepted_at: termsAcceptedAt,
+            p_terms_url:         termsUrl
           });
           currentProfileId = pid;
         } catch (e) {
