@@ -457,8 +457,10 @@ async function savePicks(){
   var b=document.getElementById('sb');
   b.disabled=true;b.innerHTML='<span class="sp"></span>Saving&hellip;';
   var ae=document.getElementById('pa');
+  var SUPPORT_EMAIL='info@thesmittenproject.com';
   try{
-    await fetch(S+'/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID,{method:'DELETE',headers:hd()});
+    var delR=await fetch(S+'/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID,{method:'DELETE',headers:hd()});
+    if(!delR.ok)throw new Error('delete '+delR.status);
     var rows=[];
     Object.entries(PX).forEach(function(e){
       var id=e[0],picks=e[1];
@@ -466,10 +468,15 @@ async function savePicks(){
       if(picks.f)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'friend'});
       if(picks.n)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'not_again'});
     });
-    if(rows.length)await fetch(S+'/rest/v1/event_picks',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(rows)});
+    if(rows.length){
+      var postR=await fetch(S+'/rest/v1/event_picks',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(rows)});
+      if(!postR.ok)throw new Error('insert '+postR.status);
+    }
     ae.innerHTML='<div class="al ok">Picks saved!</div>';
     setTimeout(function(){ae.innerHTML='';},3000);
-  }catch(ex){ae.innerHTML='<div class="al er">Error. Try again.</div>';}
+  }catch(ex){
+    ae.innerHTML='<div class="al er">Your picks did not save. Please try again. If this keeps happening, email <a href="mailto:'+SUPPORT_EMAIL+'">'+SUPPORT_EMAIL+'</a> for help.</div>';
+  }
   b.disabled=false;b.textContent='Save my picks';
 }
 
