@@ -1458,6 +1458,12 @@ async function sendOtp(email, existingUser) {
   });
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
+    rpc('log_auth_failure', {
+      p_email: email,
+      p_event_type: 'otp_send',
+      p_error_code: err.error_code || err.code || String(r.status),
+      p_error_message: err.msg || err.message || 'Failed to send verification code.'
+    }).catch(() => {});
     if (r.status === 429) throw new Error('429: Please wait 60 seconds before requesting another code.');
     throw new Error(err.msg || err.message || 'Failed to send verification code.');
   }
@@ -1509,6 +1515,12 @@ async function verifyOtp() {
     });
     const data = await r.json();
     if (!r.ok || !data.access_token) {
+      rpc('log_auth_failure', {
+        p_email: currentEmail,
+        p_event_type: 'otp_verify',
+        p_error_code: data.error_code || data.code || String(r.status),
+        p_error_message: data.msg || data.error_description || data.error || 'Invalid or expired code.'
+      }).catch(() => {});
       showAlert('otp-alert', 'Invalid or expired code. Please try again.', 'error');
       setLoading('btn-verify', false, 'Verify Code'); return;
     }
