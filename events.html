@@ -168,7 +168,7 @@ input:focus,select:focus{border-color:#C6302C}
 <script>
 var S='https://qgctltxcgsnbrdtbhmay.supabase.co';
 var AN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
-var SES=null,UID=null,PRF=null,EV=null,PX={},ACH=null,MATCHES_RELEASED=false,ALL_ATTENDEES=[],OTP_EMAIL='';
+var SES=null,UID=null,PID=null,PRF=null,EV=null,PX={},ACH=null,MATCHES_RELEASED=false,ALL_ATTENDEES=[],OTP_EMAIL='';
 var ORG={brand_name:'Smitten Singles',brand_primary_color:'#C6302C',website_url:'https://smittensingles.com',admin_secret:'smitten2026'};
 
 async function loadOrgConfig(){
@@ -287,9 +287,24 @@ async function refreshSes(){
   return true;
 }
 
+// Profile id
+// UID is the auth user id (auth.users.id). Registrations, picks, matches,
+// messages and profiles are all keyed on profiles.id, which is a DIFFERENT
+// value. Resolve it once and use PID for every one of those. Keep UID only
+// for staff lookups, get_host_events, and the profile-photos storage path,
+// which really are auth-user-id based.
+async function resolveProfileId(){
+  PID=UID;
+  var r=await api('/rest/v1/profiles?user_id=eq.'+UID+'&select=id&limit=1');
+  if(!r.ok)return;
+  var d=await r.json();
+  if(d&&d.length&&d[0].id)PID=d[0].id;
+}
+
 // Event picker
 async function loadEventPicker(){
   sv('vc');
+  if(!PID)await resolveProfileId();
   var events=[];
   var seen={};
   // Check if user is a host/admin — if so, load their assigned events
@@ -304,7 +319,7 @@ async function loadEventPicker(){
     }
   }
   // Always also check registrations (covers staff who are also registered as participants)
-  var r=await api('/rest/v1/registrations?profile_id=eq.'+UID+'&select=event_id,events(id,name,event_date,start_time,city,state,status)');
+  var r=await api('/rest/v1/registrations?profile_id=eq.'+PID+'&select=event_id,events(id,name,event_date,start_time,city,state,status)');
   if(r.ok){
     var rows=await r.json();
     rows.forEach(function(row){
@@ -415,7 +430,7 @@ async function loadAtt(){
 }
 
 async function loadPicks(){
-  var r=await api('/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID+'&select=picked_id,pick_type');
+  var r=await api('/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+PID+'&select=picked_id,pick_type');
   if(!r.ok)return;
   var d=await r.json();
   PX={};
@@ -459,14 +474,14 @@ async function savePicks(){
   var ae=document.getElementById('pa');
   var SUPPORT_EMAIL='info@thesmittenproject.com';
   try{
-    var delR=await fetch(S+'/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+UID,{method:'DELETE',headers:hd()});
+    var delR=await fetch(S+'/rest/v1/event_picks?event_id=eq.'+EV+'&picker_id=eq.'+PID,{method:'DELETE',headers:hd()});
     if(!delR.ok)throw new Error('delete '+delR.status);
     var rows=[];
     Object.entries(PX).forEach(function(e){
       var id=e[0],picks=e[1];
-      if(picks.d)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'date'});
-      if(picks.f)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'friend'});
-      if(picks.n)rows.push({event_id:EV,picker_id:UID,picked_id:id,pick_type:'not_again'});
+      if(picks.d)rows.push({event_id:EV,picker_id:PID,picked_id:id,pick_type:'date'});
+      if(picks.f)rows.push({event_id:EV,picker_id:PID,picked_id:id,pick_type:'friend'});
+      if(picks.n)rows.push({event_id:EV,picker_id:PID,picked_id:id,pick_type:'not_again'});
     });
     if(rows.length){
       var postR=await fetch(S+'/rest/v1/event_picks',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify(rows)});
@@ -559,7 +574,7 @@ async function openChat(oid,name){
 }
 
 async function loadMsgs(oid){
-  var r=await api('/rest/v1/messages?event_id=eq.'+EV+'&or=(and(sender_id.eq.'+UID+',recipient_id.eq.'+oid+'),and(sender_id.eq.'+oid+',recipient_id.eq.'+UID+'))&order=created_at.asc&select=*');
+  var r=await api('/rest/v1/messages?event_id=eq.'+EV+'&or=(and(sender_id.eq.'+PID+',recipient_id.eq.'+oid+'),and(sender_id.eq.'+oid+',recipient_id.eq.'+PID+'))&order=created_at.asc&select=*');
   var el=document.getElementById('ml');
   if(!el)return;
   if(!r.ok){el.innerHTML='<div class="empty">Could not load messages.</div>';return;}
@@ -567,7 +582,7 @@ async function loadMsgs(oid){
   if(!msgs||!msgs.length){el.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
   var atBot=el.scrollHeight-el.scrollTop<=el.clientHeight+50;
   el.innerHTML=msgs.map(function(m){
-    var mine=m.sender_id===UID;
+    var mine=m.sender_id===PID;
     var t=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     return '<div><div class="bbl '+(mine?'bm':'bt')+'">'+m.content+'</div><div class="ts">'+t+'</div></div>';
   }).join('');
@@ -579,7 +594,7 @@ async function sendM(oid){
   var txt=inp&&inp.value&&inp.value.trim();
   if(!txt)return;
   inp.value='';
-  await fetch(S+'/rest/v1/messages',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({event_id:EV,sender_id:UID,recipient_id:oid,content:txt})});
+  await fetch(S+'/rest/v1/messages',{method:'POST',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({event_id:EV,sender_id:PID,recipient_id:oid,content:txt})});
   loadMsgs(oid);
 }
 
@@ -603,7 +618,7 @@ function tab(t){
 }
 
 async function loadMe(){
-  var r=await api('/rest/v1/profiles?id=eq.'+UID+'&select=id,first_name,image_url,photos,date_of_birth,gender');
+  var r=await api('/rest/v1/profiles?id=eq.'+PID+'&select=id,first_name,image_url,photos,date_of_birth,gender');
   if(!r.ok)return;
   var d=await r.json();
   if(!d||!d.length)return;
@@ -621,7 +636,7 @@ async function saveProfile(){
   var dob=document.getElementById('pdob').value;
   var gender=document.getElementById('pgender').value;
   var msg=document.getElementById('profmsg');
-  var r=await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({date_of_birth:dob||null,gender:gender||null})});
+  var r=await fetch(S+'/rest/v1/profiles?id=eq.'+PID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({date_of_birth:dob||null,gender:gender||null})});
   if(r.ok){msg.innerHTML='<span style="color:#1b5e20">Saved!</span>';setTimeout(function(){msg.innerHTML='';},3000);}
   else{msg.innerHTML='<span style="color:#7f0000">Error saving.</span>';}
 }
@@ -634,7 +649,7 @@ async function upPhoto(inp){
   var r=await fetch(S+'/storage/v1/object/profile-photos/'+path,{method:'POST',headers:{apikey:AN,Authorization:'Bearer '+SES.t,'Content-Type':file.type,'x-upsert':'true'},body:file});
   if(!r.ok){msg.innerHTML='<span style="color:#7f0000">Upload failed.</span>';return;}
   var url=S+'/storage/v1/object/public/profile-photos/'+path;
-  await fetch(S+'/rest/v1/profiles?id=eq.'+UID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({image_url:url})});
+  await fetch(S+'/rest/v1/profiles?id=eq.'+PID,{method:'PATCH',headers:hd({Prefer:'return=minimal'}),body:JSON.stringify({image_url:url})});
   document.getElementById('ppw').innerHTML='<img class="pp" src="'+url+'" alt="">';
   msg.innerHTML='<span style="color:#1b5e20">Photo saved!</span>';
   if(PRF)PRF.image_url=url;
@@ -642,7 +657,7 @@ async function upPhoto(inp){
 
 function signOut(){
   localStorage.removeItem('ss_s');
-  SES=null;UID=null;EV=null;PRF=null;PX={};ACH=null;
+  SES=null;UID=null;PID=null;EV=null;PRF=null;PX={};ACH=null;
   if(window._cp)clearInterval(window._cp);
   showEmailCard();
   sv('vl');
