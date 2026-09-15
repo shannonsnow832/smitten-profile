@@ -898,3 +898,1803 @@
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
               <div class="modal-field">
                 <label>Group Name</label>
+                <input type="text" id="mg-name" value="Match Group" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+              </div>
+              <div class="modal-field">
+                <label>Number of Groups</label>
+                <input type="number" id="mg-group-count" value="4" min="1" max="50" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+              </div>
+              <div class="modal-field">
+                <label>People per Group</label>
+                <input type="number" id="mg-count" value="8" min="2" max="50" style="border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;width:100%">
+              </div>
+            </div>
+            <!-- Anchor person -->
+            <div style="margin-bottom:16px">
+              <label style="font-size:11px;font-weight:600;color:var(--gray-mid);display:block;margin-bottom:6px">Anchor to Person <span style="font-weight:400">(optional — builds pool from their preferences, no gender filter)</span></label>
+              <div style="position:relative">
+                <input type="text" id="mg-anchor-search" placeholder="Search by name…" oninput="searchGroupAnchor()" autocomplete="off"
+                  style="width:100%;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 10px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;box-sizing:border-box">
+                <div id="mg-anchor-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #E8E8E8;border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);max-height:180px;overflow-y:auto;z-index:100;box-shadow:var(--shadow)"></div>
+              </div>
+              <div id="mg-anchor-selected" style="display:none;margin-top:8px;font-size:12px;background:#FFF5F5;border:1px solid var(--pink);border-radius:6px;padding:8px 12px;align-items:center;gap:8px">
+                <span id="mg-anchor-name" style="font-weight:600;flex:1"></span>
+                <span style="font-size:11px;color:var(--gray-mid)">Age range ±</span>
+                <input type="number" id="mg-anchor-age-buffer" value="5" min="0" max="20" style="width:44px;border:1px solid #E8E8E8;border-radius:4px;padding:2px 6px;font-family:Montserrat,sans-serif;font-size:12px;text-align:center"> yrs
+                <button onclick="clearGroupAnchor()" style="background:none;border:none;color:var(--gray-mid);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">×</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-primary" id="btn-generate-groups" onclick="generateGroups()">Generate Groups</button>
+              <div style="position:relative;display:inline-block">
+                <button onclick="document.getElementById('export-pool-menu-hdr').style.display=document.getElementById('export-pool-menu-hdr').style.display==='none'?'block':'none'" class="btn btn-outline" style="font-size:13px">Export Pool ▾</button>
+                <div id="export-pool-menu-hdr" style="display:none;position:absolute;left:0;top:100%;background:white;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);box-shadow:var(--shadow);z-index:100;min-width:160px;margin-top:4px">
+                  <div onclick="exportPoolCSV('abbreviated');document.getElementById('export-pool-menu-hdr').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0f0" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Abbreviated</div>
+                  <div onclick="exportPoolCSV('expanded');document.getElementById('export-pool-menu-hdr').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Expanded (all fields)</div>
+                </div>
+              </div>
+              <button onclick="clearGeneratedGroups()" class="btn btn-outline" style="font-size:13px">Clear Groups</button>
+              <span id="mg-status" style="font-size:12px;color:var(--gray-mid)"></span>
+            </div>
+          </div>
+          <!-- POOL PREVIEW -->
+          <div id="pool-preview" style="margin-bottom:20px;display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+              <h3 style="font-size:14px;font-weight:700">Pool Members <span id="pool-preview-count" style="color:var(--gray-mid);font-weight:400"></span></h3>
+              <div style="display:flex;gap:8px">
+                <button id="btn-pool-view-grid" onclick="setPoolView('grid')" style="font-size:11px;padding:4px 10px;border:1px solid var(--red);border-radius:6px;background:var(--red);color:white;cursor:pointer">Grid</button>
+                <button id="btn-pool-view-list" onclick="setPoolView('list')" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">List</button>
+                <div style="position:relative;display:inline-block">
+                  <button onclick="document.getElementById('export-pool-menu').style.display=document.getElementById('export-pool-menu').style.display==='none'?'block':'none'" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:white;cursor:pointer">Export CSV ▾</button>
+                  <div id="export-pool-menu" style="display:none;position:absolute;right:0;top:100%;background:white;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);box-shadow:var(--shadow);z-index:100;min-width:160px">
+                    <div onclick="exportPoolCSV('abbreviated');document.getElementById('export-pool-menu').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0f0" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Abbreviated</div>
+                    <div onclick="exportPoolCSV('expanded');document.getElementById('export-pool-menu').style.display='none'" style="padding:9px 14px;font-size:12px;cursor:pointer" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">Expanded (all fields)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="pool-preview-list" style="display:flex;flex-wrap:wrap;gap:8px;max-height:220px;overflow-y:auto"></div>
+          </div>
+
+          <div id="match-group-results">
+            <div class="empty-state"><div class="icon">👥</div><p>1. Set filters on the left and click <strong>Build Pool</strong><br>2. Set group settings above<br>3. Click <strong>Generate Groups</strong></p></div>
+          </div>
+        </div>
+
+        <!-- SAVED GROUPS TAB PANEL -->
+        <div id="match-saved-panel" style="display:none">
+          <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Saved Groups</h3>
+            <div id="saved-groups-list"><div class="loading-state">Loading...</div></div>
+          </div>
+        </div>
+        <!-- SAVED POOLS — always visible -->
+        <div style="margin-top:32px;padding-bottom:40px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <h3 style="font-size:14px;font-weight:700">Saved Pools</h3>
+            <button onclick="saveCurrentPool()" class="btn btn-outline" style="font-size:12px;padding:6px 14px;background:#FFF5F5;border-color:var(--red);color:var(--red)" id="btn-save-pool-matching">Save Current Pool</button>
+          </div>
+          <div id="saved-pools-list" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:13px;color:var(--gray-mid)">No saved pools yet.</div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <div id="tab-staff" class="tab-panel">
+    <div style="max-width:800px;margin:32px auto;padding:0 24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="font-size:20px;font-weight:700;color:var(--black)">User Management</h2>
+        <button class="btn btn-primary" onclick="openAddStaff()">+ Add User</button>
+      </div>
+      <!-- Bulk action bar -->
+      <div id="staff-bulk-bar" style="display:none;background:#FFF5F5;border:1.5px solid var(--pink);border-radius:var(--radius-sm);padding:10px 16px;margin-bottom:14px;align-items:center;gap:12px;flex-wrap:wrap">
+        <span id="staff-bulk-count" style="font-size:13px;font-weight:600;color:var(--red)"></span>
+        <select id="staff-bulk-role" style="border:1.5px solid #E8E8E8;border-radius:6px;padding:6px 10px;font-family:Montserrat,sans-serif;font-size:12px;outline:none">
+          <option value="">Change role to...</option>
+        </select>
+        <button onclick="bulkUpdateRole()" class="btn btn-outline" style="font-size:12px;padding:6px 14px">Update Role</button>
+        <button onclick="bulkDeactivate()" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1.5px solid #C6302C;background:white;color:#C6302C;cursor:pointer;font-family:Montserrat,sans-serif">Deactivate</button>
+        <button onclick="bulkActivate()" style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1.5px solid #166534;background:white;color:#166534;cursor:pointer;font-family:Montserrat,sans-serif">Activate</button>
+        <button onclick="clearStaffSelection()" style="font-size:12px;color:var(--gray-mid);background:none;border:none;cursor:pointer;font-family:Montserrat,sans-serif;margin-left:auto">Clear selection</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <input type="text" id="staff-search" placeholder="Search by name or email…" oninput="filterStaffList()" style="flex:1;border:1.5px solid #E8E8E8;border-radius:var(--radius-sm);padding:8px 12px;font-family:Montserrat,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#E8E8E8'">
+        <label style="font-size:12px;font-weight:600;color:var(--gray-dark);display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="staff-select-all" onchange="toggleSelectAllStaff(this)" style="accent-color:var(--red);width:14px;height:14px"> Select all
+        </label>
+      </div>
+      <div id="staff-list" style="display:flex;flex-direction:column;gap:10px">
+        <div class="loading-state">Loading staff...</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ARCHIVED TAB -->
+  <div id="tab-archived" class="tab-panel">
+    <div style="max-width:1000px;margin:32px auto;padding:0 24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <h2 style="font-size:20px;font-weight:700;color:var(--black)">Archived Profiles</h2>
+        <span style="font-size:13px;color:var(--gray-mid)">These profiles are hidden from all lists. Restore to reinstate or Delete Everything to permanently remove.</span>
+      </div>
+      <div id="archived-list" style="display:flex;flex-direction:column;gap:10px">
+        <div class="loading-state">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- PHOTO LIGHTBOX -->
+<div id="photo-lightbox" onclick="lbClose()">
+  <span class="lb-close" onclick="lbClose()">×</span>
+  <span class="lb-arrow lb-prev" onclick="event.stopPropagation();lbNav(-1)">&#8249;</span>
+  <img id="lb-img" src="" alt="photo" onclick="event.stopPropagation()">
+  <span class="lb-arrow lb-next" onclick="event.stopPropagation();lbNav(1)">&#8250;</span>
+  <div class="lb-counter" id="lb-counter"></div>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div id="staff-modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeStaffModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-topbar">
+      <div class="modal-topbar-left">
+        <div><h2 id="staff-modal-title" style="font-size:18px;font-weight:700;color:white">Add User</h2></div>
+      </div>
+      <div class="modal-topbar-actions">
+        <button class="modal-close" onclick="closeStaffModal()">×</button>
+      </div>
+    </div>
+    <div style="padding:24px">
+      <div id="staff-modal-alert" class="modal-alert" style="margin:0 0 16px"></div>
+      <div class="modal-form-row">
+        <div class="modal-field"><label>First Name *</label><input type="text" id="sf-first"></div>
+        <div class="modal-field"><label>Last Name *</label><input type="text" id="sf-last"></div>
+      </div>
+      <div class="modal-form-row full">
+        <div class="modal-field"><label>Email *</label><input type="email" id="sf-email"></div>
+      </div>
+      <div class="modal-form-row full">
+        <div class="modal-field"><label>Role *</label>
+          <select id="sf-role">
+            <option value="">Select...</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-form-row full" id="sf-org-row">
+        <div class="modal-field"><label>Organization</label>
+          <select id="sf-org"><option value="">Platform-level (no org)</option></select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-light)">
+        <button class="btn btn-outline" onclick="closeStaffModal()">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-staff" onclick="saveStaff()">Add User</button>
+      </div>
+    </div>
+  </div>
+    </div><!-- end app-content -->
+  </div><!-- end app-layout -->
+</div>
+
+<!-- PROFILE DETAIL MODAL -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModalOnBg(event)">
+  <div class="modal" id="profile-modal">
+    <div class="modal-topbar">
+      <div class="modal-topbar-left">
+        <div class="modal-topbar-avatar" id="modal-topbar-avatar"></div>
+        <div>
+          <h2 id="modal-topbar-name"></h2>
+          <p id="modal-topbar-sub"></p>
+        </div>
+      </div>
+      <div class="modal-topbar-actions">
+        <span id="modal-role-badge"></span>
+        <button class="btn" id="btn-modal-edit" onclick="toggleProfileEditMode()" style="background:transparent;color:white;border:1.5px solid rgba(255,255,255,0.5);font-size:12px;padding:6px 14px">Edit</button>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+    </div>
+    <div class="modal-layout">
+      <!-- PHOTOS -->
+      <div class="modal-photos">
+        <h4>Photos</h4>
+        <div class="modal-photo-grid" id="modal-photo-grid"></div>
+        <input type="file" id="modal-photo-file-input" accept="image/*" style="display:none" onchange="modalHandleFileInput(this)">
+        <p class="modal-upload-note">Drag to reorder · First photo is profile picture<br>Click empty slot to add · Hover to delete</p>
+      </div>
+      <!-- CONTENT -->
+      <div class="modal-content">
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" onclick="switchModalTab('basic',this)">Basic Info</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('lifestyle',this)">Lifestyle</button>
+          <button class="modal-tab-btn" onclick="switchModalTab('preferences',this)">Preferences</button>
+        </div>
+        <div id="modal-alert" class="modal-alert"></div>
+
+        <!-- BASIC INFO TAB -->
+        <div id="modal-tab-basic" class="modal-tab-content active">
+          <div class="modal-section-title">Personal Details</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>First Name</label><input type="text" id="m-first"></div>
+            <div class="modal-field"><label>Last Name</label><input type="text" id="m-last"></div>
+          </div>
+          <div class="modal-form-row" id="m-contact-row">
+            <div class="modal-field"><label>Email</label><input type="email" id="m-email" readonly></div>
+            <div class="modal-field"><label>Phone</label><input type="tel" id="m-phone"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Date of Birth</label><input type="date" id="m-dob"></div>
+            <div class="modal-field"><label>Gender</label>
+              <select id="m-gender"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Street Address</label><input type="text" id="m-address"></div>
+          </div>
+          <div class="modal-form-row three">
+            <div class="modal-field"><label>City</label><input type="text" id="m-city"></div>
+            <div class="modal-field"><label>State</label><input type="text" id="m-state"></div>
+            <div class="modal-field"><label>Zip</label><input type="text" id="m-zip"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Closest Major City</label><input type="text" id="m-closest-city"></div>
+            <div class="modal-field"><label>Timezone</label><input type="text" id="m-timezone" readonly></div>
+          </div>
+          <div class="modal-section-title">Seeking</div>
+          <div class="modal-checkbox-group" style="margin-bottom:12px">
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-date-men" value="Date Men"> Date Men</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-date-women" value="Date Women"> Date Women</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-any" value="Date Any/Other Gender"> Date Any/Other</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-seek-friend" value="Friendship"> Friendship</label>
+          </div>
+          <div class="modal-section-title">About Me</div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Bio</label><textarea id="m-bio" rows="4"></textarea></div>
+          </div>
+          <div class="modal-section-title">Consent &amp; Communication</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+            <label class="modal-check-item"><input type="checkbox" id="m-share-matchmakers"> Share with matchmakers</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-interested-matchmaking"> Interested in matchmaking services</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-email-opt"> Email opt-in</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-services-text"> Services text opt-in</label>
+            <label class="modal-check-item"><input type="checkbox" id="m-marketing-text"> Marketing text opt-in</label>
+          </div>
+        </div>
+
+        <!-- LIFESTYLE TAB -->
+        <div id="modal-tab-lifestyle" class="modal-tab-content">
+          <div class="modal-section-title">Background &amp; Lifestyle</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Height</label>
+              <div style="display:flex;gap:6px">
+                <select id="m-height-ft" style="flex:1"><option value="">Ft</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+                </select>
+                <select id="m-height-in" style="flex:1"><option value="">In</option>
+                  <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+                  <option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-field"><label>Education</label>
+              <select id="m-education"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Occupation</label><input type="text" id="m-occupation"></div>
+            <div class="modal-field"><label>Employer</label><input type="text" id="m-employer"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Has Kids</label>
+              <select id="m-kids"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Wants Kids</label>
+              <select id="m-want-kids"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Smoking</label>
+              <select id="m-smoking"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Drinking</label>
+              <select id="m-drinking"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Religion</label>
+              <select id="m-religion"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Politics</label>
+              <select id="m-politics"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Income Level</label>
+              <select id="m-income"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Body Type</label>
+              <select id="m-body-type"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Hair Color</label>
+              <select id="m-hair"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Eye Color</label>
+              <select id="m-eyes"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Ethnicity</label>
+              <select id="m-ethnicity"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Relationship Status</label>
+              <select id="m-rel-status"><option value="">Select...</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Pets</label><input type="text" id="m-pets" placeholder="e.g. Dog, Cat, None"></div>
+            <div class="modal-field"><label>Languages</label><input type="text" id="m-languages"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Activities &amp; Hobbies</label><input type="text" id="m-activities" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Ideal Match</label><textarea id="m-ideal-match" rows="3"></textarea></div>
+          </div>
+        </div>
+
+        <!-- PREFERENCES TAB -->
+        <div id="modal-tab-preferences" class="modal-tab-content">
+          <div class="modal-section-title">Match Preferences</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Min Age Preference</label><input type="number" id="m-min-age" min="18" max="99"></div>
+            <div class="modal-field"><label>Max Age Preference</label><input type="number" id="m-max-age" min="18" max="99"></div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Max Distance (miles)</label><input type="number" id="m-max-distance"></div>
+            <div class="modal-field"><label>Preferred Income</label>
+              <select id="m-pref-income"><option value="">Any</option></select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Pref. Height Min</label><input type="text" id="m-pref-height-min" placeholder="e.g. 5'4&quot;"></div>
+            <div class="modal-field"><label>Pref. Height Max</label><input type="text" id="m-pref-height-max" placeholder="e.g. 6'2&quot;"></div>
+          </div>
+          <div class="modal-section-title">Lifestyle Compatibility</div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Date someone with kids?</label>
+              <select id="m-date-with-kids"><option value="">Select...</option></select>
+            </div>
+            <div class="modal-field"><label>Relocate in-state?</label>
+              <select id="m-relocation-in"><option value="">Select...</option>
+                <option>Yes</option><option>No</option><option>Maybe</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-row">
+            <div class="modal-field"><label>Relocate out-of-state?</label>
+              <select id="m-relocation-out"><option value="">Select...</option>
+                <option>Yes</option><option>No</option><option>Maybe</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-section-title">Dealbreakers</div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Dealbreakers</label><textarea id="m-dealbreakers" rows="2" placeholder="Comma separated"></textarea></div>
+          </div>
+          <div class="modal-section-title">Checkbox Preferences</div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Body Type</label><input type="text" id="m-pref-body" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Ethnicity</label><input type="text" id="m-pref-ethnicity" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Religion</label><input type="text" id="m-pref-religion" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Politics</label><input type="text" id="m-pref-politics" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Education</label><input type="text" id="m-pref-education" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Smoking</label><input type="text" id="m-pref-smoking" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Drinking</label><input type="text" id="m-pref-alcohol" placeholder="Comma separated"></div>
+          </div>
+          <div class="modal-form-row full">
+            <div class="modal-field"><label>Preferred Relationship Status</label><input type="text" id="m-pref-rel-status" placeholder="Comma separated"></div>
+          </div>
+        </div>
+
+        <div id="modal-save-bar" class="modal-save-bar">
+          <button class="btn" id="btn-modal-delete" onclick="softDeleteProfile()" style="background:transparent;color:#C6302C;border:1.5px solid #C6302C;font-size:12px;padding:6px 14px">Archive</button>
+          <button class="btn" id="btn-modal-hard-delete" onclick="hardDeleteProfile()" style="background:#C6302C;color:white;font-size:12px;padding:6px 14px">Delete</button>
+          <button class="btn" id="btn-modal-save-profile" onclick="toggleSaveProfile()" style="background:transparent;color:#0369a1;border:1.5px solid #0369a1;font-size:12px;padding:6px 14px">⭐ Save</button>
+          <button class="btn" id="btn-modal-ban" onclick="toggleBanProfile()" style="background:transparent;color:#7c3aed;border:1.5px solid #7c3aed;font-size:12px;padding:6px 14px">Ban</button>
+          <button class="btn" id="btn-modal-invite-paused" onclick="toggleInvitePaused()" style="background:transparent;color:#92400e;border:1.5px solid #92400e;font-size:12px;padding:6px 14px">Invite Paused</button>
+          <span id="modal-save-status" style="font-size:12px;color:var(--gray-mid);align-self:center;flex:1;text-align:center;"></span>
+          <button class="btn btn-primary" id="btn-modal-save" onclick="saveModalProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qgctltxcgsnbrdtbhmay.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnY3RsdHhjZ3NuYnJkdGJobWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMjgwNTcsImV4cCI6MjA5MDYwNDA1N30.-TS1CofnGMGAj38OrZAvtphbHPXQWZWtysO83_960M4';
+const PAGE_SIZE = 25;
+
+let adminUser = null;
+let currentPage = 0;
+let totalCount = 0;
+let activeFilters = {};
+let searchQuery = '';
+let searchTimer = null;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+let otpEmail = '';
+let supabaseSession = null;
+
+async function doRequestOtp() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  showLoginError('');
+  if (!email) { showLoginError('Please enter your email.'); return; }
+
+  // Check staff table first - only super_admin and matchmaker allowed
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_staff_login`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_email: email })
+    });
+    const isStaff = await r.json();
+    if (!isStaff) { showLoginError('Access denied. Authorized staff only.'); return; }
+
+    // Send OTP — create_user:true so Lisa and future staff get auth users on first login
+    const otpRes = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, type: 'recovery', create_user: true })
+    });
+    if (!otpRes.ok) {
+      let errMsg = 'Could not send code. Try again.';
+      try { const errData = await otpRes.json(); errMsg = errData.msg || errData.error_description || errMsg; } catch(e2) {}
+      showLoginError(errMsg);
+      return;
+    }
+
+    otpEmail = email;
+    document.getElementById('otp-sent-msg').textContent = `We sent an 8-digit code to ${email}.`;
+    document.getElementById('login-step-email').style.display = 'none';
+    document.getElementById('login-step-otp').style.display = 'block';
+    setTimeout(() => document.querySelector('.otp-box').focus(), 100);
+    initOtpInputs();
+    startResendCooldown();
+  } catch(e) {
+    showLoginError('Could not connect. Try again.');
+  }
+}
+
+let resendCooldownInterval = null;
+
+function startResendCooldown() {
+  const link = document.getElementById('resend-otp-link');
+  let secondsLeft = 30;
+  if (resendCooldownInterval) clearInterval(resendCooldownInterval);
+  const render = () => {
+    link.textContent = `Resend code (${secondsLeft}s)`;
+    link.style.opacity = '0.5';
+    link.style.pointerEvents = 'none';
+  };
+  render();
+  resendCooldownInterval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0) {
+      clearInterval(resendCooldownInterval);
+      link.textContent = 'Resend code';
+      link.style.opacity = '1';
+      link.style.pointerEvents = 'auto';
+    } else {
+      render();
+    }
+  }, 1000);
+}
+
+async function doResendOtp() {
+  const link = document.getElementById('resend-otp-link');
+  if (link.style.pointerEvents === 'none') return;
+  showLoginErrorOtp('');
+  try {
+    const otpRes = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: otpEmail, type: 'recovery', create_user: true })
+    });
+    if (!otpRes.ok) {
+      let errMsg = 'Could not resend code. Try again.';
+      try { const errData = await otpRes.json(); errMsg = errData.msg || errData.error_description || errMsg; } catch(e2) {}
+      showLoginErrorOtp(errMsg);
+      return;
+    }
+    document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+    document.querySelector('.otp-box').focus();
+    showLoginErrorOtp('A new code was sent. Your previous code no longer works.');
+    startResendCooldown();
+  } catch(e) {
+    showLoginErrorOtp('Could not connect. Try again.');
+  }
+}
+
+function initOtpInputs() {
+  const boxes = document.querySelectorAll('.otp-box');
+  boxes.forEach((box, i) => {
+    box.value = '';
+    box.addEventListener('input', () => {
+      // Only allow digits
+      box.value = box.value.replace(/\D/g, '');
+      if (box.value.length === 1 && i < boxes.length - 1) boxes[i+1].focus();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i-1].focus();
+    });
+    box.addEventListener('paste', (e) => {
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,8);
+      if (paste.length) {
+        boxes.forEach((b, j) => b.value = paste[j] || '');
+        boxes[Math.min(paste.length, 7)].focus();
+        // Don't auto-trigger - let user click Verify
+      }
+      e.preventDefault();
+    });
+  });
+}
+
+function getOtpValue() {
+  return [...document.querySelectorAll('.otp-box')].map(b => b.value).join('');
+}
+
+let verifyInFlight = false;
+
+async function doVerifyOtp() {
+  const token = getOtpValue();
+  showLoginErrorOtp('');
+  if (token.length !== 8) { showLoginErrorOtp('Please enter all 8 digits.'); return; }
+  if (verifyInFlight) return;
+  verifyInFlight = true;
+  const btn = document.getElementById('btn-verify-otp');
+  btn.disabled = true; btn.textContent = 'Verifying...';
+  setResendLocked(true);
+
+  const slowNoticeTimer = setTimeout(() => {
+    showLoginErrorOtp('Still working, hang tight...');
+  }, 3000);
+
+  const controller = new AbortController();
+  const timeoutTimer = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: otpEmail, token, type: 'recovery' }),
+      signal: controller.signal
+    });
+    clearTimeout(slowNoticeTimer);
+    const data = await res.json();
+    if (!res.ok || !data.access_token) {
+      showLoginErrorOtp('Invalid or expired code. Please try again.');
+      btn.disabled = false; btn.textContent = 'Verify';
+      verifyInFlight = false; setResendLocked(false);
+      return;
+    }
+    supabaseSession = data.access_token;
+    if (data.refresh_token) sessionStorage.setItem('smitten_refresh', data.refresh_token);
+
+    // Get auth user id from session JWT
+    const authUid = JSON.parse(atob(supabaseSession.split('.')[1])).sub;
+
+    // user_id linking is now handled automatically by database triggers
+    // (trg_link_staff_on_auth_user_created and trg_link_staff_on_staff_created)
+
+    // Load staff record (separate timeout — verify succeeded, this is a second independent call)
+    const staffController = new AbortController();
+    const staffTimeoutTimer = setTimeout(() => staffController.abort(), 15000);
+    let staffRes, staffData;
+    try {
+      staffRes = await fetch(`${SUPABASE_URL}/rest/v1/staff?email=eq.${encodeURIComponent(otpEmail)}&is_active=eq.true&select=id,email,first_name,last_name,role`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${supabaseSession}` },
+        signal: staffController.signal
+      });
+      staffData = await staffRes.json();
+    } finally {
+      clearTimeout(staffTimeoutTimer);
+    }
+    if (!staffRes.ok || !staffData.length) {
+      showLoginErrorOtp(!staffRes.ok ? 'Could not load your account. Please try again.' : 'Staff record not found.');
+      btn.disabled = false; btn.textContent = 'Verify';
+      verifyInFlight = false; setResendLocked(false);
+      return;
+    }
+    adminUser = staffData[0];
+    sessionStorage.setItem('smitten_admin', JSON.stringify(adminUser));
+    sessionStorage.setItem('smitten_session', supabaseSession);
+    launchApp();
+  } catch(e) {
+    clearTimeout(slowNoticeTimer);
+    if (e.name === 'AbortError') {
+      showLoginErrorOtp('This is taking longer than expected. Please try again.');
+    } else {
+      showLoginErrorOtp('Could not verify. Try again.');
+    }
+    btn.disabled = false; btn.textContent = 'Verify';
+    verifyInFlight = false; setResendLocked(false);
+  } finally {
+    clearTimeout(timeoutTimer);
+  }
+}
+
+function setResendLocked(locked) {
+  const link = document.getElementById('resend-otp-link');
+  if (!link) return;
+  if (locked) {
+    link.dataset.verifyLocked = 'true';
+    link.style.opacity = '0.5';
+    link.style.pointerEvents = 'none';
+  } else {
+    delete link.dataset.verifyLocked;
+    // Only restore interactivity if the resend cooldown itself isn't also active
+    if (!resendCooldownInterval) {
+      link.style.opacity = '1';
+      link.style.pointerEvents = 'auto';
+    }
+  }
+}
+
+function backToEmail() {
+  if (resendCooldownInterval) clearInterval(resendCooldownInterval);
+  document.getElementById('login-step-otp').style.display = 'none';
+  document.getElementById('login-step-email').style.display = 'block';
+  showLoginError('');
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = msg ? 'block' : 'none';
+}
+
+function showLoginErrorOtp(msg) {
+  const el = document.getElementById('login-error-otp');
+  el.textContent = msg; el.style.display = msg ? 'block' : 'none';
+}
+
+function doLogout() {
+  sessionStorage.removeItem('smitten_admin');
+  sessionStorage.removeItem('smitten_session');
+  sessionStorage.removeItem('smitten_refresh');
+  adminUser = null; supabaseSession = null; otpEmail = '';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('screen-app').style.display = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-step-email').style.display = 'block';
+  document.getElementById('login-step-otp').style.display = 'none';
+  document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+}
+
+function launchApp() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-app').style.display = 'block';
+  const isMatchmaker = ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
+  document.getElementById('admin-name-display').textContent = `${adminUser.first_name} ${adminUser.last_name}`;
+  // Show staff + matching tabs
+  const staffTab = document.getElementById('nav-tab-staff');
+  const matchTab = document.getElementById('nav-tab-matching');
+  if (!isMatchmaker) { if (staffTab) staffTab.style.display = ''; }
+  const archivedTab = document.getElementById('nav-tab-archived');
+  if (adminUser.role === 'super_admin') { if (archivedTab) archivedTab.style.display = ''; }
+  if (matchTab) matchTab.style.display = '';
+  // Hide matchmaker filter for matchmakers
+  if (isMatchmaker) {
+    const mmFilter = document.getElementById('filter-matchmakers-group');
+    if (mmFilter) mmFilter.style.display = 'none';
+  }
+  // Clear any stale filter state
+  activeFilters = {};
+  searchQuery = '';
+  // Show sidebar button for profiles tab (default)
+  const actionBtn = document.getElementById('sidebar-action-btn');
+  if (actionBtn) { actionBtn.textContent = 'Apply Filters'; actionBtn.style.display = ''; }
+  loadAllOptions();
+  loadStaffRoles();
+  loadProfiles();
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  // Update sidebar action button based on active tab
+  const actionBtn = document.getElementById('sidebar-action-btn');
+  if (actionBtn) {
+    if (name === 'matching') {
+      actionBtn.style.display = 'none'; // mode select screen shown first
+    } else {
+      actionBtn.textContent = 'Apply Filters';
+      actionBtn.style.display = '';
+    }
+  }
+  if (name === 'staff') { const s = document.getElementById('staff-search'); if(s) s.value=''; loadStaff(); loadStaffRoles(); }
+  if (name === 'matching') { setMatchMode(null); loadEventOptions(); loadSavedPoolsList(); }
+  if (name === 'archived') loadArchivedProfiles();
+}
+
+function sidebarAction() {
+  const activeTab = document.querySelector('.tab-panel.active');
+  if (!activeTab || activeTab.id !== 'tab-matching') {
+    applyFilters();
+    return;
+  }
+  if (matchMode === '1to1') {
+    runMatching();
+  } else if (matchMode === 'group') {
+    buildPool();
+  } else {
+    applyFilters();
+  }
+}
+
+function toggleFilter(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ── PROFILES ──────────────────────────────────────────────────────────────────
+function applyQuickFilters() {
+  // Sync quick filter values into sidebar filters where they overlap
+  const gender = document.getElementById('qf-gender').value;
+  const income = document.getElementById('qf-income').value;
+  const kids = document.getElementById('qf-kids').value;
+  const wantKids = document.getElementById('qf-want-kids').value;
+  const religion = document.getElementById('qf-religion').value;
+  const education = document.getElementById('qf-education').value;
+  const active = document.getElementById('qf-active').value;
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  setEl('f-gender', gender);
+  setEl('f-income-min', income);
+  setEl('f-income-max', '');
+  setEl('f-kids', kids);
+  setEl('f-want-kids', wantKids);
+  setEl('f-religion', religion);
+  setEl('f-education', education);
+  setEl('f-active', active);
+  currentPage = 0;
+  applyFilters();
+}
+
+function clearQuickFilters() {
+  ['qf-gender','qf-income','qf-kids','qf-want-kids','qf-religion','qf-education','qf-active'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  clearFilters();
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchQuery = document.getElementById('search-input').value.trim();
+    currentPage = 0;
+    loadProfiles();
+  }, 400);
+}
+
+
+
+function clearFilters() {
+  ['f-age-min','f-age-max','f-zip','f-distance-zip','f-distance-miles'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['f-income','f-kids','f-want-kids','f-religion','f-education','f-politics','f-body-type','f-smoking',
+   'f-drinking','f-rel-status','f-pref-religion','f-pref-politics','f-pref-body-type',
+   'f-pref-education','f-pref-smoking','f-pref-drinking','f-pref-rel-status'].forEach(id => msSetValues(id, []));
+  ['f-gender','f-seeking','f-has-photo','f-matchmakers','f-status','f-completeness',
+   'f-date-with-kids','f-relocation-in','f-relocation-out','f-state','f-city','f-last-active'
+  ].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.querySelectorAll('.last-active-preset').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-distance-status').textContent = '';
+  distanceCenter = null;
+  activeFilters = {};
+  currentPage = 0;
+  loadProfiles();
+}
+
+function setLastActive(days) {
+  const input = document.getElementById("f-last-active");
+  document.querySelectorAll(".last-active-preset").forEach(b => b.classList.remove("active"));
+  if (!days) {
+    if (input) input.value = "";
+    const anyBtn = document.querySelector(".last-active-preset[data-days=\"\"]");
+    if (anyBtn) anyBtn.classList.add("active");
+    return;
+  }
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  if (input) input.value = d.toISOString().split("T")[0];
+  const btn = document.querySelector(`.last-active-preset[data-days="${days}"]`);
+  if (btn) btn.classList.add("active");
+}
+
+function calcAge(dob) {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d)) return null;
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const m = today.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+  return age;
+}
+
+function buildProfilesUrl(forCount = false) {
+  const f = activeFilters;
+  let params = [];
+
+  // Always exclude deleted and sample data
+  params.push('deleted_at=is.null');
+  params.push('or=(import_batch.is.null,import_batch.neq.sample_data)');
+  // Standard matchmakers only see opted-in profiles; smitten_matchmaker sees all org profiles
+  if (adminUser && adminUser.role === 'matchmaker') {
+    params.push('share_with_matchmakers=eq.true');
+  }
+
+  if (f.gender) params.push(`gender=ilike.${encodeURIComponent(f.gender)}`);
+  if (f.state) params.push(`state=eq.${encodeURIComponent(f.state)}`);
+  if (f.city) params.push(`city=eq.${encodeURIComponent(f.city)}`);
+  if (f.education && f.education.length) params.push(`education=in.(${f.education.map(v => `"${v}"`).join(',')})`);
+  if (f.religion && f.religion.length) params.push(`religion=in.(${f.religion.map(v => `"${v}"`).join(',')})`);
+  if (f.matchmakers) params.push(`share_with_matchmakers=eq.${f.matchmakers}`);
+  if (f.status === 'active') params.push('is_active=eq.true', 'invite_paused=eq.false', 'banned=eq.false');
+  if (f.status === 'inactive') params.push('is_active=eq.false');
+  if (f.status === 'invite_paused') params.push('invite_paused=eq.true');
+  if (f.status === 'banned') params.push('banned=eq.true');
+  // Completeness filter — translate tiers to field null checks
+  const allFields = ['gender','kids','want_kids','religion','politics','body_type','income_level','min_age','max_age','preferred_body_type'];
+  const coreFields = ['gender','kids','want_kids','religion'];
+  const mostFields = ['gender','kids','want_kids','religion','politics','body_type','income_level'];
+  if (f.completeness === '100') {
+    allFields.forEach(col => params.push(`${col}=not.is.null`));
+    params.push('seeking=not.is.null', 'seeking=not.eq.{}');
+  } else if (f.completeness === '75') {
+    mostFields.forEach(col => params.push(`${col}=not.is.null`));
+    params.push('seeking=not.is.null', 'seeking=not.eq.{}');
+  } else if (f.completeness === '50') {
+    coreFields.forEach(col => params.push(`${col}=not.is.null`));
+    params.push('seeking=not.is.null', 'seeking=not.eq.{}');
+  } else if (f.completeness === 'low') {
+    params.push(`or=(${coreFields.map(col => `${col}.is.null`).join(',')},seeking.is.null)`);
+  }  if (f.hasPhoto === 'yes') params.push('image_url=not.is.null');
+  if (f.hasPhoto === 'no') params.push('image_url=is.null');
+  if (f.seeking) params.push(`seeking=cs.${encodeURIComponent('{"' + f.seeking + '"}')}`) ;
+  if (f.zip) params.push(`postal_code=eq.${encodeURIComponent(f.zip)}`);
+  if (f.politics && f.politics.length) params.push(`politics=in.(${f.politics.map(v => `"${v}"`).join(',')})`);
+  if (f.bodyType && f.bodyType.length) params.push(`body_type=in.(${f.bodyType.map(v => `"${v}"`).join(',')})`);
+  if (f.smoking && f.smoking.length) params.push(`smoking=in.(${f.smoking.map(v => `"${v}"`).join(',')})`);
+  if (f.drinking && f.drinking.length) params.push(`drinking=in.(${f.drinking.map(v => `"${v}"`).join(',')})`);
+  if (f.kids && f.kids.length) params.push(`kids=in.(${f.kids.map(v => `"${v}"`).join(',')})`);
+  if (f.wantKids && f.wantKids.length) params.push(`want_kids=in.(${f.wantKids.map(v => `"${v}"`).join(',')})`);
+  if (f.relStatus && f.relStatus.length) params.push(`relationship_status=in.(${f.relStatus.map(v => `"${v}"`).join(',')})`);
+  if (f.relocationIn) params.push(`relocation_in=eq.${encodeURIComponent(f.relocationIn)}`);
+  if (f.relocationOut) params.push(`relocation_out=eq.${encodeURIComponent(f.relocationOut)}`);
+  // Server-side age filter — convert age to DOB range
+  if (f.ageMin || f.ageMax) {
+    const today = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    if (f.ageMin) {
+      // Min age X → must be at least X years old → born on or before today minus X years
+      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMin));
+      params.push(`date_of_birth=lte.${fmt(d)}`);
+    }
+    if (f.ageMax) {
+      // Max age X → must be at most X years old → born on or after today minus X years
+      const d = new Date(today); d.setFullYear(d.getFullYear() - parseInt(f.ageMax));
+      params.push(`date_of_birth=gte.${fmt(d)}`);
+    }
+  }
+  // Server-side income range filter
+  const incomeOrder = ['Under $50k','$50k - $100k','$100k - $150k','$150k - $250k','$250k - $500k','$500k+'];
+  if (f.incomeMin && !f.incomeMax) {
+    const minIdx = incomeOrder.indexOf(f.incomeMin);
+    const tiers = incomeOrder.slice(minIdx);
+    if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
+  } else if (!f.incomeMin && f.incomeMax) {
+    const maxIdx = incomeOrder.indexOf(f.incomeMax);
+    const tiers = incomeOrder.slice(0, maxIdx + 1);
+    if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
+  } else if (f.incomeMin && f.incomeMax) {
+    const minIdx = incomeOrder.indexOf(f.incomeMin);
+    const maxIdx = incomeOrder.indexOf(f.incomeMax);
+    const tiers = incomeOrder.slice(minIdx, maxIdx + 1);
+    if (tiers.length) params.push(`income_level=in.(${tiers.map(t => `"${t}"`).join(',')})`);
+  }
+  if (f.incomeExact && f.incomeExact.length) params.push(f.incomeExact.length === 1 ? `income_level=eq.${encodeURIComponent(f.incomeExact[0])}` : `income_level=in.(${f.incomeExact.map(v => `"${v}"`).join(',')})`);
+  if (f.dateWithKids) params.push(`date_with_kids=eq.${encodeURIComponent(f.dateWithKids)}`);
+  if (f.prefReligion && f.prefReligion.length) params.push(`preferred_religion=ov.{${f.prefReligion.map(v => `"${v}"`).join(',')}}`)
+  if (f.prefPolitics && f.prefPolitics.length) params.push(`preferred_politics=ov.{${f.prefPolitics.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefBodyType && f.prefBodyType.length) params.push(`preferred_body_type=ov.{${f.prefBodyType.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefEducation && f.prefEducation.length) params.push(`preferred_education=ov.{${f.prefEducation.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefSmoking && f.prefSmoking.length) params.push(`preferred_smoking=ov.{${f.prefSmoking.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefDrinking && f.prefDrinking.length) params.push(`preferred_alcohol=ov.{${f.prefDrinking.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefRelStatus && f.prefRelStatus.length) params.push(`preferred_relationship_status=ov.{${f.prefRelStatus.map(v => `"${v}"`).join(',')}}`);
+  if (f.prefAgeMin) params.push(`min_age=gte.${f.prefAgeMin}`);
+  if (f.prefAgeMax) params.push(`max_age=lte.${f.prefAgeMax}`);
+  if (f.lastActive) params.push(`last_login_at=gte.${encodeURIComponent(f.lastActive)}`);
+
+  if (searchQuery) {
+    const words = searchQuery.trim().split(/\s+/);
+    if (words.length === 1) {
+      const sq = encodeURIComponent(words[0]);
+      params.push(`or=(first_name.ilike.*${sq}*,last_name.ilike.*${sq}*,email.ilike.*${sq}*)`);
+    } else {
+      const first = encodeURIComponent(words[0]);
+      const last = encodeURIComponent(words.slice(1).join(' '));
+      params.push(`or=(and(first_name.ilike.*${first}*,last_name.ilike.*${last}*),email.ilike.*${encodeURIComponent(searchQuery)}*)`);
+    }
+  }
+
+  const base = `${SUPABASE_URL}/rest/v1/profiles?${params.join('&')}`;
+
+  if (forCount) return base + '&select=id,date_of_birth' + (f.ageMin || f.ageMax ? '' : '');
+  return base + `&select=id,first_name,last_name,email,phone,date_of_birth,gender,city,state,postal_code,street_address,closest_major_city,timezone,image_url,seeking,share_with_matchmakers,interested_in_matchmaking,email_opt_in,services_text_opt_in,marketing_text_opt_in,is_active,created_at,updated_at,bio,occupation,employer,education,religion,ethnicity,height_inches,hair_color,eye_color,kids,want_kids,smoking,drinking,politics,body_type,relationship_status,pets,languages,income_level,activities_hobbies,ideal_match,photos,dealbreakers,min_age,max_age,max_distance,relocation_in,relocation_out,date_with_kids,preferred_height_min,preferred_height_max,preferred_body_type,preferred_ethnicities,preferred_religion,preferred_politics,preferred_education,preferred_smoking,preferred_alcohol,preferred_relationship_status,preferred_income,import_batch,latitude,longitude,invite_paused,invite_paused_reason,banned,ban_reason&order=created_at.desc`;
+}
+
+async function loadProfiles() {
+  document.getElementById('profiles-list').innerHTML = '<div class="loading-state">Loading…</div>';
+  document.getElementById('pagination').innerHTML = '';
+
+  try {
+    const f = activeFilters;
+
+    // Fetch with range
+    const from = currentPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const url = buildProfilesUrl();
+
+    const token = supabaseSession || SUPABASE_ANON;
+    const r = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${token}`,
+        'Range': `${from}-${to}`,
+        'Range-Unit': 'items',
+        'Prefer': 'count=exact'
+      }
+    });
+
+    let data = await r.json();
+    const contentRange = r.headers.get('content-range');
+    let total = 0;
+    if (contentRange) {
+      const match = contentRange.match(/\/(\d+)/);
+      if (match) total = parseInt(match[1]);
+    }
+
+    // Age filter is now server-side (see buildProfilesUrl)
+
+    // Distance filter — fetch ALL matching profiles then filter by distance
+    if (distanceCenter && f.distanceMiles) {
+      const miles = parseFloat(f.distanceMiles);
+      // Fetch all profiles (not just current page) to apply distance filter
+      const allUrl = buildProfilesUrl() + '&limit=5000';
+      const allR = await fetch(allUrl, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      });
+      const allData = await allR.json();
+      const filtered = allData.filter(p => {
+        if (!p.latitude || !p.longitude) return false;
+        return haversineDistance(distanceCenter.lat, distanceCenter.lng, p.latitude, p.longitude) <= miles;
+      });
+      // Paginate filtered results client-side
+      const pageStart = currentPage * PAGE_SIZE;
+      totalCount = filtered.length;
+      renderProfiles(filtered.slice(pageStart, pageStart + PAGE_SIZE));
+      renderPagination(Math.ceil(filtered.length / PAGE_SIZE));
+      document.getElementById('profile-count').textContent = `${totalCount.toLocaleString()} profile${totalCount !== 1 ? 's' : ''}`;
+      return;
+    }
+
+    totalCount = total;
+    renderProfiles(data);
+    renderPagination(Math.ceil(total / PAGE_SIZE));
+    document.getElementById('profile-count').textContent = `${totalCount.toLocaleString()} profile${totalCount !== 1 ? 's' : ''}`;
+
+  } catch(e) {
+    document.getElementById('profiles-list').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load profiles.</p></div>';
+    console.error(e);
+  }
+}
+
+function renderProfiles(profiles) {
+  const el = document.getElementById('profiles-list');
+  if (!profiles.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No profiles match your filters.</p></div>';
+    return;
+  }
+  el.innerHTML = profiles.map(p => {
+    const age = calcAge(p.date_of_birth);
+    const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
+    const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
+    const location = [p.city, p.state].filter(Boolean).join(', ');
+    const locationWithZip = [location, p.postal_code].filter(Boolean).join(' · ');
+    const meta = [age ? `${age} yrs` : null, p.gender, locationWithZip].filter(Boolean).join(' · ');
+    const avatar = p.image_url
+      ? '<img src="' + p.image_url + '" alt="' + name + '" onerror="this.style.display=&apos;none&apos;">'
+      : '<span>' + initials + '</span>';
+    const seeking = p.seeking?.join(', ') || '';
+    const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    const pJson = JSON.stringify(p).replace(/"/g, '&quot;');
+    return `<div class="profile-card" onclick="openProfile(${pJson})">
+      <div class="profile-avatar">${avatar}</div>
+      <div class="profile-info">
+        <h4>${name}</h4>
+        <div class="meta">${meta || '—'}</div>
+        <div class="profile-tags">
+          ${p.occupation ? '<span class="tag">' + p.occupation + '</span>' : ''}
+          ${seeking ? '<span class="tag red">Seeking: ' + seeking + '</span>' : ''}
+          ${p.share_with_matchmakers ? '<span class="tag green">Matchmaker</span>' : ''}
+          ${!p.is_active ? '<span class="tag" style="background:#fff0f0;color:#C6302C">Inactive</span>' : ''}
+          ${p.invite_paused ? '<span class="tag" style="background:#fffbeb;color:#92400e;border:1px solid #f59e0b">Invite Paused</span>' : ''}
+          ${p.banned_at ? '<span class="tag" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe">Banned</span>' : ''}
+          ${(p.relocation_in === 'Yes' || p.relocation_out === 'Yes' || p.relocation_in === 'Maybe' || p.relocation_out === 'Maybe') ? '<span class="tag" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">Open to Travel</span>' : ''}
+        </div>
+      </div>
+      <div class="profile-card-right">
+        <div class="date">Joined ${date}</div>
+        ${adminUser && !['matchmaker','smitten_matchmaker'].includes(adminUser.role) ? '<div class="email">' + (p.email || '') + '</div>' : ''}
+        ${(function(){
+          const fields = ['seeking','kids','want_kids','religion','politics','body_type','min_age','max_age','preferred_body_type','income_level','gender'];
+          const filled = fields.filter(f => p[f] !== null && p[f] !== undefined && p[f] !== '' && !(Array.isArray(p[f]) && p[f].length === 0)).length;
+          const pct = Math.round((filled / fields.length) * 100);
+          if (pct < 50) return '<div style="font-size:11px;font-weight:700;color:#C6302C;margin-top:4px">⚠ ' + pct + '% complete</div>';
+          if (pct < 80) return '<div style="font-size:11px;font-weight:700;color:#92400e;margin-top:4px">' + pct + '% complete</div>';
+          return '';
+        })()}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPagination(totalPages) {
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>← Prev</button>`;
+  const start = Math.max(0, currentPage - 2);
+  const end = Math.min(totalPages - 1, currentPage + 2);
+  if (start > 0) html += `<button class="page-btn" onclick="goPage(0)">1</button>${start > 1 ? '<span class="page-info">…</span>' : ''}`;
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i + 1}</button>`;
+  }
+  if (end < totalPages - 1) html += `${end < totalPages - 2 ? '<span class="page-info">…</span>' : ''}<button class="page-btn" onclick="goPage(${totalPages - 1})">${totalPages}</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Next →</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(n) {
+  currentPage = n;
+  loadProfiles();
+  window.scrollTo(0, 0);
+}
+
+// ── PROFILE MODAL ─────────────────────────────────────────────────────────────
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('modal-tab-' + name).classList.add('active');
+}
+
+let currentModalProfile = null;
+let profileEditUnlocked = false;
+
+function setProfileFieldsLocked(locked) {
+  profileEditUnlocked = !locked;
+  const content = document.querySelector('.modal-content');
+  if (!content) return;
+  content.querySelectorAll('input, select, textarea').forEach(el => {
+    // Email and timezone stay readonly regardless of edit mode — never editable
+    if (el.id === 'm-email' || el.id === 'm-timezone') return;
+    el.disabled = locked;
+  });
+  const editBtn = document.getElementById('btn-modal-edit');
+  const saveBtn = document.getElementById('btn-modal-save');
+  if (editBtn) editBtn.textContent = locked ? 'Edit' : 'Editing...';
+  if (saveBtn) saveBtn.disabled = locked;
+}
+
+function toggleProfileEditMode() {
+  setProfileFieldsLocked(profileEditUnlocked);
+}
+
+function openProfile(p) {
+  currentModalProfile = p;
+  const isMatchmaker = adminUser && ['matchmaker', 'smitten_matchmaker'].includes(adminUser.role);
+  const age = calcAge(p.date_of_birth);
+  const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
+  const initials = [(p.first_name||'?')[0], (p.last_name||'')[0]].join('').toUpperCase();
+  const location = [p.city, p.state].filter(Boolean).join(', ');
+
+  // Topbar
+  const avatarEl = document.getElementById('modal-topbar-avatar');
+  avatarEl.innerHTML = p.image_url ? `<img src="${p.image_url}" alt="${name}">` : initials;
+  document.getElementById('modal-topbar-name').textContent = name;
+  document.getElementById('modal-topbar-sub').textContent = [age ? `Age ${age}` : null, p.gender, location].filter(Boolean).join(' · ') || '—';
+  document.getElementById('modal-role-badge').textContent = isMatchmaker ? '' : (p.import_batch || '');
+
+  // Photos — deduplicate in case image_url is also present in photos[]
+  const _raw = p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || []);
+  const allPhotos = [...new Set(_raw.filter(Boolean))];
+  renderModalPhotos(allPhotos);
+
+  // Hide contact row for matchmakers
+  const contactRow = document.getElementById('m-contact-row');
+  if (contactRow) contactRow.style.display = isMatchmaker ? 'none' : '';
+
+  // Hide save bar for matchmakers
+  document.getElementById('modal-save-bar').style.display = isMatchmaker ? 'none' : '';
+
+  // Lock all editable fields until Edit is pressed
+  setProfileFieldsLocked(true);
+  const editBtn = document.getElementById('btn-modal-edit');
+  if (editBtn) editBtn.style.display = isMatchmaker ? 'none' : '';
+
+  // Reset to first tab
+  document.querySelectorAll('.modal-tab-btn')[0].click();
+  document.getElementById('modal-alert').className = 'modal-alert';
+
+  // Populate fields
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+
+  // Basic
+  setVal('m-first', p.first_name);
+  setVal('m-last', p.last_name);
+  setVal('m-email', p.email);
+  setVal('m-phone', p.phone);
+  setVal('m-dob', p.date_of_birth);
+  setVal('m-gender', p.gender);
+  setVal('m-address', p.street_address);
+  setVal('m-city', p.city);
+  setVal('m-state', p.state);
+  setVal('m-zip', p.postal_code);
+  setVal('m-closest-city', p.closest_major_city);
+  setVal('m-timezone', p.timezone);
+  setVal('m-bio', p.bio);
+  setChk('m-share-matchmakers', p.share_with_matchmakers);
+  // Invite Paused button state
+  const ipBtn = document.getElementById('btn-modal-invite-paused');
+  if (ipBtn) {
+    if (p.invite_paused) {
+      ipBtn.textContent = 'Resume Invites';
+      ipBtn.style.background = '#92400e';
+      ipBtn.style.color = 'white';
+      ipBtn.style.border = '1.5px solid #92400e';
+    } else {
+      ipBtn.textContent = 'Invite Paused';
+      ipBtn.style.background = 'transparent';
+      ipBtn.style.color = '#92400e';
+      ipBtn.style.border = '1.5px solid #92400e';
+    }
+  }
+  // Save profile button state
+  if (adminUser) {
+    const saveBtn = document.getElementById('btn-modal-save-profile');
+    if (saveBtn) {
+      const token = supabaseSession || SUPABASE_ANON;
+      fetch(`${SUPABASE_URL}/rest/v1/saved_profiles?staff_id=eq.${adminUser.id}&profile_id=eq.${p.id}&select=id`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+      }).then(r => r.json()).then(rows => {
+        if (rows.length) { saveBtn.textContent = '★ Saved'; saveBtn.style.background = '#0369a1'; saveBtn.style.color = 'white'; }
+        else { saveBtn.textContent = '⭐ Save'; saveBtn.style.background = 'transparent'; saveBtn.style.color = '#0369a1'; }
+      });
+    }
+  }
+  const banBtn = document.getElementById('btn-modal-ban');
+  if (banBtn) {
+    banBtn.textContent = p.banned ? 'Unban' : 'Ban';
+    banBtn.style.background = p.banned ? '#7c3aed' : 'transparent';
+    banBtn.style.color = p.banned ? 'white' : '#7c3aed';
+  }
+  setChk('m-interested-matchmaking', p.interested_in_matchmaking);
+  setChk('m-email-opt', p.email_opt_in);
+  setChk('m-services-text', p.services_text_opt_in);
+  setChk('m-marketing-text', p.marketing_text_opt_in);
+  // Seeking checkboxes
+  ['m-seek-date-men','m-seek-date-women','m-seek-any','m-seek-friend'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = Array.isArray(p.seeking) && p.seeking.includes(el.value);
+  });
+
+  // Lifestyle
+  if (p.height_inches) {
+    setVal('m-height-ft', Math.floor(p.height_inches / 12));
+    setVal('m-height-in', p.height_inches % 12);
+  } else { setVal('m-height-ft',''); setVal('m-height-in',''); }
+  setVal('m-education', p.education);
+  setVal('m-occupation', p.occupation);
+  setVal('m-employer', p.employer);
+  setVal('m-kids', p.kids);
+  setVal('m-want-kids', p.want_kids);
+  setVal('m-smoking', p.smoking);
+  setVal('m-drinking', p.drinking);
+  setVal('m-religion', p.religion);
+  setVal('m-politics', p.politics);
+  setVal('m-income', p.income_level);
+  setVal('m-body-type', p.body_type);
+  setVal('m-hair', p.hair_color);
+  setVal('m-eyes', p.eye_color);
+  setVal('m-ethnicity', Array.isArray(p.ethnicity) ? p.ethnicity[0] : p.ethnicity);
+  setVal('m-rel-status', p.relationship_status);
+  setVal('m-pets', p.pets);
+  setVal('m-languages', p.languages);
+  setVal('m-activities', Array.isArray(p.activities_hobbies) ? p.activities_hobbies.join(', ') : p.activities_hobbies);
+  setVal('m-ideal-match', p.ideal_match);
+
+  // Preferences
+  setVal('m-min-age', p.min_age);
+  setVal('m-max-age', p.max_age);
+  setVal('m-max-distance', p.max_distance);
+  setVal('m-pref-income', p.preferred_income);
+  setVal('m-pref-height-min', p.preferred_height_min);
+  setVal('m-pref-height-max', p.preferred_height_max);
+  setVal('m-date-with-kids', p.date_with_kids);
+  setVal('m-relocation-in', p.relocation_in);
+  setVal('m-relocation-out', p.relocation_out);
+  setVal('m-dealbreakers', Array.isArray(p.dealbreakers) ? p.dealbreakers.join(', ') : p.dealbreakers);
+  setVal('m-pref-body', Array.isArray(p.preferred_body_type) ? p.preferred_body_type.join(', ') : '');
+  setVal('m-pref-ethnicity', Array.isArray(p.preferred_ethnicities) ? p.preferred_ethnicities.join(', ') : '');
+  setVal('m-pref-religion', Array.isArray(p.preferred_religion) ? p.preferred_religion.join(', ') : '');
+  setVal('m-pref-politics', Array.isArray(p.preferred_politics) ? p.preferred_politics.join(', ') : '');
+  setVal('m-pref-education', Array.isArray(p.preferred_education) ? p.preferred_education.join(', ') : '');
+  setVal('m-pref-smoking', Array.isArray(p.preferred_smoking) ? p.preferred_smoking.join(', ') : '');
+  setVal('m-pref-alcohol', Array.isArray(p.preferred_alcohol) ? p.preferred_alcohol.join(', ') : '');
+  setVal('m-pref-rel-status', Array.isArray(p.preferred_relationship_status) ? p.preferred_relationship_status.join(', ') : '');
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+
+// ── PHOTO LIGHTBOX ────────────────────────────────────────────────────────
+let lbPhotos = [];
+let lbIndex = 0;
+
+function lbOpen(photos, startIndex) {
+  lbPhotos = Array.isArray(photos) ? photos.filter(Boolean) : [photos];
+  lbIndex = startIndex || 0;
+  lbShow();
+  document.getElementById('photo-lightbox').classList.add('open');
+  document.addEventListener('keydown', lbKeydown);
+}
+
+function lbShow() {
+  const img = document.getElementById('lb-img');
+  const counter = document.getElementById('lb-counter');
+  img.src = lbPhotos[lbIndex];
+  counter.textContent = lbPhotos.length > 1 ? (lbIndex + 1) + ' of ' + lbPhotos.length : '';
+  document.querySelectorAll('.lb-arrow').forEach(a => a.style.display = lbPhotos.length > 1 ? '' : 'none');
+}
+
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  lbShow();
+}
+
+function lbClose() {
+  document.getElementById('photo-lightbox').classList.remove('open');
+  document.removeEventListener('keydown', lbKeydown);
+}
+
+function lbKeydown(e) {
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  else if (e.key === 'ArrowRight') lbNav(1);
+  else if (e.key === 'Escape') lbClose();
+}
+
+// ── MODAL PHOTO SYSTEM (drag-to-reorder, 6 max) ──────────────────────────────
+const MAX_PHOTOS = 6;
+let _modalUploadTargetSlot = null;
+
+function renderModalPhotos(allPhotos) {
+  const grid = document.getElementById('modal-photo-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    const url = allPhotos[i] || null;
+    const slot = document.createElement('div');
+    const slotIndex = i;
+
+    if (url) {
+      slot.className = 'modal-photo-slot has-photo' + (slotIndex === 0 ? ' is-main' : '');
+      slot.draggable = true;
+      slot.dataset.index = slotIndex;
+
+      const img = document.createElement('img');
+      img.src = url;
+      slot.appendChild(img);
+
+      if (slotIndex === 0) {
+        const badge = document.createElement('div');
+        badge.className = 'main-badge';
+        badge.textContent = 'MAIN';
+        slot.appendChild(badge);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'modal-photo-delete-btn';
+      del.innerHTML = '×';
+      slot.appendChild(del);
+
+      img.addEventListener('click', (e) => { e.stopPropagation(); lbOpen(allPhotos.filter(Boolean), slotIndex); });
+      del.addEventListener('click', (e) => { e.stopPropagation(); modalConfirmDelete(slotIndex); });
+      slot.addEventListener('click', (e) => {
+        // Only open file picker if clicking the slot background (not img, not del, not badge)
+        if (e.target === img || e.target === del || (e.target.classList && e.target.classList.contains('main-badge'))) return;
+        _modalUploadTargetSlot = slotIndex;
+        document.getElementById('modal-photo-file-input').click();
+      });
+
+      slot.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', String(slotIndex));
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => slot.classList.add('dragging'), 0);
+      });
+      slot.addEventListener('dragend', () => slot.classList.remove('dragging'));
+
+    } else {
+      slot.className = 'modal-photo-slot';
+      slot.innerHTML = '<span class="cam">+</span>';
+      slot.addEventListener('click', () => {
+        _modalUploadTargetSlot = slotIndex;
+        document.getElementById('modal-photo-file-input').click();
+      });
+    }
+
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('drag-over');
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = slotIndex;
+      if (isNaN(fromIdx) || fromIdx === toIdx) return;
+      if (toIdx >= allPhotos.length) return;
+      modalReorderPhotos(fromIdx, toIdx);
+    });
+
+    grid.appendChild(slot);
+  }
+}
+
+// createPhotoSlot no longer needed - kept as no-op for safety
+function createPhotoSlot() {}
+
+async function modalReorderPhotos(fromIdx, toIdx) {
+  const p = currentModalProfile;
+  if (!p) return;
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
+  const reordered = [...allPhotos];
+  const [moved] = reordered.splice(fromIdx, 1);
+  reordered.splice(toIdx, 0, moved);
+  await modalSavePhotos(reordered);
+}
+
+async function modalHandleFileInput(input) {
+  if (!input.files[0] || !currentModalProfile) return;
+  const p = currentModalProfile;
+  const token = supabaseSession || SUPABASE_ANON;
+  const file = input.files[0];
+  const ext = file.name.split('.').pop();
+  // Storage RLS requires path to start with auth.uid()
+  const authUid = JSON.parse(atob(token.split('.')[1])).sub;
+  const path = `${authUid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/profile-photos/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': file.type },
+    body: file
+  });
+  if (!uploadRes.ok) { alert('Upload failed.'); input.value = ''; return; }
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile-photos/${path}`;
+
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
+  const newAll = [...allPhotos];
+  const slot = _modalUploadTargetSlot;
+  if (slot !== null && slot < newAll.length) {
+    newAll[slot] = publicUrl; // replace
+  } else {
+    if (newAll.length >= MAX_PHOTOS) { alert(`Maximum ${MAX_PHOTOS} photos allowed.`); input.value = ''; return; }
+    newAll.push(publicUrl);
+  }
+  _modalUploadTargetSlot = null;
+  input.value = '';
+  await modalSavePhotos(newAll);
+}
+
+async function modalSavePhotos(newAll) {
+  const p = currentModalProfile;
+  const token = supabaseSession || SUPABASE_ANON;
+  const newImageUrl = newAll[0] || null;
+  const newPhotos = newAll.slice(1);
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ image_url: newImageUrl, photos: newPhotos.length ? newPhotos : null })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.image_url = newImageUrl;
+    currentModalProfile.photos = newPhotos;
+    // Update topbar avatar
+    const avatarEl = document.getElementById('modal-topbar-avatar');
+    if (avatarEl && newImageUrl) avatarEl.innerHTML = `<img src="${newImageUrl}" alt="">`;
+    renderModalPhotos(newAll);
+    loadProfiles();
+  } catch(e) { alert('Failed to save photos: ' + e.message); }
+}
+
+let _modalPendingDelete = null;
+function modalConfirmDelete(slot) {
+  _modalPendingDelete = slot;
+  if (confirm('Remove this photo?')) { modalExecuteDelete(); } else { _modalPendingDelete = null; }
+}
+
+async function modalExecuteDelete() {
+  const slot = _modalPendingDelete;
+  _modalPendingDelete = null;
+  const p = currentModalProfile;
+  if (!p || slot === null) return;
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
+  const newAll = allPhotos.filter((_, i) => i !== slot);
+  await modalSavePhotos(newAll);
+}
+
+// Legacy shim
+async function deleteProfilePhoto(url) {
+  const p = currentModalProfile;
+  if (!p) return;
+  const allPhotos = [...new Set((p.image_url ? [p.image_url, ...(p.photos || [])] : (p.photos || [])).filter(Boolean))];
+  const idx = allPhotos.indexOf(url);
+  if (idx === -1) return;
+  _modalPendingDelete = idx;
+  modalExecuteDelete();
+}
+function modalMainPhotoClick() {}
+function modalExtraPhotoClick() {}
+async function modalUploadPhoto() {}
+
+// ── BAN PROFILE ───────────────────────────────────────────────────────────────
+async function toggleBanProfile() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const isBanned = !!p.banned_at;
+  let reason = null;
+  if (!isBanned) {
+    reason = prompt(`Ban ${fullName}?\n\nEnter a reason (required):`);
+    if (!reason || !reason.trim()) return;
+    reason = reason.trim();
+  } else {
+    if (!confirm(`Remove ban for ${fullName}?`)) return;
+  }
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-modal-ban');
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(isBanned
+        ? { banned_at: null, ban_reason: null, is_active: true }
+        : { banned_at: new Date().toISOString(), ban_reason: reason, is_active: false })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.banned_at = isBanned ? null : new Date().toISOString();
+    currentModalProfile.ban_reason = isBanned ? null : reason;
+    btn.textContent = isBanned ? 'Ban' : 'Unban';
+    btn.style.color = isBanned ? '#7c3aed' : 'white';
+    btn.style.background = isBanned ? 'transparent' : '#7c3aed';
+    document.getElementById('modal-save-status').textContent = isBanned ? 'Ban removed.' : 'Profile banned.';
+    setTimeout(() => { document.getElementById('modal-save-status').textContent = ''; }, 3000);
+    loadProfiles();
+  } catch(e) { alert('Failed: ' + e.message); }
+  btn.disabled = false;
+}
+
+// ── REMOVE FROM MATCHING ──────────────────────────────────────────────────────
+async function toggleRemovedFromMatching() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const fullName = `${p.first_name} ${p.last_name}`;
+  const isRemoved = !!p.removed_from_matching;
+  let reason = null;
+  if (!isRemoved) {
+    reason = prompt(`Remove ${fullName} from matching?\n\nOptional reason:`);
+    if (reason === null) return;
+    reason = reason.trim() || null;
+  } else {
+    if (!confirm(`Restore ${fullName} to matching?`)) return;
+  }
+  const token = supabaseSession || SUPABASE_ANON;
+  const btn = document.getElementById('btn-modal-remove-matching');
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${p.id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(isRemoved
+        ? { removed_from_matching: false, removed_from_matching_reason: null, removed_from_matching_at: null }
+        : { removed_from_matching: true, removed_from_matching_reason: reason, removed_from_matching_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    currentModalProfile.removed_from_matching = !isRemoved;
+    btn.textContent = isRemoved ? 'Remove from Matching' : 'Restore to Matching';
+    document.getElementById('modal-save-status').textContent = isRemoved ? 'Restored to matching.' : 'Removed from matching.';
+    setTimeout(() => { document.getElementById('modal-save-status').textContent = ''; }, 3000);
+    loadProfiles();
+  } catch(e) { alert('Failed: ' + e.message); }
+  btn.disabled = false;
+}
+
+// ── STAFF ROLES FROM DB ───────────────────────────────────────────────────────
+let staffRoles = [];
+
+async function loadStaffRoles() {
+  const token = supabaseSession || SUPABASE_ANON;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/staff_roles?order=sort_order`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}` }
+    });
+    staffRoles = await r.json();
+    const opts = '<option value="">Select...</option>' + staffRoles.map(r => `<option value="${r.value}">${r.label}</option>`).join('');
+    const sfRole = document.getElementById('sf-role');
+    if (sfRole) sfRole.innerHTML = opts;
+    const bulkRole = document.getElementById('staff-bulk-role');
+    if (bulkRole) bulkRole.innerHTML = '<option value="">Change role to...</option>' + staffRoles.map(r => `<option value="${r.value}">${r.label}</option>`).join('');
+  } catch(e) { console.warn('Could not load staff roles', e); }
+}
+
+// ── STAFF BULK ACTIONS ────────────────────────────────────────────────────────
+let selectedStaffIds = new Set();
+
+let _allStaff = [];
+
+function filterStaffList() {
+  const q = (document.getElementById('staff-search')?.value || '').toLowerCase().trim();
+  const filtered = q ? _allStaff.filter(s =>
+    `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) ||
+    (s.email || '').toLowerCase().includes(q)
+  ) : _allStaff;
+  renderStaffRows(filtered);
+}
+
+function renderStaff(staff) {
+  _allStaff = staff;
+  filterStaffList();
+}
+
+function renderStaffRows(staff) {
+  const el = document.getElementById('staff-list');
+  if (!staff.length) { el.innerHTML = '<div class="empty-state"><p>No staff found.</p></div>'; return; }
+  const roleColors = { super_admin: '#C6302C', matchmaker: '#7c3aed', org_admin: '#0369a1', host: '#166534', viewer: '#555' };
+  el.innerHTML = staff.map(s => {
+    const roleLabel = staffRoles.find(r => r.value === s.role)?.label || s.role;
+    const roleColor = roleColors[s.role] || '#666';
+    return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px">
+      <input type="checkbox" data-staff-id="${s.id}" onchange="onStaffCheckbox(this,'${s.id}')" style="accent-color:var(--red);width:16px;height:16px;flex-shrink:0;cursor:pointer">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);flex-shrink:0">
+        ${(s.first_name||'?')[0]}${(s.last_name||'')[0]}
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px;color:var(--black)">${s.first_name} ${s.last_name}</div>
+        <div style="font-size:12px;color:var(--gray-dark);margin-top:2px">${s.email}</div>
+        <div style="font-size:11px;color:var(--gray-mid);margin-top:2px">${s.organizations?.name || 'Platform-level'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${roleColor}22;color:${roleColor}">${roleLabel}</span>
+        <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:${s.is_active?'#F0FFF4':'#FFF0F0'};color:${s.is_active?'#166534':'#C6302C'}">${s.is_active?'Active':'Inactive'}</span>
+        <button onclick="editStaff(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:var(--gray-dark)">Edit</button>
+        <button onclick="toggleStaffActive('${s.id}', ${s.is_active})" style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1.5px solid #E8E8E8;background:white;cursor:pointer;color:${s.is_active?'#C6302C':'#166534'}">${s.is_active?'Deactivate':'Activate'}</button>
+      </div>
+    </div>`;
+  }).join('');
+  selectedStaffIds.clear();
+  updateStaffBulkBar();
+}
+
+function onStaffCheckbox(cb, id) {
+  if (cb.checked) { selectedStaffIds.add(id); } else { selectedStaffIds.delete(id); }
+  updateStaffBulkBar();
+}
+
+function toggleSelectAllStaff(masterCb) {
+  document.querySelectorAll('[data-staff-id]').forEach(cb => {
+    cb.checked = masterCb.checked;
+    if (masterCb.checked) { selectedStaffIds.add(cb.dataset.staffId); } else { selectedStaffIds.delete(cb.dataset.staffId); }
+  });
+  updateStaffBulkBar();
+}
+
+function clearStaffSelection() {
+  selectedStaffIds.clear();
+  document.querySelectorAll('[data-staff-id]').forEach(cb => cb.checked = false);
+  const masterCb = document.getElementById('staff-select-all');
+  if (masterCb) masterCb.checked = false;
+  updateStaffBulkBar();
+}
+
+function updateStaffBulkBar() {
+  const bar = document.getElementById('staff-bulk-bar');
+  const countEl = document.getElementById('staff-bulk-count');
+  if (!bar) return;
+  if (selectedStaffIds.size > 0) {
+    bar.style.display = 'flex';
+    countEl.textContent = `${selectedStaffIds.size} selected`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+async function bulkUpdateRole() {
+  const role = document.getElementById('staff-bulk-role').value;
+  if (!role) { alert('Select a role first.'); return; }
+  if (!selectedStaffIds.size) return;
+  if (!confirm(`Update role to "${role}" for ${selectedStaffIds.size} user(s)?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const ids = [...selectedStaffIds];
+  try {
+    await Promise.all(ids.map(id => fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ role, updated_at: new Date().toISOString() })
+    })));
+    clearStaffSelection();
+    loadStaff();
+  } catch(e) { alert('Bulk update failed.'); }
+}
+
+async function bulkDeactivate() {
+  if (!selectedStaffIds.size) return;
+  if (!confirm(`Deactivate ${selectedStaffIds.size} user(s)?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const ids = [...selectedStaffIds];
+  try {
+    await Promise.all(ids.map(id => fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ is_active: false, updated_at: new Date().toISOString() })
+    })));
+    clearStaffSelection();
+    loadStaff();
+  } catch(e) { alert('Bulk deactivate failed.'); }
+}
+
+async function bulkActivate() {
+  if (!selectedStaffIds.size) return;
+  if (!confirm(`Activate ${selectedStaffIds.size} user(s)?`)) return;
+  const token = supabaseSession || SUPABASE_ANON;
+  const ids = [...selectedStaffIds];
+  try {
+    await Promise.all(ids.map(id => fetch(`${SUPABASE_URL}/rest/v1/staff?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ is_active: true, updated_at: new Date().toISOString() })
+    })));
+    clearStaffSelection();
+    loadStaff();
+  } catch(e) { alert('Bulk activate failed.'); }
+}
+
+function enlargePhoto(url) {
+  // Legacy single-photo call -- open lightbox with just this photo
+  const allPhotos = currentModalProfile && currentModalProfile.photos && currentModalProfile.photos.length
+    ? currentModalProfile.photos
+    : (currentModalProfile && currentModalProfile.image_url ? [currentModalProfile.image_url] : [url]);
+  const idx = allPhotos.indexOf(url);
+  lbOpen(allPhotos, idx >= 0 ? idx : 0);
+}
+
+async function saveModalProfile() {
+  const p = currentModalProfile;
+  if (!p) return;
+  const btn = document.getElementById('btn-modal-save');
+  const alertEl = document.getElementById('modal-alert');
+  alertEl.className = 'modal-alert';
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  const getVal = id => { const el = document.getElementById(id); return el ? el.value.trim() || null : null; };
+  const getChk = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+  const splitArr = id => { const v = getVal(id); return v ? v.split(',').map(s => s.trim()).filter(Boolean) : null; };
+
+  const seeking = ['m-seek-date-men','m-seek-date-women','m-seek-any','m-seek-friend']
+    .filter(id => document.getElementById(id)?.checked)
+    .map(id => document.getElementById(id).value);
+
+  const ft = parseInt(document.getElementById('m-height-ft')?.value);
+  const inches = parseInt(document.getElementById('m-height-in')?.value);
+  const heightInches = !isNaN(ft) && !isNaN(inches) ? ft * 12 + inches : null;
+
+  const params = {
+    p_email: p.email,
+    p_first_name: getVal('m-first'),
+    p_last_name: getVal('m-last'),
+    p_middle_name: null,
+    p_phone: getVal('m-phone'),
+    p_date_of_birth: getVal('m-dob'),
+    p_gender: getVal('m-gender'),
+    p_gender_identity: null,
+    p_street_address: getVal('m-address'),
+    p_city: getVal('m-city'),
+    p_state: getVal('m-state'),
+    p_postal_code: getVal('m-zip'),
+    p_country: 'US',
+    p_closest_major_city: getVal('m-closest-city'),
+    p_timezone: getVal('m-timezone'),
+    p_seeking: seeking.length ? seeking : null,
+    p_bio: getVal('m-bio'),
+    p_share_with_matchmakers: getChk('m-share-matchmakers'),
+    p_interested_in_matchmaking: getChk('m-interested-matchmaking'),
+    p_email_opt_in: getChk('m-email-opt'),
+    p_services_text_opt_in: getChk('m-services-text'),
+    p_marketing_text_opt_in: getChk('m-marketing-text'),
+    p_height_inches: heightInches,
+    p_education: getVal('m-education'),
+    p_occupation: getVal('m-occupation'),
+    p_employer: getVal('m-employer'),
+    p_kids: getVal('m-kids'),
+    p_want_kids: getVal('m-want-kids'),
+    p_smoking: getVal('m-smoking'),
+    p_drinking: getVal('m-drinking'),
+    p_religion: getVal('m-religion'),
+    p_politics: getVal('m-politics'),
+    p_income_level: getVal('m-income'),
+    p_body_type: getVal('m-body-type'),
+    p_hair_color: getVal('m-hair'),
+    p_eye_color: getVal('m-eyes'),
+    p_ethnicity: getVal('m-ethnicity') ? [getVal('m-ethnicity')] : null,
+    p_relationship_status: getVal('m-rel-status'),
+    p_pets: getVal('m-pets'),
+    p_languages: getVal('m-languages'),
+    p_activities_hobbies: splitArr('m-activities'),
+    p_ideal_match: getVal('m-ideal-match'),
+    p_university: null,
+    p_min_age: getVal('m-min-age') ? parseInt(getVal('m-min-age')) : null,
+    p_max_age: getVal('m-max-age') ? parseInt(getVal('m-max-age')) : null,
+    p_max_distance: getVal('m-max-distance') ? parseInt(getVal('m-max-distance')) : null,
+    p_preferred_income: getVal('m-pref-income'),
+    p_preferred_height_min: getVal('m-pref-height-min'),
+    p_preferred_height_max: getVal('m-pref-height-max'),
+    p_date_with_kids: getVal('m-date-with-kids'),
+    p_relocation_in: getVal('m-relocation-in'),
+    p_relocation_out: getVal('m-relocation-out'),
+    p_dealbreakers: splitArr('m-dealbreakers'),
+    p_preferred_body_type: splitArr('m-pref-body'),
+    p_preferred_ethnicities: splitArr('m-pref-ethnicity'),
+    p_preferred_religion: splitArr('m-pref-religion'),
+    p_preferred_politics: splitArr('m-pref-politics'),
+    p_preferred_education: splitArr('m-pref-education'),
+    p_preferred_smoking: splitArr('m-pref-smoking'),
+    p_preferred_alcohol: splitArr('m-pref-alcohol'),
