@@ -62,7 +62,7 @@ export const BasicInfo = ({ onNext }: { onNext: () => void }) => {
   return (
     <div className="space-y-8 py-4">
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">About you</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">About you</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -214,7 +214,7 @@ export const BasicInfo = ({ onNext }: { onNext: () => void }) => {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Who you want to meet *</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Who you want to meet *</h3>
         <div className="flex flex-col gap-3">
           {SEEKING_OPTIONS.map(option => (
             <div key={option} className="flex items-center space-x-2">
@@ -230,7 +230,7 @@ export const BasicInfo = ({ onNext }: { onNext: () => void }) => {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">In your words</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">In your words</h3>
         <div className="space-y-2">
           <Label htmlFor="bio">Bio</Label>
           <Textarea 
@@ -245,7 +245,7 @@ export const BasicInfo = ({ onNext }: { onNext: () => void }) => {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Permissions and contact</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Permissions and contact</h3>
         
         <div className="space-y-6">
           <div className="flex items-start space-x-3">
@@ -314,8 +314,10 @@ export const BasicInfo = ({ onNext }: { onNext: () => void }) => {
         </div>
       </section>
 
-      <div className="pt-6">
-        <Button variant="outline" onClick={onNext}>Next: Your Life</Button>
+      <div className="flex flex-col gap-2 pt-6 sm:flex-row sm:justify-end">
+        <Button variant="outline" onClick={onNext} className="min-h-[48px] w-full sm:w-auto">
+          Next: your life
+        </Button>
       </div>
     </div>
   );

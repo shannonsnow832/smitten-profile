@@ -242,7 +242,7 @@ export const PhotoGrid = () => {
   return (
     <div className="space-y-4 mb-8">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Profile Photos <span className="text-destructive">*</span></h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Profile Photos <span className="text-destructive">*</span></h3>
         {uploading && <span className="text-sm text-muted-foreground animate-pulse">Uploading...</span>}
       </div>
       

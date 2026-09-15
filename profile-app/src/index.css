@@ -2,97 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/*
+ * Smitten Singles design system.
+ *
+ * Follows the Smitten Singles / SmittenSync product style guide, matching the
+ * patterns already in use on events.smittensync.com.
+ *   Page background  Soft White   #FCFAFA
+ *   Surfaces         Bright White #FFFFFF
+ *   Brand red        #C6302C
+ *   Type             Montserrat, headings and subheadings in ALL CAPS
+ *   Major surfaces   8px radius, borders before shadows
+ *
+ * The old Light Gray #EFEFF1 is RETIRED. Do not reintroduce it, in a token or
+ * inline. Neutrals here are warm (hue 0) so they sit with Soft White rather
+ * than against it. The stock shadcn neutrals were cool blue-grays and clashed.
+ *
+ * All colors MUST be HSL, so Tailwind's hsl(var(--token)) wrapper works.
+ */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    /* Soft White. The page itself, never a card. */
+    --background: 0 25% 98%;
     --foreground: 0 0% 0%;
 
+    /* Bright White. Cards, forms, tables, anything raised off the page. */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
+    /* Brand red #C6302C */
     --primary: 2 64% 47%;
     --primary-foreground: 0 0% 100%;
+    /* Brand pink #FBB3B1 */
     --primary-light: 2 90% 84%;
     --primary-light-foreground: 0 0% 0%;
 
-    --secondary: 240 7% 94%;
+    /* Warm neutral fill, one step down from Soft White. Replaces #EFEFF1. */
+    --secondary: 0 15% 95%;
     --secondary-foreground: 0 4% 34%;
 
-    --muted: 240 7% 94%;
+    --muted: 0 15% 95%;
+    /* Brand dark gray #5A5353. Body copy and secondary text. */
     --muted-foreground: 0 4% 34%;
 
-    --accent: 2 63% 60%;
+    /* Brand light red #DA5C58 */
+    --accent: 2 64% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 2 64% 47%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Warm borders. The guide leans on these instead of shadows. */
+    --border: 0 10% 88%;
+    --input: 0 10% 88%;
+    --ring: 2 64% 47%;
 
+    /* 0.5rem = 8px on major surfaces, per the guide. */
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 25% 98%;
+    --sidebar-foreground: 0 4% 34%;
+    --sidebar-primary: 2 64% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 15% 95%;
+    --sidebar-accent-foreground: 0 4% 34%;
+    --sidebar-border: 0 10% 88%;
+    --sidebar-ring: 2 64% 47%;
   }
 
+  /*
+   * This app is light mode only. The block is kept so anything that reads a
+   * .dark token still resolves, but the values intentionally match :root.
+   */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 0 25% 98%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 2 64% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 15% 95%;
+    --secondary-foreground: 0 4% 34%;
+    --muted: 0 15% 95%;
+    --muted-foreground: 0 4% 34%;
+    --accent: 2 64% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 2 64% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 10% 88%;
+    --input: 0 10% 88%;
+    --ring: 2 64% 47%;
   }
 }
 
@@ -101,7 +105,57 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    /* Respects the iPhone notch and home indicator in standalone PWA mode. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /*
+   * Stops iOS Safari zooming the viewport when a field takes focus. Anything
+   * under 16px triggers it, and the zoom does not reverse on blur, which
+   * leaves the participant stranded mid-form on a phone.
+   */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * ALL CAPS Montserrat headings are the signature Smitten look, used on
+   * purpose. These are explicit classes rather than a blanket h1/h2 rule so
+   * they never surprise a shadcn primitive that happens to render a heading.
+   */
+  .brand-heading {
+    @apply font-sans font-bold uppercase tracking-wide text-foreground;
+  }
+
+  /* Section headings inside a page. */
+  .brand-subheading {
+    @apply font-sans font-bold uppercase tracking-wide text-foreground text-base sm:text-lg;
+  }
+
+  /* The smallest step: labels over a group of fields, eyebrow text. */
+  .brand-eyebrow {
+    @apply font-sans font-bold uppercase tracking-[0.12em] text-xs text-muted-foreground;
+  }
+
+  /*
+   * A full-width section instead of a card. The guide asks for fewer, stronger
+   * sections and warns against card-on-card, so anything already sitting
+   * inside a surface uses this rather than nesting another Card.
+   */
+  .brand-section {
+    @apply rounded-lg border border-border bg-card;
   }
 }

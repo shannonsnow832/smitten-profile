@@ -67,36 +67,52 @@ export const AcceptTerms = () => {
   const buttonText = isExistingUser ? "Accept and continue" : "Create my profile";
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 p-8 w-full max-w-md mx-auto">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">{heading}</h2>
-        <p className="text-muted-foreground text-sm">
-          {bodyCopy}
-        </p>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-8 sm:px-6">
+      <div className="space-y-2 text-center">
+        <h1 className="brand-heading text-2xl sm:text-3xl">{heading}</h1>
+        <p className="text-sm text-muted-foreground">{bodyCopy}</p>
       </div>
 
       {error && (
-        <Alert variant="destructive" className="w-full">
+        <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="w-full space-y-4">
-        <div className="flex items-start space-x-2 pt-2">
-          <Checkbox 
-            id="consent" 
-            checked={consent} 
-            onCheckedChange={(c) => setConsent(c === true)} 
-            className="mt-1"
+      <div className="brand-section space-y-4 p-4 sm:p-6">
+        <div className="flex items-start gap-3">
+          <Checkbox
+            id="consent"
+            checked={consent}
+            onCheckedChange={(c) => setConsent(c === true)}
+            className="mt-0.5 h-5 w-5 shrink-0"
           />
-          <Label htmlFor="consent" className="text-sm leading-snug font-normal text-muted-foreground">
-            I agree to the <a href={termsUrl || "https://smittensingles.com/terms-of-service"} target="_blank" rel="noreferrer" className="underline text-foreground">Terms of Service</a> and <a href="https://smittensingles.com/privacy-policy" target="_blank" rel="noreferrer" className="underline text-foreground">Privacy Policy</a>.
+          <Label htmlFor="consent" className="text-sm font-normal leading-relaxed text-muted-foreground">
+            I agree to the{" "}
+            <a
+              href={termsUrl || "https://smittensingles.com/terms-of-service"}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary underline"
+            >
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a
+              href="https://smittensingles.com/privacy-policy"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary underline"
+            >
+              Privacy Policy
+            </a>
+            .
           </Label>
         </div>
 
-        <Button 
-          onClick={handleContinue} 
-          className="w-full mt-4"
+        <Button
+          onClick={handleContinue}
+          className="min-h-[48px] w-full"
           disabled={loading || !consent}
         >
           {loading ? "Saving..." : buttonText}

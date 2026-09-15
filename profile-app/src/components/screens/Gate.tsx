@@ -116,14 +116,14 @@ export const Gate = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 p-8 w-full max-w-md mx-auto">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-8 sm:px-6">
       {/* TODO: REMOVE BEFORE LAUNCH */}
       {isDevMode && (
-        <div className="w-full bg-destructive/10 text-destructive border border-destructive/20 p-4 rounded-md mb-4 text-center">
-          <p className="font-bold mb-2">DEV MODE ACTIVE</p>
-          <Button 
-            variant="destructive" 
-            className="w-full" 
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
+          <p className="brand-eyebrow mb-2 text-destructive">Dev mode active</p>
+          <Button
+            variant="destructive"
+            className="min-h-[44px] w-full"
             onClick={handleDevBypass}
             disabled={loading}
           >
@@ -132,57 +132,74 @@ export const Gate = () => {
         </div>
       )}
 
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Sign in</h2>
-        <p className="text-muted-foreground text-sm">
+      <div className="space-y-2 text-center">
+        <h1 className="brand-heading text-2xl sm:text-3xl">Sign in</h1>
+        <p className="text-sm text-muted-foreground">
           Enter your email and we will send you a verification code.
         </p>
       </div>
 
       {error && (
-        <Alert variant="destructive" className="w-full">
+        <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="w-full space-y-4">
+      <div className="brand-section space-y-4 p-4 sm:p-6">
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            autoComplete="email" 
-            value={localEmail} 
-            onChange={e => setLocalEmail(e.target.value)} 
+          <Label htmlFor="email" className="brand-eyebrow">
+            Email address
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            className="h-12"
+            value={localEmail}
+            onChange={e => setLocalEmail(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") handleContinue();
+            }}
           />
         </div>
 
-        <Button 
-          onClick={handleContinue} 
-          className="w-full mt-4"
-          disabled={loading}
-        >
+        <Button onClick={handleContinue} className="min-h-[48px] w-full" disabled={loading}>
           {loading ? "Sending code..." : "Continue"}
         </Button>
       </div>
 
-      <div className="w-full bg-muted border rounded-md p-4 text-sm space-y-3">
-        <h3 className="font-bold">About your Smitten Singles profile</h3>
-        <p>
-          Your free profile is how we know who you are and what you are looking for. It is what we use to consider you for event invitations and matches, and to send you updates on what is happening near you. If you opt in, our team can also share your profile with trusted matchmakers.
-        </p>
-        <div className="h-px bg-border w-full"></div>
+      <div className="brand-section space-y-3 p-4 text-sm sm:p-6">
+        <h2 className="brand-subheading">About your Smitten Singles profile</h2>
         <p className="text-muted-foreground">
-          Ticket discounts, invite-only events, dating strategy sessions, and matchmaker visibility come with Private Access and VIP.
+          Your free profile is how we know who you are and what you are looking for. It is what we use
+          to consider you for event invitations and matches, and to send you updates on what is
+          happening near you. If you opt in, our team can also share your profile with trusted
+          matchmakers.
         </p>
-        <a href="https://join.smittensingles.com/features" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block">
+        <div className="h-px w-full bg-border"></div>
+        <p className="text-muted-foreground">
+          Ticket discounts, invite-only events, dating strategy sessions, and matchmaker visibility
+          come with Private Access and VIP.
+        </p>
+        <a
+          href="https://join.smittensingles.com/features"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block font-semibold text-primary hover:underline"
+        >
           See what is included
         </a>
       </div>
 
-      <div className="text-sm text-muted-foreground pt-4">
-        Having trouble signing in? <a href="mailto:info@thesmittenproject.com" className="underline text-foreground">Contact us</a>
-      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        Having trouble signing in?{" "}
+        <a href="mailto:info@thesmittenproject.com" className="font-semibold text-primary hover:underline">
+          Contact us
+        </a>
+      </p>
     </div>
   );
 };

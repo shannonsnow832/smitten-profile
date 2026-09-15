@@ -75,7 +75,7 @@ export const ArchiveAccount = () => {
   };
 
   return (
-    <div className="mt-16 pt-8 border-t flex justify-center">
+    <div className="mt-12 flex justify-center border-t border-border pt-8">
       <Dialog open={open} onOpenChange={(isOpen: boolean) => {
         if (!archiving) {
           setOpen(isOpen);
@@ -88,13 +88,13 @@ export const ArchiveAccount = () => {
         }
       }}>
         <DialogTrigger asChild>
-          <button className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline">
+          <button className="min-h-[44px] px-3 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline">
             Archive my profile
           </button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Archive your profile</DialogTitle>
+            <DialogTitle className="brand-heading text-lg">Archive your profile</DialogTitle>
             <DialogDescription className="pt-2">
               Archiving removes you from matching and stops all emails and texts from us. Your profile is kept but hidden, and you can contact us if you want to come back.
               <br/><br/>
@@ -107,7 +107,7 @@ export const ArchiveAccount = () => {
               <div className="text-sm font-medium text-destructive">{error}</div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason *</Label>
+              <Label htmlFor="reason" className="brand-eyebrow">Reason *</Label>
               <Select value={reason} onValueChange={(val: string) => setReason(val)}>
                 <SelectTrigger id="reason">
                   <SelectValue placeholder="Select a reason" />
@@ -122,7 +122,7 @@ export const ArchiveAccount = () => {
             
             {isInRelationship && (
               <div className="space-y-2">
-                <Label htmlFor="relationship_source">Did you meet them through Smitten? *</Label>
+                <Label htmlFor="relationship_source" className="brand-eyebrow">Did you meet them through Smitten? *</Label>
                 <Select value={relationshipSource} onValueChange={(val: string) => setRelationshipSource(val)}>
                   <SelectTrigger id="relationship_source">
                     <SelectValue placeholder="Select an option" />
@@ -137,8 +137,8 @@ export const ArchiveAccount = () => {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="note">
-                Additional Details {isOther ? "*" : "(optional)"}
+              <Label htmlFor="note" className="brand-eyebrow">
+                Additional details {isOther ? "*" : "(optional)"}
               </Label>
               <Textarea 
                 id="note" 

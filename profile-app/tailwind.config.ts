@@ -13,7 +13,19 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       colors: {
+        brand: {
+          red: "#C6302C",
+          "red-light": "#DA5C58",
+          pink: "#FBB3B1",
+          "gray-dark": "#5A5353",
+          "gray-mid": "#BFBFBF",
+          "soft-white": "#FCFAFA",
+          white: "#FFFFFF",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

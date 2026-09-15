@@ -14,7 +14,7 @@ const ScreenRenderer = () => {
     return <Archived />;
   }
   return (
-    <main className="flex-1 flex flex-col">
+    <main className="flex w-full flex-1 flex-col">
       {step === 'gate' && <Gate />}
       {step === 'otp' && <Otp />}
       {step === 'accept_terms' && <AcceptTerms />}
@@ -35,22 +35,22 @@ const AppLayout = () => {
   
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background">
+        <div className="brand-eyebrow animate-pulse">Loading</div>
       </div>
     );
   }
   
   if (step === 'archived') {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="flex min-h-[100dvh] flex-col bg-background">
         <BugBanner />
         <ScreenRenderer />
       </div>
     );
   }
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="flex min-h-[100dvh] flex-col bg-background">
       <BugBanner />
       <Header />
       <ScreenRenderer />

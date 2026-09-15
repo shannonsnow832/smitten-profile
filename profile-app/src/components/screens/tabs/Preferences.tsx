@@ -92,7 +92,7 @@ export const Preferences = ({ onBack }: { onBack: () => void }) => {
   return (
     <div className="space-y-8 py-4">
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Who you are hoping to meet</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Who you are hoping to meet</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -224,7 +224,7 @@ export const Preferences = ({ onBack }: { onBack: () => void }) => {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">What matters to you</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">What matters to you</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -281,7 +281,7 @@ export const Preferences = ({ onBack }: { onBack: () => void }) => {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Absolute no-gos</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Absolute no-gos</h3>
         <p className="text-sm text-muted-foreground">Any strict dealbreakers our matchmakers should know about?</p>
         
         <div className="space-y-4">
@@ -301,8 +301,10 @@ export const Preferences = ({ onBack }: { onBack: () => void }) => {
         </div>
       </section>
 
-      <div className="flex justify-between pt-6">
-        <Button variant="outline" onClick={onBack}>Back: Your Life</Button>
+      <div className="flex flex-col gap-2 pt-6 sm:flex-row sm:justify-start">
+        <Button variant="outline" onClick={onBack} className="min-h-[48px] w-full sm:w-auto">
+          Back: your life
+        </Button>
       </div>
     </div>
   );

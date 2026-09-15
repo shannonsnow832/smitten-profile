@@ -97,20 +97,20 @@ export const BugBanner = () => {
   return (
     <>
       {isBugVisible && (
-        <div className="bg-[#4A4444] text-white px-4 py-2 flex flex-col sm:flex-row items-center justify-between text-sm gap-2">
+        <div className="flex flex-col items-center justify-between gap-2 bg-brand-gray-dark px-4 py-2 text-sm text-white sm:flex-row">
           <div className="flex-1 text-center sm:text-left">
             You are using an early version of the Smitten Singles profile. Things may change. We appreciate your patience.
           </div>
           <div className="flex items-center gap-4">
             <button 
               onClick={handleOpen} 
-              className="underline hover:text-zinc-300 whitespace-nowrap"
+              className="min-h-[36px] whitespace-nowrap px-1 underline hover:opacity-80"
             >
               Report a Bug
             </button>
             <button 
               onClick={() => setIsBugVisible(false)} 
-              className="hover:text-zinc-300 p-1"
+              className="flex min-h-[36px] min-w-[36px] items-center justify-center p-1 hover:opacity-80"
               aria-label="Dismiss"
             >
               <X size={16} />
@@ -120,14 +120,14 @@ export const BugBanner = () => {
       )}
 
       {isWelcomeVisible && (
-        <div className="bg-[#1A1717] text-white px-4 py-2 flex flex-col sm:flex-row items-center justify-between text-sm gap-2">
+        <div className="flex flex-col items-center justify-between gap-2 border-b border-border bg-muted px-4 py-2 text-sm text-muted-foreground sm:flex-row">
           <div className="flex-1 text-center sm:text-left">
-            Welcome to our new profile system. Having trouble? Try <a href="https://me.smittensingles.com" target="_blank" rel="noopener noreferrer" className="underline text-white hover:text-zinc-300">me.smittensingles.com</a> or contact <a href="mailto:info@thesmittenproject.com" className="underline text-white hover:text-zinc-300">info@thesmittenproject.com</a>
+            Welcome to our new profile system. Having trouble? Try <a href="https://me.smittensingles.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline hover:opacity-80">me.smittensingles.com</a> or contact <a href="mailto:info@thesmittenproject.com" className="font-semibold text-primary underline hover:opacity-80">info@thesmittenproject.com</a>
           </div>
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsWelcomeVisible(false)} 
-              className="hover:text-zinc-300 p-1"
+              className="flex min-h-[36px] min-w-[36px] items-center justify-center p-1 hover:opacity-80"
               aria-label="Dismiss"
             >
               <X size={16} />

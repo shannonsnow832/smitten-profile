@@ -66,7 +66,7 @@ export const Lifestyle = ({ onNext, onBack }: { onNext: () => void, onBack: () =
   return (
     <div className="space-y-8 py-4">
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Your life</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Your life</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -377,7 +377,7 @@ export const Lifestyle = ({ onNext, onBack }: { onNext: () => void, onBack: () =
       />
 
       <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Ideal Match Description</h3>
+        <h3 className="brand-subheading text-lg sm:text-xl">Ideal Match Description</h3>
         <div className="space-y-2">
           <Textarea 
             id="ideal_match" 
@@ -389,9 +389,13 @@ export const Lifestyle = ({ onNext, onBack }: { onNext: () => void, onBack: () =
         </div>
       </section>
 
-      <div className="flex justify-between pt-6">
-        <Button variant="outline" onClick={onBack}>Back: About You</Button>
-        <Button variant="outline" onClick={onNext}>Next: Your Matches</Button>
+      <div className="flex flex-col gap-2 pt-6 sm:flex-row sm:justify-between">
+        <Button variant="outline" onClick={onBack} className="min-h-[48px] w-full sm:w-auto">
+          Back: about you
+        </Button>
+        <Button variant="outline" onClick={onNext} className="min-h-[48px] w-full sm:w-auto">
+          Next: your matches
+        </Button>
       </div>
     </div>
   );

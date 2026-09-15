@@ -36,32 +36,27 @@ export const Header = () => {
   };
 
   return (
-    <header className="w-full bg-background border-b border-border h-16 flex items-center justify-between px-4 md:px-8 shrink-0">
+    <header className="sticky top-0 z-40 flex h-14 w-full shrink-0 items-center justify-between border-b border-border bg-card px-4 sm:h-16 sm:px-6">
       {/* TODO: point to the participant portal once it is live */}
-      <a 
-        href="https://smittensingles.com" 
-        className="flex items-center"
-        target="_self"
-        rel="noopener"
-      >
+      <a href="https://smittensingles.com" className="flex min-w-0 items-center" target="_self" rel="noopener">
         {!imgError ? (
-          <img 
-            src="https://vibe.filesafe.space/1783906396328761747/attachments/435dc44a-54e4-4c5c-9bac-40f207197e8c.png" 
-            alt="Smitten Singles" 
-            style={{ height: "40px", width: "auto" }}
+          <img
+            src="https://vibe.filesafe.space/1783906396328761747/attachments/435dc44a-54e4-4c5c-9bac-40f207197e8c.png"
+            alt="Smitten Singles"
+            className="h-8 w-auto sm:h-10"
             onError={() => setImgError(true)}
           />
         ) : (
-          <span className="text-primary font-bold uppercase text-xl tracking-wider">
-            SMITTEN SINGLES
+          <span className="brand-heading truncate text-lg text-primary sm:text-xl">
+            Smitten Singles
           </span>
         )}
       </a>
 
       {email && (
-        <button 
+        <button
           onClick={handleLogout}
-          className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+          className="brand-eyebrow -mr-2 min-h-[44px] shrink-0 px-2 transition-colors hover:text-foreground"
         >
           Log out
         </button>

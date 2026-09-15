@@ -12,7 +12,6 @@ import { Preferences } from "./tabs/Preferences";
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { CompletenessCard } from "@/components/CompletenessCard";
 import { ArchiveAccount } from "@/components/ArchiveAccount";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { performSaveProfile } from "@/lib/saveProfile";
 import { useToast } from "@/hooks/use-toast";
 
@@ -200,114 +199,142 @@ export const Profile = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col space-y-6 p-4 md:p-8 w-full max-w-5xl mx-auto">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 md:px-8">
         <div>
-          <h2 className="text-2xl font-bold">{getHeading()}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{getSubHeading()}</p>
+          <h1 className="brand-heading text-xl sm:text-2xl">{getHeading()}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{getSubHeading()}</p>
         </div>
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-[280px] shrink-0">
+        <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+          <div className="w-full shrink-0 md:w-[280px]">
             <Skeleton className="h-[280px] w-full" />
           </div>
-          <div className="flex-1 min-w-0">
-            <Skeleton className="h-[40px] w-full" />
-            <Skeleton className="h-[400px] w-full mt-4" />
+          <div className="min-w-0 flex-1">
+            <Skeleton className="h-[44px] w-full" />
+            <Skeleton className="mt-4 h-[400px] w-full" />
           </div>
         </div>
       </div>
     );
   }
 
-
   return (
-    <div className="flex flex-col space-y-6 p-4 md:p-8 w-full max-w-5xl mx-auto">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 md:px-8">
       <div>
-        <h2 className="text-2xl font-bold">{getHeading()}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{getSubHeading()}</p>
+        <h1 className="brand-heading text-xl sm:text-2xl">{getHeading()}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{getSubHeading()}</p>
       </div>
-      
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-        <div className="contents md:block md:w-[280px] md:shrink-0">
-          
-          {/* Mobile Photo Row */}
-          <div className="order-1 md:hidden flex items-center gap-4 mb-2">
-            <div className="relative shrink-0 w-[72px] h-[72px] rounded-full overflow-hidden bg-muted border flex items-center justify-center">
+
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+        <div className="contents md:block md:w-[280px] md:shrink-0 md:space-y-6">
+          {/* Phone: a compact avatar plus an entry point to the full photo manager. */}
+          <div className="brand-section order-1 flex items-center gap-4 p-3 md:hidden">
+            <div className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
               {profileData?.image_url ? (
-                <img src={profileData.image_url} alt="Main profile" className="w-full h-full object-cover" />
+                <img src={profileData.image_url} alt="Main profile" className="h-full w-full object-cover" />
               ) : (
                 <Camera className="h-8 w-8 text-muted-foreground" />
               )}
             </div>
-            <div className="flex flex-col items-start">
-              <Button variant="outline" size="sm" onClick={() => setShowMobilePhotos(true)}>
+            <div className="flex min-w-0 flex-col items-start gap-1">
+              <Button
+                variant="outline"
+                onClick={() => setShowMobilePhotos(true)}
+                className="min-h-[44px]"
+              >
                 Manage photos
               </Button>
-              <span className="text-xs text-muted-foreground mt-1 ml-1">
-                {photoCount} of 6
-              </span>
+              <span className="text-xs text-muted-foreground">{photoCount} of 6</span>
             </div>
           </div>
 
-          <div className={showMobilePhotos ? "fixed inset-0 z-50 bg-background overflow-y-auto pb-8 block md:relative md:inset-auto md:z-auto md:bg-transparent md:overflow-visible md:pb-0 md:mb-6" : "hidden md:block md:mb-6"}>
+          {/*
+            On a phone the photo manager takes over the screen rather than
+            pushing the form down. On desktop it is simply the sidebar panel.
+          */}
+          <div
+            className={
+              showMobilePhotos
+                ? "fixed inset-0 z-50 block overflow-y-auto bg-background pb-8 md:relative md:inset-auto md:z-auto md:overflow-visible md:bg-transparent md:pb-0"
+                : "hidden md:block"
+            }
+          >
             {showMobilePhotos && (
-              <div className="sticky top-0 bg-background border-b z-10 flex items-center p-4 md:hidden">
-                <Button variant="ghost" size="icon" onClick={() => setShowMobilePhotos(false)} className="mr-2">
+              <div className="sticky top-0 z-10 flex items-center border-b border-border bg-card p-4 md:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowMobilePhotos(false)}
+                  className="mr-2 min-h-[44px] min-w-[44px]"
+                >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <h2 className="text-lg font-semibold">Profile Photos</h2>
+                <h2 className="brand-subheading">Profile photos</h2>
               </div>
             )}
-            <div className={showMobilePhotos ? "p-4 max-w-md mx-auto md:p-0 md:max-w-none md:mx-0" : ""}>
+            <div className={showMobilePhotos ? "mx-auto max-w-md p-4 md:mx-0 md:max-w-none md:p-0" : ""}>
               <PhotoGrid />
             </div>
           </div>
-          
-          <div className="order-3 md:order-none mt-6 md:mt-0 mb-6 md:mb-0">
+
+          <div className="order-3 md:order-none">
             <CompletenessCard />
           </div>
-          <Card className="order-4 md:order-none w-full bg-muted/30 md:mt-6">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Your Privacy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground">
-                Your profile is only visible to Smitten Singles staff and the matchmakers you have opted in to work with. It is never shown to other participants.
-              </p>
-            </CardContent>
-          </Card>
+
+          {/*
+            A plain bordered note, not another Card. The sidebar already
+            carries one, and the style guide rules out stacking cards inside
+            cards inside cards.
+          */}
+          <div className="brand-section order-4 space-y-1 p-4 md:order-none">
+            <h2 className="brand-eyebrow">Your privacy</h2>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Your profile is only visible to Smitten Singles staff and the matchmakers you have
+              opted in to work with. It is never shown to other participants.
+            </p>
+          </div>
         </div>
-        
-        <div className="contents md:block md:flex-1 md:min-w-0">
-          <div className="order-2 md:order-none w-full">
+
+        <div className="contents md:block md:min-w-0 md:flex-1">
+          <div className="order-2 w-full md:order-none">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="basic">About You</TabsTrigger>
-                <TabsTrigger value="lifestyle">Your Life</TabsTrigger>
-                <TabsTrigger value="preferences">Your Matches</TabsTrigger>
+                <TabsTrigger value="basic">About you</TabsTrigger>
+                <TabsTrigger value="lifestyle">Your life</TabsTrigger>
+                <TabsTrigger value="preferences">Your matches</TabsTrigger>
               </TabsList>
-              <TabsContent value="basic" className="p-4 border rounded-md mt-4">
+              <TabsContent value="basic" className="brand-section mt-4 p-4 sm:p-6">
                 <BasicInfo onNext={() => setActiveTab("lifestyle")} />
               </TabsContent>
-              <TabsContent value="lifestyle" className="p-4 border rounded-md mt-4">
+              <TabsContent value="lifestyle" className="brand-section mt-4 p-4 sm:p-6">
                 <Lifestyle onBack={() => setActiveTab("basic")} onNext={() => setActiveTab("preferences")} />
               </TabsContent>
-              <TabsContent value="preferences" className="p-4 border rounded-md mt-4">
+              <TabsContent value="preferences" className="brand-section mt-4 p-4 sm:p-6">
                 <Preferences onBack={() => setActiveTab("lifestyle")} />
               </TabsContent>
             </Tabs>
           </div>
-          <div className="order-5 md:order-none mt-8 md:mt-0 w-full">
+          <div className="order-5 mt-8 w-full md:order-none md:mt-6">
             <ArchiveAccount />
           </div>
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-background border-t p-4 mt-8 z-10 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <div className="text-destructive text-sm font-medium whitespace-pre-wrap max-w-lg">
-          {saveError}
-        </div>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : (isExistingUser ? "Update Profile" : "Complete Profile")}
+      {/*
+        Save bar. Stacks on a phone so a long validation message never squeezes
+        the button off the edge, and clears the iOS home indicator.
+      */}
+      <div className="sticky bottom-0 z-10 -mx-4 mt-2 flex flex-col gap-3 border-t border-border bg-card px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6 md:-mx-8 md:flex-row md:items-center md:justify-between md:px-8">
+        {saveError && (
+          <div className="max-w-lg whitespace-pre-wrap text-sm font-medium text-destructive">
+            {saveError}
+          </div>
+        )}
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="min-h-[48px] w-full md:ml-auto md:w-auto md:min-w-[200px]"
+        >
+          {saving ? "Saving..." : isExistingUser ? "Update profile" : "Complete profile"}
         </Button>
       </div>
     </div>

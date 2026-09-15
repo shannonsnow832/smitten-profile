@@ -42,10 +42,10 @@ export const CompletenessCard = () => {
   const isComplete = completenessPct >= 100;
 
   return (
-    <Card className="w-full mt-6">
+    <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Profile Completeness</CardTitle>
+          <CardTitle className="brand-subheading">Profile completeness</CardTitle>
           <span className={`font-bold ${isComplete ? 'text-green-600' : 'text-primary'}`}>
             {completenessPct}%
           </span>
@@ -78,7 +78,7 @@ export const CompletenessCard = () => {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-sm">Match Preferences</h4>
+            <h3 className="brand-eyebrow">Match preferences</h3>
             <span className="font-bold text-primary text-sm">{preferencesPct}%</span>
           </div>
           <p className="text-xs text-muted-foreground">
