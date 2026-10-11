@@ -4,10 +4,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { rpc, sendOtp } from "@/lib/auth";
+import { OtpRateLimitError, rpc, sendOtp } from '@/lib/auth';
+import {
+  cooldownSecondsLeft,
+  markRateLimited,
+  startCooldown,
+} from '@/lib/resend-cooldown';
 
 // TODO: REMOVE BEFORE LAUNCH
 const DEV_EMAIL = "shannon@thesmittenproject.com"; 
+
+let sendInFlight = false;
+
+/**
+ * Sends the first code, once. Refuses a second send while one is in flight or
+ * while the address is still inside its cooldown; in that case the code the
+ * member already has is still valid and they go on to the code screen.
+ */
+async function sendCodeOnce(address: string, hasAuthAccount: boolean): Promise<void> {
+  if (sendInFlight || cooldownSecondsLeft(address) > 0) return;
+  sendInFlight = true;
+  try {
+    await sendOtp(address, hasAuthAccount);
+    startCooldown(address);
+  } catch (e) {
+    if (!(e instanceof OtpRateLimitError)) throw e;
+    startCooldown(address, e.retryAfterSeconds);
+    markRateLimited(address);
+  } finally {
+    sendInFlight = false;
+  }
+}
 
 export const Gate = () => {
   const { 
@@ -53,7 +80,7 @@ export const Gate = () => {
         existingAuth = true;
       }
 
-      await sendOtp(DEV_EMAIL, existingAuth);
+      await sendCodeOnce(DEV_EMAIL, existingAuth);
 
       setEmail(DEV_EMAIL);
       setHasAuthAccount(existingAuth);
@@ -102,7 +129,7 @@ export const Gate = () => {
         existingAuth = true;
       }
 
-      await sendOtp(processedEmail, existingAuth);
+      await sendCodeOnce(processedEmail, existingAuth);
 
       setEmail(processedEmail);
       setHasAuthAccount(existingAuth);

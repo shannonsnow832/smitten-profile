@@ -1,9 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from 'react';
 import { useAppContext } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { rpc, sendOtp, verifyOtp } from "@/lib/auth";
+import { OtpRateLimitError, rpc, sendOtp, verifyOtp } from '@/lib/auth';
+import {
+  RATE_LIMIT_MESSAGE,
+  startCooldown,
+  takeRateLimited,
+  useResendCooldown,
+} from '@/lib/resend-cooldown';
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,14 +25,16 @@ export const Otp = () => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [verifyInFlight, setVerifyInFlight] = useState(false);
   
-  const [resendCountdown, setResendCountdown] = useState(0);
+  const { secondsLeft: resendCountdown } = useResendCooldown(email);
+  const [resending, setResending] = useState(false);
+  // Set synchronously, so two fast taps cannot both send before React re-renders.
+  const resendingRef = useRef(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
+  // Arriving here after a rate-limited send: say the first code still works.
   useEffect(() => {
-    if (resendCountdown > 0) {
-      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCountdown]);
+    if (email && takeRateLimited(email)) setNotice(RATE_LIMIT_MESSAGE);
+  }, [email]);
 
   const handleVerify = async () => {
     setError(null);
@@ -101,17 +109,29 @@ export const Otp = () => {
   };
 
   const handleResend = async () => {
-    if (!email || resendCountdown > 0) return;
-    
+    if (!email || resendCountdown > 0 || resendingRef.current) return;
+
+    resendingRef.current = true;
+    setResending(true);
     setError(null);
     setSuccessMsg(null);
+    setNotice(null);
 
     try {
       await sendOtp(email, hasAuthAccount);
       setSuccessMsg("A new code was sent. Your previous code no longer works.");
-      setResendCountdown(60);
+      startCooldown(email);
     } catch (e) {
-      setError("Could not resend. Please wait 60 seconds before trying again.");
+      if (e instanceof OtpRateLimitError) {
+        // Not a failure: the earlier code is still valid.
+        startCooldown(email, e.retryAfterSeconds);
+        setNotice(RATE_LIMIT_MESSAGE);
+      } else {
+        setError("We could not send a new code. Check your connection and try again.");
+      }
+    } finally {
+      resendingRef.current = false;
+      setResending(false);
     }
   };
 
@@ -134,6 +154,12 @@ export const Otp = () => {
       {successMsg && (
         <Alert className="w-full bg-green-50 text-green-800 border-green-200">
           <AlertDescription>{successMsg}</AlertDescription>
+        </Alert>
+      )}
+
+      {notice && (
+        <Alert className="w-full">
+          <AlertDescription>{notice}</AlertDescription>
         </Alert>
       )}
 
@@ -168,10 +194,10 @@ export const Otp = () => {
       <div className="text-sm text-center pt-2">
         <button 
           onClick={handleResend} 
-          disabled={resendCountdown > 0}
+          disabled={resendCountdown > 0 || resending}
           className="text-primary hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
         >
-          {resendCountdown > 0 ? `Resend code (${resendCountdown}s)` : "Resend code"}
+          {resending ? "Sending..." : resendCountdown > 0 ? `Resend code in ${resendCountdown}s` : "Resend code"}
         </button>
       </div>
     </div>
