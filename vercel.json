@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/admin-profiles", "destination": "/admin-profiles.html" }
+  ]
+}
